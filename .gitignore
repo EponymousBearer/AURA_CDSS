@@ -20,6 +20,7 @@ node_modules/
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+backend/.vercel/
 
 # OS / editor
 .DS_Store
