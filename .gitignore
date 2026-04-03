@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environments
+.env
+.env.*
+.venv/
+venv/
+
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Training artifacts
+training/catboost_info/
+
+# Large raw source files (GitHub file-size safe)
+training/microbiology_cultures_microbial_resistance.csv
