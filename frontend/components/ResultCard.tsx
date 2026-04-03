@@ -182,6 +182,7 @@ export default function ResultCard({ recommendation, rank, patientData }: Result
           {isExplainLoading ? 'Loading explanation...' : 'Explain'}
         </button>
       </div>
+      </div>
 
       {isExplainOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
