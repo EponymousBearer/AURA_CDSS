@@ -10,8 +10,6 @@ __pycache__/
 htmlcov/
 
 # Environments
-.env
-.env.*
 .venv/
 venv/
 
@@ -32,3 +30,4 @@ training/catboost_info/
 
 # Large raw source files (GitHub file-size safe)
 training/microbiology_cultures_microbial_resistance.csv
+config.bat
