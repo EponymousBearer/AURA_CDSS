@@ -1,5 +1,7 @@
 """
 Pydantic schemas for request/response validation.
+v1 schemas: CatBoost-based (organism/age/gender/kidney_function/severity)
+v2 schemas: ARMD RandomForest (culture_description/organism/age/gender/labs/ward)
 """
 
 from typing import List, Optional, Dict, Any
@@ -193,3 +195,73 @@ class ErrorResponse(BaseModel):
     error: str = Field(..., description="Error type")
     detail: str = Field(..., description="Error details")
     suggestion: Optional[str] = Field(None, description="Suggested action")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# V2 schemas — ARMD RandomForest model
+# ─────────────────────────────────────────────────────────────────────────────
+
+class WardEnum(str, Enum):
+    GENERAL = "general"
+    ICU = "icu"
+    ER = "er"
+
+
+class ARMDRecommendationRequest(BaseModel):
+    """
+    Request schema for v2 ARMD-based antibiotic recommendation.
+    Uses richer clinical inputs including lab values and ward location.
+    """
+    culture_description: str = Field(
+        ...,
+        description="Culture site/type (e.g. 'urine', 'blood', 'wound')",
+        min_length=1,
+        max_length=200,
+    )
+    organism: str = Field(
+        ...,
+        description="Infecting organism (free text, lowercased internally)",
+        min_length=1,
+        max_length=200,
+    )
+    age: int = Field(..., description="Patient age in years", ge=0, le=150)
+    gender: str = Field(..., description="Patient gender: 'male' or 'female'")
+    wbc: Optional[float] = Field(None, description="WBC count (×10³/μL)", ge=0)
+    cr: Optional[float] = Field(None, description="Creatinine (mg/dL)", ge=0)
+    lactate: Optional[float] = Field(None, description="Lactate (mmol/L)", ge=0)
+    procalcitonin: Optional[float] = Field(None, description="Procalcitonin (ng/mL)", ge=0)
+    ward: WardEnum = Field(WardEnum.GENERAL, description="Patient ward location")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "culture_description": "urine",
+                "organism": "klebsiella pneumoniae",
+                "age": 45,
+                "gender": "female",
+                "wbc": 12.5,
+                "cr": 1.2,
+                "lactate": 1.8,
+                "procalcitonin": 2.5,
+                "ward": "er",
+            }
+        }
+
+
+class ARMDResult(BaseModel):
+    """Single v2 antibiotic recommendation result."""
+    antibiotic: str = Field(..., description="Antibiotic name")
+    probability: float = Field(..., ge=0, le=1, description="Predicted susceptibility probability")
+    dose_range: str = Field(..., description="Recommended dose range")
+    route: str = Field(..., description="Route of administration (IV/PO/IM)")
+    dose_source: str = Field(..., description="Source of dosage: lookup | model | fallback")
+
+
+class ARMDRecommendationResponse(BaseModel):
+    """Response schema for v2 ARMD recommendations."""
+    recommendations: List[ARMDResult] = Field(..., description="Top 3 antibiotic recommendations")
+    patient_factors: Dict[str, Any] = Field(..., description="Echo of patient input factors")
+    culture_description: str = Field(..., description="Culture site used for dosage lookup")
+    all_predictions: List[Dict[str, Any]] = Field(
+        ..., description="All antibiotics sorted by susceptibility probability"
+    )

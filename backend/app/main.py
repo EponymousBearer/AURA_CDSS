@@ -10,7 +10,7 @@ import logging
 import os
 import time
 
-from app.api.routes import router as api_router
+from app.api.routes import router as api_router, v2_router
 from app.utils.logger import setup_logging
 
 # Setup logging
@@ -118,6 +118,7 @@ async def health_check():
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(v2_router, prefix="/api/v2")
 
 
 if __name__ == "__main__":

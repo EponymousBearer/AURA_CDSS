@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it using the metadata below."
+type: software
+title: "AURA: Antibiotic AI Clinical Decision Support System"
+abstract: >
+  AURA is an end-to-end clinical decision support system (CDSS) that predicts
+  antibiotic susceptibility from patient clinical data using machine learning
+  and converts predictions into evidence-aligned dosage recommendations.
+  The system implements two parallel model architectures: (1) per-antibiotic
+  CatBoost binary classifiers trained on a public microbiology culture dataset
+  (Dryad, n=22,946, 23 antibiotics) with SHAP explainability; and (2) a single
+  RandomForest pipeline trained on the ARMD clinical dataset (32 antibiotics,
+  ROC AUC 84.5%) with a hybrid lookup-and-ML dosage model. The backend is a
+  FastAPI REST API; the frontend is a Next.js 14 web application.
+authors:
+  - name: "AURA Contributors"
+    alias: EponymousBearer
+    email: amadha@aitek-solutions.com
+repository-code: "https://github.com/EponymousBearer/antibiotic-ai-cdss"
+url: "https://github.com/EponymousBearer/antibiotic-ai-cdss"
+license: MIT
+version: "2.0.0"
+date-released: "2025-04-01"
+keywords:
+  - antibiotic stewardship
+  - clinical decision support
+  - antimicrobial resistance
+  - machine learning
+  - random forest
+  - CatBoost
+  - SHAP explainability
+  - FastAPI
+  - Next.js
+  - medical AI
+references:
+  - type: article
+    title: "CatBoost: gradient boosting with categorical features support"
+    authors:
+      - family-names: Prokhorenkova
+        given-names: Liudmila
+      - family-names: Gusev
+        given-names: Gleb
+      - family-names: Vorobev
+        given-names: Aleksandr
+      - family-names: Dorogush
+        given-names: Anna Veronika
+      - family-names: Gulin
+        given-names: Andrey
+    journal: "Advances in Neural Information Processing Systems"
+    year: 2018
+    url: "https://arxiv.org/abs/1810.11363"
+  - type: article
+    title: "Random Forests"
+    authors:
+      - family-names: Breiman
+        given-names: Leo
+    journal: "Machine Learning"
+    volume: 45
+    issue: 1
+    pages: "5-32"
+    year: 2001

@@ -1,22 +1,27 @@
 import axios from 'axios'
-import { PatientFormData, RecommendationResponse } from '@/types'
+import {
+  PatientFormData,
+  RecommendationResponse,
+  ARMDFormData,
+  ARMDRecommendationResponse,
+  ARMDOrganismCatalog,
+} from '@/types'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
   timeout: 30000,
 })
+
+// V1 (CatBoost)
 
 export async function getRecommendation(
   data: PatientFormData
 ): Promise<RecommendationResponse> {
   const response = await api.post('/api/v1/recommend', data)
   const payload = response.data
-
   return {
     ...payload,
     allPredictions: payload.all_predictions ?? payload.allPredictions ?? [],
@@ -49,7 +54,6 @@ export async function getExplanation(
       antibiotic,
     },
   })
-
   return response.data
 }
 
@@ -80,5 +84,82 @@ export interface RecommendationWithPredictionsResponse extends RecommendationRes
 
 export async function getModelInfo(): Promise<ModelInfoResponse> {
   const response = await api.get('/api/v1/model-info')
+  return response.data
+}
+
+// V2 (ARMD RandomForest)
+
+export interface ARMDTestSummaryRow {
+  split: string
+  threshold: number
+  accuracy: number
+  balanced_accuracy: number
+  precision_1: number
+  recall_1: number
+  f1_1: number
+  roc_auc: number
+}
+
+export interface ARMDFeatureImportance {
+  feature: string
+  importance: number
+}
+
+export interface ARMDDosageModelInfo {
+  model_type: string
+  available: boolean
+  lookup_entries: number
+  fallback_antibiotics: number
+  artifacts: Record<string, string>
+}
+
+export interface ARMDModelInfoResponse {
+  model_type: string
+  n_antibiotics: number
+  n_features: number
+  best_threshold: number
+  available: boolean
+  antibiotics: string[]
+  feature_groups: {
+    categorical: string[]
+    numeric: string[]
+    binary: string[]
+  }
+  test_summary: ARMDTestSummaryRow[]
+  top_feature_importances: ARMDFeatureImportance[]
+  artifacts: Record<string, string>
+  metadata: Record<string, unknown>
+  dosage_model: ARMDDosageModelInfo
+  models: {
+    recommendation: unknown
+    dosage: ARMDDosageModelInfo
+  }
+}
+
+export async function getARMDRecommendation(
+  data: ARMDFormData
+): Promise<ARMDRecommendationResponse> {
+  const payload = {
+    culture_description: data.culture_description,
+    organism: data.organism,
+    age: data.age,
+    gender: data.gender,
+    wbc: data.wbc ?? undefined,
+    cr: data.cr ?? undefined,
+    lactate: data.lactate ?? undefined,
+    procalcitonin: data.procalcitonin ?? undefined,
+    ward: data.ward,
+  }
+  const response = await api.post('/api/v2/recommend', payload)
+  return response.data
+}
+
+export async function getARMDModelInfo(): Promise<ARMDModelInfoResponse> {
+  const response = await api.get('/api/v2/model-info')
+  return response.data
+}
+
+export async function getARMDOrganismCatalog(): Promise<ARMDOrganismCatalog> {
+  const response = await api.get('/api/v2/organisms')
   return response.data
 }

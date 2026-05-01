@@ -1,5 +1,7 @@
 """
 API routes for the Antibiotic AI CDSS.
+v1: CatBoost-based (/api/v1/*)
+v2: ARMD RandomForest-based (/api/v2/*)
 """
 
 from fastapi import APIRouter, HTTPException, status, Response, Query
@@ -12,18 +14,28 @@ from app.schemas.request import (
     AntibioticRecommendationRequest,
     AntibioticRecommendationResponse,
     AntibioticExplainRequest,
-    ErrorResponse
+    ARMDRecommendationRequest,
+    ARMDRecommendationResponse,
+    ErrorResponse,
 )
 from app.services.predictor import PredictionService
 from app.services.rules import DosingRuleEngine
+from app.services.armd_predictor import ARMDPredictorService
+from app.services.dosage_service import DosageService
+from app.services.clinical_catalog import ClinicalCatalogService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Initialize services
+# V1 services (CatBoost)
 prediction_service = PredictionService()
 dosing_engine = DosingRuleEngine()
+
+# V2 services (ARMD RandomForest)
+armd_service = ARMDPredictorService()
+dosage_service = DosageService()
+clinical_catalog_service = ClinicalCatalogService()
 
 
 def _validate_age(age: int, request_id: str) -> None:
@@ -312,3 +324,168 @@ async def get_model_info():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch model information"
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# V2 routes — ARMD RandomForest model
+# ─────────────────────────────────────────────────────────────────────────────
+
+v2_router = APIRouter()
+
+
+@v2_router.get(
+    "/organisms",
+    summary="Get v2 organisms by culture site",
+    description="Return ARMD culture sites and culture-specific organism options for the v2 form",
+)
+async def get_v2_organisms(culture_description: str | None = Query(None)):
+    return clinical_catalog_service.get_catalog(culture_description)
+
+
+@v2_router.post(
+    "/recommend",
+    response_model=ARMDRecommendationResponse,
+    responses={
+        200: {"description": "Successful v2 recommendation"},
+        400: {"model": ErrorResponse, "description": "Invalid input"},
+        503: {"model": ErrorResponse, "description": "ARMD model not loaded"},
+        500: {"model": ErrorResponse, "description": "Server error"},
+    },
+    summary="Get v2 antibiotic recommendations (ARMD model)",
+    description=(
+        "Get AI-powered antibiotic recommendations using the ARMD RandomForest model. "
+        "Accepts richer clinical inputs: culture site, organism, age, gender, lab values (WBC, "
+        "creatinine, lactate, procalcitonin), and ward location. Returns top 3 antibiotics with "
+        "susceptibility probabilities and dosage information."
+    ),
+)
+async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Response):
+    """
+    V2 recommendation endpoint using the ARMD RandomForest model.
+
+    The model scores all 32 candidate antibiotics for susceptibility given the patient
+    context, returns the top 3, and enriches each with dosage information from the
+    hybrid lookup/ML dosage model.
+    """
+    request_id = str(uuid4())
+    response.headers["X-Request-ID"] = request_id
+
+    try:
+        logger.info(
+            f"[request_id={request_id}] V2 recommend: organism={request.organism!r} "
+            f"culture={request.culture_description!r} age={request.age} ward={request.ward}"
+        )
+
+        if not armd_service.is_available():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=(
+                    "ARMD model is not trained yet. "
+                    "Run armd_model/train_armd.py with the ARMD dataset files in datasets/ "
+                    "to generate the model artifacts."
+                ),
+                headers={"X-Request-ID": request_id},
+            )
+
+        if not clinical_catalog_service.is_valid_culture_site(request.culture_description):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Unsupported culture site for v2 model: {request.culture_description}",
+                headers={"X-Request-ID": request_id},
+            )
+
+        if not clinical_catalog_service.is_valid_organism_for_culture(
+            request.culture_description,
+            request.organism,
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    f"Unsupported organism '{request.organism}' for culture site "
+                    f"'{request.culture_description}'. Select one of the listed organisms or 'other'."
+                ),
+                headers={"X-Request-ID": request_id},
+            )
+
+        # Map ward enum to binary flags
+        ward_icu = 1 if request.ward.value == "icu" else 0
+        ward_er = 1 if request.ward.value == "er" else 0
+        ward_ip = 1 if request.ward.value == "general" else 0
+
+        top3, all_scores = armd_service.predict(
+            culture_description=request.culture_description,
+            organism=request.organism,
+            age=request.age,
+            gender=request.gender,
+            wbc=request.wbc,
+            cr=request.cr,
+            lactate=request.lactate,
+            procalcitonin=request.procalcitonin,
+            ward_icu=ward_icu,
+            ward_er=ward_er,
+            ward_ip=ward_ip,
+        )
+
+        # Enrich top 3 with dosage info
+        recommendations = []
+        for item in top3:
+            dosage = dosage_service.get_dosage(
+                antibiotic=item["antibiotic"],
+                disease=request.culture_description,
+                age=request.age,
+            )
+            recommendations.append({
+                "antibiotic": item["antibiotic"],
+                "probability": item["probability"],
+                "dose_range": dosage["dose_range"],
+                "route": dosage["route"],
+                "dose_source": dosage["source"],
+            })
+
+        patient_factors = {
+            "culture_description": request.culture_description,
+            "organism": request.organism,
+            "age": request.age,
+            "gender": request.gender,
+            "wbc": request.wbc,
+            "cr": request.cr,
+            "lactate": request.lactate,
+            "procalcitonin": request.procalcitonin,
+            "ward": request.ward.value,
+        }
+
+        return ARMDRecommendationResponse(
+            recommendations=recommendations,
+            patient_factors=patient_factors,
+            culture_description=request.culture_description,
+            all_predictions=all_scores,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"[request_id={request_id}] V2 recommend failed: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate v2 recommendation: {exc}",
+            headers={"X-Request-ID": request_id},
+        )
+
+
+@v2_router.get(
+    "/model-info",
+    summary="Get v2 model information",
+    description="Get ARMD RandomForest, dosage model, test summary, and training metadata",
+)
+async def get_v2_model_info():
+    recommendation_model = armd_service.get_model_info()
+    dosage_model = dosage_service.get_model_info()
+
+    return {
+        **recommendation_model,
+        'models': {
+            'recommendation': recommendation_model,
+            'dosage': dosage_model,
+        },
+        'dosage_model': dosage_model,
+    }

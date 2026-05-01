@@ -1,326 +1,445 @@
 'use client'
 
-import { useState } from 'react'
-import { PatientFormProps, PatientFormData } from '@/types'
+import { useEffect, useMemo, useState } from 'react'
+import { ARMDFormProps, ARMDFormData, WardType } from '@/types'
+import { getARMDOrganismCatalog } from '@/services/api'
 
-const organisms = [
-  { value: 'E. coli', label: 'E. coli' },
-  { value: 'K. pneumoniae', label: 'K. pneumoniae' },
-  { value: 'P. aeruginosa', label: 'P. aeruginosa' },
-  { value: 'A. baumannii', label: 'A. baumannii' },
-  { value: 'S. aureus', label: 'S. aureus' },
-  { value: 'E. faecium', label: 'E. faecium' },
-  { value: 'S. pneumoniae', label: 'S. pneumoniae' },
-  { value: 'Enterococcus spp', label: 'Enterococcus spp' },
-  {
-    value: 'COAG NEGATIVE STAPHYLOCOCCUS',
-    label: 'COAG NEGATIVE STAPHYLOCOCCUS',
-  },
-  { value: 'KLEBSIELLA OXYTOCA', label: 'KLEBSIELLA OXYTOCA' },
-  { value: 'PROTEUS MIRABILIS', label: 'PROTEUS MIRABILIS' },
-  {
-    value: 'STAPHYLOCOCCUS EPIDERMIDIS',
-    label: 'STAPHYLOCOCCUS EPIDERMIDIS',
-  },
-  { value: 'ENTEROCOCCUS FAECALIS', label: 'ENTEROCOCCUS FAECALIS' },
-  { value: 'Other', label: 'Other' },
-]
+const FALLBACK_ORGANISMS_BY_CULTURE: Record<string, string[]> = {
+  blood: ['escherichia coli', 'klebsiella pneumoniae', 'staphylococcus aureus', 'enterococcus faecalis', 'other'],
+  urine: ['escherichia coli', 'klebsiella pneumoniae', 'proteus mirabilis', 'pseudomonas aeruginosa', 'other'],
+  respiratory: ['pseudomonas aeruginosa', 'staphylococcus aureus', 'klebsiella pneumoniae', 'other'],
+}
 
-const kidneyFunctionOptions = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'mild', label: 'Mild Impairment' },
-  { value: 'low', label: 'Impaired / Low' },
-  { value: 'severe', label: 'Severe / Dialysis' },
-]
-
-const severityOptions = [
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Moderate (medium)' },
-  { value: 'high', label: 'High' },
-  { value: 'critical', label: 'Critical' },
+const WARD_OPTIONS: { value: WardType; label: string; description: string }[] = [
+  { value: 'general', label: 'General Ward (IP)', description: 'Standard inpatient ward' },
+  { value: 'icu',     label: 'ICU',               description: 'Intensive care unit' },
+  { value: 'er',      label: 'Emergency Room',    description: 'Emergency / acute presentation' },
 ]
 
 type FormState = {
+  culture_description: string
   organism: string
   age: string
-  gender: 'M' | 'F'
-  kidney_function: PatientFormData['kidney_function']
-  severity: PatientFormData['severity']
+  gender: 'male' | 'female'
+  wbc: string
+  cr: string
+  lactate: string
+  procalcitonin: string
+  ward: WardType
 }
 
 type FormErrors = {
+  culture_description?: string
   organism?: string
   age?: string
 }
 
-export default function PatientForm({
-  onSubmit,
-  loading,
-  hasSubmitted = false,
-  onReset,
-}: PatientFormProps) {
-  const [formData, setFormData] = useState<FormState>({
+function displayName(value: string) {
+  return value
+    .split(' ')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function LabField({
+  id,
+  label,
+  unit,
+  hint,
+  value,
+  onChange,
+}: {
+  id: string
+  label: string
+  unit: string
+  hint: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+        <span className="ml-1 text-xs font-normal text-gray-400">({unit})</span>
+        <span className="ml-1 text-xs font-normal text-blue-400">optional</span>
+      </label>
+      <input
+        type="number"
+        id={id}
+        name={id}
+        step="any"
+        min="0"
+        value={value}
+        onChange={onChange}
+        placeholder="—"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder:text-gray-300"
+      />
+      <p className="mt-1 text-xs text-gray-400">{hint}</p>
+    </div>
+  )
+}
+
+export default function PatientForm({ onSubmit, loading, hasSubmitted = false, onReset }: ARMDFormProps) {
+  const [organismsByCulture, setOrganismsByCulture] = useState<Record<string, string[]>>(
+    FALLBACK_ORGANISMS_BY_CULTURE
+  )
+  const [organismQuery, setOrganismQuery] = useState('')
+  const [organismOpen, setOrganismOpen] = useState(false)
+  const [form, setForm] = useState<FormState>({
+    culture_description: '',
     organism: '',
     age: '',
-    gender: 'M',
-    kidney_function: 'normal',
-    severity: 'medium',
+    gender: 'male',
+    wbc: '',
+    cr: '',
+    lactate: '',
+    procalcitonin: '',
+    ward: 'general',
   })
   const [errors, setErrors] = useState<FormErrors>({})
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+  useEffect(() => {
+    let mounted = true
 
-    if (name === 'organism') {
-      setErrors((prev) => ({
-        ...prev,
-        organism: value ? '' : 'Please select an organism',
-      }))
+    async function loadCatalog() {
+      try {
+        const catalog = await getARMDOrganismCatalog()
+        if (mounted && catalog.organisms_by_culture) {
+          setOrganismsByCulture(catalog.organisms_by_culture)
+        }
+      } catch {
+        if (mounted) {
+          setOrganismsByCulture(FALLBACK_ORGANISMS_BY_CULTURE)
+        }
+      }
     }
 
-    if (name === 'age') {
-      setErrors((prev) => ({
-        ...prev,
-        age: validateAge(value),
-      }))
+    loadCatalog()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const cultureSites = useMemo(
+    () => Object.keys(organismsByCulture).sort(),
+    [organismsByCulture]
+  )
+
+  const organismOptions = useMemo(
+    () => organismsByCulture[form.culture_description] ?? [],
+    [form.culture_description, organismsByCulture]
+  )
+
+  const filteredOrganisms = useMemo(() => {
+    const query = organismQuery.trim().toLowerCase()
+    if (!query) return organismOptions.slice(0, 30)
+    return organismOptions
+      .filter((organism) => organism.includes(query))
+      .slice(0, 30)
+  }, [organismOptions, organismQuery])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'culture_description' ? { organism: '' } : {}),
+    }))
+    if (name === 'culture_description') {
+      setOrganismQuery('')
+      setOrganismOpen(false)
+    }
+    if (name in errors) {
+      setErrors((prev) => ({ ...prev, [name]: '' }))
     }
   }
 
-  const validateAge = (ageValue: string) => {
-    if (!ageValue.trim()) {
-      return 'Age is required'
+  const handleOrganismQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setOrganismQuery(value)
+    setForm((prev) => ({ ...prev, organism: '' }))
+    setOrganismOpen(true)
+    if (errors.organism) {
+      setErrors((prev) => ({ ...prev, organism: '' }))
     }
+  }
 
-    const ageNumber = Number(ageValue)
-    if (!Number.isInteger(ageNumber)) {
-      return 'Age must be a whole number'
-    }
-    if (ageNumber < 1 || ageNumber > 120) {
-      return 'Age must be between 1 and 120'
-    }
+  const selectOrganism = (organism: string) => {
+    setForm((prev) => ({ ...prev, organism }))
+    setOrganismQuery(displayName(organism))
+    setOrganismOpen(false)
+    setErrors((prev) => ({ ...prev, organism: '' }))
+  }
 
+  const validateAge = (v: string) => {
+    if (!v.trim()) return 'Age is required'
+    const n = Number(v)
+    if (!Number.isInteger(n) || n < 0 || n > 150) return 'Enter a whole number between 0 and 150'
     return ''
   }
 
-  const validateForm = () => {
-    const nextErrors: FormErrors = {}
-
-    if (!formData.organism) {
-      nextErrors.organism = 'Please select an organism'
+  const validate = (): boolean => {
+    const next: FormErrors = {}
+    if (!form.culture_description) next.culture_description = 'Select a culture site'
+    if (!form.organism.trim()) {
+      next.organism = 'Select an organism'
+    } else if (!organismOptions.includes(form.organism)) {
+      next.organism = 'Select an organism from the list or choose Other'
     }
-
-    const ageError = validateAge(formData.age)
-    if (ageError) {
-      nextErrors.age = ageError
-    }
-
-    setErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
+    const ageErr = validateAge(form.age)
+    if (ageErr) next.age = ageErr
+    setErrors(next)
+    return Object.keys(next).length === 0
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateForm()) {
-      return
+    if (!validate()) return
+    const data: ARMDFormData = {
+      culture_description: form.culture_description,
+      organism: form.organism.trim().toLowerCase(),
+      age: Number(form.age),
+      gender: form.gender,
+      wbc: form.wbc.trim() ? Number(form.wbc) : null,
+      cr: form.cr.trim() ? Number(form.cr) : null,
+      lactate: form.lactate.trim() ? Number(form.lactate) : null,
+      procalcitonin: form.procalcitonin.trim() ? Number(form.procalcitonin) : null,
+      ward: form.ward,
     }
-
-    onSubmit({
-      organism: formData.organism,
-      age: Number(formData.age),
-      gender: formData.gender,
-      kidney_function: formData.kidney_function,
-      severity: formData.severity,
-    })
+    onSubmit(data)
   }
 
   const handleReset = () => {
-    setFormData({
+    setForm({
+      culture_description: '',
       organism: '',
       age: '',
-      gender: 'M',
-      kidney_function: 'normal',
-      severity: 'medium',
+      gender: 'male',
+      wbc: '',
+      cr: '',
+      lactate: '',
+      procalcitonin: '',
+      ward: 'general',
     })
+    setOrganismQuery('')
+    setOrganismOpen(false)
     setErrors({})
     onReset?.()
   }
 
   const canSubmit =
     !loading &&
-    Boolean(formData.organism) &&
-    Boolean(formData.age.trim()) &&
-    !validateAge(formData.age) &&
-    !errors.organism &&
-    !errors.age
+    Boolean(form.culture_description) &&
+    Boolean(form.organism.trim()) &&
+    organismOptions.includes(form.organism) &&
+    !validateAge(form.age)
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg">
-            🦠
-          </span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg">🧬</span>
           <div>
-            <h2 className="text-xl font-semibold text-white">Patient Information</h2>
-            <p className="text-blue-100 text-sm">
-              Clinical inputs used to estimate antibiotic susceptibility
-            </p>
+            <h2 className="text-xl font-semibold text-white">Clinical Input</h2>
+            <p className="text-blue-100 text-sm">ARMD model · culture, demographics &amp; labs</p>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Organism Selection */}
-          <div className="md:col-span-2">
-            <label
-              htmlFor="organism"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Organism <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="organism"
-              name="organism"
-              value={formData.organism}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            >
-              <option value="">Select organism...</option>
-              {organisms.map((org) => (
-                <option key={org.value} value={org.value}>
-                  {org.label}
-                </option>
-              ))}
-            </select>
-            {errors.organism && (
-              <p className="mt-2 text-xs text-red-600">{errors.organism}</p>
-            )}
-            <p className="mt-2 text-xs text-gray-500">
-              Select the likely pathogen to match the resistance patterns used by the model.
-            </p>
-          </div>
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
 
-          {/* Age */}
-          <div>
-            <label
-              htmlFor="age"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Age (years)
-            </label>
-            <input
-              type="number"
-              id="age"
-              name="age"
-              min="1"
-              max="120"
-              value={formData.age}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            />
-            {errors.age && <p className="mt-2 text-xs text-red-600">{errors.age}</p>}
-            <p className="mt-2 text-xs text-gray-500">
-              Patient age influences dosing safety, severity risk, and model context.
-            </p>
-          </div>
-
-          {/* Gender */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Gender
-            </label>
-            <div className="flex gap-4">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="M"
-                  checked={formData.gender === 'M'}
-                  onChange={handleChange}
-                  className="mr-2 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-gray-700">Male</span>
+        {/* ── Section 1: Culture & Organism ── */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Microbiology</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Culture site */}
+            <div>
+              <label htmlFor="culture_description" className="block text-sm font-medium text-gray-700 mb-1">
+                Culture Site <span className="text-red-500">*</span>
               </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="F"
-                  checked={formData.gender === 'F'}
-                  onChange={handleChange}
-                  className="mr-2 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-gray-700">Female</span>
-              </label>
+              <select
+                id="culture_description"
+                name="culture_description"
+                value={form.culture_description}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                <option value="">Select culture site…</option>
+                {cultureSites.map((s) => (
+                  <option key={s} value={s}>
+                    {displayName(s)}
+                  </option>
+                ))}
+              </select>
+              {errors.culture_description && (
+                <p className="mt-1 text-xs text-red-600">{errors.culture_description}</p>
+              )}
             </div>
-            <p className="mt-2 text-xs text-gray-500">
-              Gender is used as a demographic feature during susceptibility prediction.
-            </p>
-          </div>
 
-          {/* Kidney Function */}
-          <div>
-            <label
-              htmlFor="kidney_function"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Kidney Function
-            </label>
-            <select
-              id="kidney_function"
-              name="kidney_function"
-              value={formData.kidney_function}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              {kidneyFunctionOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs text-gray-500">
-              (CrCl: Normal &gt;90, Mild 60–90, Low 30–60, Severe &lt;30 mL/min)
-            </p>
-          </div>
-
-          {/* Severity */}
-          <div>
-            <label
-              htmlFor="severity"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Infection Severity
-            </label>
-            <select
-              id="severity"
-              name="severity"
-              value={formData.severity}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              {severityOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs text-gray-500">
-              (Low: Outpatient, Moderate: Ward, High: ICU, Critical: Septic shock)
-            </p>
+            {/* Organism */}
+            <div>
+              <label htmlFor="organism" className="block text-sm font-medium text-gray-700 mb-1">
+                Organism <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="organism"
+                  name="organism"
+                  value={organismQuery}
+                  onChange={handleOrganismQueryChange}
+                  onFocus={() => setOrganismOpen(Boolean(form.culture_description))}
+                  onBlur={() => window.setTimeout(() => setOrganismOpen(false), 120)}
+                  disabled={!form.culture_description}
+                  placeholder={form.culture_description ? 'Search organisms...' : 'Select culture site first'}
+                  autoComplete="off"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors placeholder:text-gray-300"
+                />
+                {organismOpen && form.culture_description && (
+                  <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                    {filteredOrganisms.length > 0 ? (
+                      filteredOrganisms.map((organism) => (
+                        <button
+                          key={organism}
+                          type="button"
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => selectOrganism(organism)}
+                          className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          {displayName(organism)}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-gray-500">
+                        No organism found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {errors.organism && (
+                <p className="mt-1 text-xs text-red-600">{errors.organism}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-400">
+                Options are filtered by the selected culture site
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="mt-8">
+        {/* ── Section 2: Demographics ── */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Demographics</h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Age */}
+            <div>
+              <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-1">
+                Age (years) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                id="age"
+                name="age"
+                min="0"
+                max="150"
+                value={form.age}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+              {errors.age && <p className="mt-1 text-xs text-red-600">{errors.age}</p>}
+            </div>
+
+            {/* Gender */}
+            <div>
+              <span className="block text-sm font-medium text-gray-700 mb-1">Gender</span>
+              <div className="flex gap-4 mt-2">
+                {(['male', 'female'] as const).map((g) => (
+                  <label key={g} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={g}
+                      checked={form.gender === g}
+                      onChange={handleChange}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700 capitalize">{g}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Ward */}
+            <div>
+              <label htmlFor="ward" className="block text-sm font-medium text-gray-700 mb-1">
+                Ward Location
+              </label>
+              <select
+                id="ward"
+                name="ward"
+                value={form.ward}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                {WARD_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-400">
+                {WARD_OPTIONS.find((o) => o.value === form.ward)?.description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section 3: Lab Values ── */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
+            Laboratory Values
+            <span className="ml-2 text-blue-400 normal-case tracking-normal font-normal">all optional</span>
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <LabField
+              id="wbc"
+              label="WBC"
+              unit="×10³/μL"
+              hint="Normal: 4–11"
+              value={form.wbc}
+              onChange={handleChange}
+            />
+            <LabField
+              id="cr"
+              label="Creatinine"
+              unit="mg/dL"
+              hint="Normal: 0.6–1.2"
+              value={form.cr}
+              onChange={handleChange}
+            />
+            <LabField
+              id="lactate"
+              label="Lactate"
+              unit="mmol/L"
+              hint="Normal: 0.5–2.0"
+              value={form.lactate}
+              onChange={handleChange}
+            />
+            <LabField
+              id="procalcitonin"
+              label="Procalcitonin"
+              unit="ng/mL"
+              hint="Normal: <0.1"
+              value={form.procalcitonin}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        {/* ── Actions ── */}
+        <div className="pt-2">
           <button
             type="submit"
             disabled={!canSubmit}
@@ -328,27 +447,11 @@ export default function PatientForm({
           >
             {loading ? (
               <>
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Analyzing...
+                Analyzing…
               </>
             ) : (
               'Get Recommendations'

@@ -1,154 +1,318 @@
-# Antibiotic AI Clinical Decision Support System
+# AURA — Antibiotic AI Clinical Decision Support System
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](#)
-[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688)](#)
-[![Next.js](https://img.shields.io/badge/frontend-Next.js-111827)](#)
-[![CatBoost](https://img.shields.io/badge/ML-CatBoost-ff7f0e)](#)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](#)
+[![Backend](https://img.shields.io/badge/backend-FastAPI%201.0-009688?logo=fastapi)](#)
+[![Frontend](https://img.shields.io/badge/frontend-Next.js%2014-111827?logo=next.js)](#)
+[![v1 Model](https://img.shields.io/badge/v1-CatBoost-ff7f0e)](#)
+[![v2 Model](https://img.shields.io/badge/v2-RandomForest%20ARMD-4caf50)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#)
+[![Python](https://img.shields.io/badge/python-3.11-blue?logo=python)](#)
+[![Node](https://img.shields.io/badge/node-20-brightgreen?logo=node.js)](#)
 
-An end-to-end clinical decision support system that predicts antibiotic susceptibility and converts those predictions into dosing recommendations. The project combines a FastAPI backend, a Next.js frontend, and a CatBoost-based multi-model training pipeline for a final-year-project style presentation of model performance, clinical rules, and deployment readiness.
+> **For academic and research use only. Not for autonomous clinical prescribing.**
 
-## Abstract
+AURA is an end-to-end clinical decision support system that predicts antibiotic susceptibility and converts those predictions into dosage recommendations. The system has two production-ready model versions running simultaneously on the same backend:
 
-Antimicrobial resistance makes empiric antibiotic selection increasingly difficult, especially when clinicians must balance organism identity, kidney function, and illness severity under time pressure. This project addresses that problem with a machine learning assisted decision support workflow. Given a patient profile and a selected organism, the backend ranks antibiotics by predicted susceptibility, applies rule-based dosing logic, and returns the top recommendations together with a full resistance overview.
+| | V1 — CatBoost | V2 — ARMD RandomForest |
+|---|---|---|
+| **Endpoint** | `/api/v1/recommend` | `/api/v2/recommend` |
+| **Dataset** | Dryad microbiology cultures | ARMD (6-file clinical dataset) |
+| **Inputs** | organism, age, gender, kidney function, severity | culture site, organism, age, gender, WBC, creatinine, lactate, procalcitonin, ward |
+| **Antibiotics** | 23 (CatBoost per-antibiotic classifiers) | 32 (single RF pipeline, all scored per request) |
+| **Dosing** | Rule-based engine (frequency + duration) | Hybrid lookup + ML model (dose range + route) |
+| **Explainability** | SHAP per prediction | Feature importance (global) |
+| **Status** | **Complete** | **Complete with trained artifacts in `armd_model/artifacts/`** |
 
-The system was built on microbiology culture data sourced from Dryad and trained as one binary CatBoost classifier per antibiotic. The pipeline includes organism normalization, dataset reporting, cross-validation, held-out evaluation, model filtering, and metadata export. The frontend presents the results through a polished dashboard with recommendation cards, a susceptibility bar chart, error handling, and a model information page.
+---
 
-## Key Features
+## Contents
 
-- CatBoost models for per-antibiotic susceptibility prediction.
-- Rule-based dosing adjustments for kidney function and severity.
-- Normalized organism handling for the Dryad data labels and UI labels.
-- Full resistance overview showing all antibiotic probabilities, not just the top three.
-- Model dashboard with training metadata and performance summary.
-- Request tracing, validation feedback, retry support, and clean error states.
-- Docker-based local deployment for both backend and frontend.
+- [Architecture](#architecture)
+- [Repository Layout](#repository-layout)
+- [Quick Start](#quick-start)
+- [Datasets](#datasets)
+- [Training the V2 Model](#training-the-v2-model)
+- [Manual Setup](#manual-setup)
+- [Configuration](#configuration)
+- [API Reference](#api-reference)
+- [Model Performance](#model-performance)
+- [V2 Model Details](#v2-model-details)
+- [Deployment](#deployment)
+- [Build Status](#build-status)
+- [Limitations](#limitations)
+- [Future Work](#future-work)
+- [Contributing](#contributing)
+- [License](#license)
 
-## System Architecture
+---
 
-```mermaid
-graph LR
-  A[Patient profile] --> B[Next.js frontend]
-  B --> C[FastAPI backend]
-  C --> D[CatBoost predictor]
-  C --> E[Clinical rules engine]
-  D --> F[Ranked antibiotic probabilities]
-  E --> F
-  F --> G[Top recommendations + resistance overview]
+## Architecture
+
 ```
+┌──────────────────────────────────────────────────────────────────────┐
+│  Browser  —  Next.js 14 (TypeScript + Tailwind)                      │
+│                                                                      │
+│  PatientForm (v2)  →  ResultCardV2 ×3  →  ResistanceChart           │
+│  (culture, organism, age, gender, labs, ward)                        │
+└────────────────────────┬─────────────────────────────────────────────┘
+                         │ HTTPS / JSON
+┌────────────────────────▼─────────────────────────────────────────────┐
+│  FastAPI 1.0  (Python 3.11)                                          │
+│                                                                      │
+│  /api/v1/*  ──►  PredictionService (CatBoost)                        │
+│                   DosingRuleEngine                                    │
+│                                                                      │
+│  /api/v2/*  ──►  ARMDPredictorService (RandomForest Pipeline)        │
+│                   DosageService (lookup + ML hybrid)                 │
+└──────────┬───────────────────────────────┬───────────────────────────┘
+           │                               │
+    backend/model/                  armd_model/artifacts/
+    antibiotic_model.pkl            rf_top3_recommender_optimized.joblib
+    model_metadata.json             dose_model_hybrid.pkl
+                                    dose_route_lookup.csv
+```
+
+---
 
 ## Repository Layout
 
-```text
+```
 antibiotic-ai-cdss/
-├── backend/
+│
+├── backend/                        FastAPI backend
 │   ├── app/
-│   │   ├── api/
-│   │   ├── schemas/
+│   │   ├── api/routes.py           V1 + V2 API endpoints
+│   │   ├── schemas/request.py      Pydantic models (v1 + v2)
 │   │   ├── services/
-│   │   ├── utils/
-│   │   └── main.py
-│   ├── model/
+│   │   │   ├── predictor.py        V1 CatBoost service
+│   │   │   ├── rules.py            V1 rule-based dosing engine
+│   │   │   ├── armd_predictor.py   V2 ARMD RF service
+│   │   │   └── dosage_service.py   V2 hybrid dosage service
+│   │   └── main.py                 FastAPI app + middleware
+│   ├── model/                      V1 trained model artifacts
 │   ├── tests/
 │   ├── Dockerfile
 │   └── requirements.txt
-├── frontend/
+│
+├── frontend/                       Next.js 14 frontend
 │   ├── app/
+│   │   ├── page.tsx                Home / V2 recommendation dashboard
+│   │   └── model-info/page.tsx     Model performance dashboard (v2)
 │   ├── components/
-│   ├── public/
-│   ├── services/
-│   ├── types/
+│   │   ├── PatientForm.tsx         V2 clinical input form
+│   │   ├── ResultCardV2.tsx        V2 recommendation card
+│   │   ├── ResultCard.tsx          V1 recommendation card (with SHAP)
+│   │   ├── ResistanceChart.tsx     Full antibiotic probability chart
+│   │   └── DisclaimerBanner.tsx
+│   ├── services/api.ts             Axios client (v1 + v2 functions)
+│   ├── types/index.ts              TypeScript types (v1 + v2)
 │   ├── Dockerfile
 │   └── package.json
-├── training/
-│   ├── data/
-│   ├── output/
-│   ├── evaluate.py
+│
+├── training/                       V1 CatBoost training pipeline
 │   ├── preprocess.py
 │   ├── train.py
+│   ├── evaluate.py
 │   └── requirements.txt
+│
+├── armd_model/                     V2 ARMD training pipeline
+│   ├── train_armd.py               RF recommendation model training
+│   ├── train_dosage.py             Dosage model training
+│   ├── artifacts/                  Generated model artifacts (git-ignored)
+│   └── requirements.txt
+│
+├── datasets/                       ARMD source CSV files — NOT committed
+│   │                               Download from Google Drive (see below)
+│   ├── microbiology_cultures_cohort.csv
+│   ├── microbiology_cultures_demographics.csv
+│   ├── microbiology_cultures_labs.csv
+│   ├── microbiology_cultures_antibiotic_class_exposure.csv
+│   ├── microbiology_culture_prior_infecting_organism.csv
+│   ├── microbiology_cultures_ward_info.csv
+│   └── d_dose.csv
+│
+├── docs/                           Extended documentation
+│   ├── API_REFERENCE.md
+│   ├── ARCHITECTURE.md
+│   ├── MODEL.md
+│   ├── DEPLOYMENT.md
+│   └── BUILD_STATUS.md
+│
 ├── docker-compose.yml
-└── README.md
+├── render.yaml
+├── vercel.json
+├── .env.example
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+└── Makefile
 ```
 
-## Dataset And Modeling
+---
 
-The training data is derived from Dryad microbiology culture files stored in the repository under `training/data/`. The preprocessing pipeline normalizes organism names, generates dataset statistics, and prepares features for model training. The current deployment uses three clinical features in addition to organism identity:
+## Quick Start
 
-- Age
-- Gender
-- Kidney function
-- Severity
+### Docker
 
-Because the source dataset does not natively provide every clinical field used by the app, the preprocessing pipeline assigns the non-observed clinical attributes in a controlled synthetic manner for demonstration and modeling purposes. That makes the system suitable for final-year-project evaluation, but it should not be treated as a substitute for live clinical data capture.
+```bash
+git clone https://github.com/EponymousBearer/antibiotic-ai-cdss.git
+cd antibiotic-ai-cdss
+cp .env.example .env
+docker-compose up --build
+```
 
-Training details:
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/docs |
 
-- Model family: CatBoostClassifier
-- Strategy: one binary classifier per antibiotic
-- Validation: 5-fold cross-validation during training
-- Evaluation: held-out test evaluation in `training/evaluate.py`
-- Exported artifacts: model pickle, metadata JSON, quality reports, and evaluation reports
+> V2 uses the artifacts in `armd_model/artifacts/`. Retrain only when replacing the ARMD datasets or model configuration.
 
-Low-quality antibiotics are filtered before deployment. In the current artifact set, `Ethambutol`, `Colistin`, and `Cefpodoxime` are excluded from the backend recommendation set because they do not meet the deployment-quality threshold.
+---
 
-## Performance Summary
+## Datasets
 
-The table below is generated from `training/output/metrics.json`.
+Neither the ARMD clinical dataset nor the Dryad microbiology files are committed to this repository due to their size.
 
-| Antibiotic | AUC | F1 | Accuracy |
-| --- | ---: | ---: | ---: |
-| Ampicillin | 0.9018 | 0.8401 | 0.8170 |
-| Penicillin | 0.8980 | 0.7506 | 0.8276 |
-| Erythromycin | 0.8360 | 0.6279 | 0.7386 |
-| Rifampin | 0.8211 | 0.0462 | 0.7355 |
-| Linezolid | 0.8164 | 0.0563 | 0.7340 |
-| Vancomycin | 0.8073 | 0.2033 | 0.7514 |
-| Metronidazole | 0.7965 | 0.0069 | 0.5598 |
-| Meropenem | 0.7867 | 0.1271 | 0.7654 |
-| Aztreonam | 0.7822 | 0.0138 | 0.6501 |
-| Amikacin | 0.7802 | 0.1093 | 0.7117 |
-| Nitrofurantoin | 0.7749 | 0.4391 | 0.7639 |
-| Minocycline | 0.7731 | 0.0235 | 0.7209 |
-| Moxifloxacin | 0.7606 | 0.3747 | 0.6263 |
-| Levofloxacin | 0.7030 | 0.5080 | 0.6809 |
-| Cefazolin | 0.7078 | 0.5324 | 0.6168 |
-| Ceftriaxone | 0.7098 | 0.3175 | 0.5830 |
-| Ceftazidime | 0.6685 | 0.2501 | 0.5427 |
-| Gentamicin | 0.6703 | 0.3614 | 0.6226 |
-| Cefepime | 0.6733 | 0.1500 | 0.6300 |
-| Cefoxitin | 0.7321 | 0.3997 | 0.7608 |
-| Ertapenem | 0.7371 | 0.0485 | 0.7010 |
-| Ciprofloxacin | 0.7415 | 0.5418 | 0.7193 |
-| Clarithromycin | 0.7268 | 0.0113 | 0.7337 |
-| Cefpodoxime | 0.5000 | 0.0000 | 0.9808 |
-| Colistin | 0.5000 | 0.0000 | 0.9359 |
-| Ethambutol | 0.0000 | 0.0000 | 0.0000 |
+**Download all required files from Google Drive:**
 
-## Clinical Workflow
+> **[Google Drive — AURA Datasets](https://drive.google.com/drive/folders/1agc1hXlVinXAPM-7E8RFfAFopKVrIota?usp=sharing)**
 
-1. The user enters patient age, gender, kidney function, severity, and organism.
-2. The frontend validates the form and submits it to the FastAPI backend.
-3. The predictor normalizes the organism label and scores each antibiotic model.
-4. The rule engine adjusts route, dose, frequency, and duration.
-5. The API returns the top recommendations plus the full probability list.
-6. The frontend renders the top cards and the susceptibility chart.
+| File | Used by | Destination |
+|---|---|---|
+| `microbiology_cultures_cohort.csv` | V2 training | `datasets/` |
+| `microbiology_cultures_demographics.csv` | V1 + V2 training | `datasets/` (V2) · `training/` (V1) |
+| `microbiology_cultures_labs.csv` | V2 training | `datasets/` |
+| `microbiology_cultures_antibiotic_class_exposure.csv` | V2 training | `datasets/` |
+| `microbiology_culture_prior_infecting_organism.csv` | V2 training | `datasets/` |
+| `microbiology_cultures_ward_info.csv` | V2 training | `datasets/` |
+| `d_dose.csv` | V2 dosage model | `datasets/` |
+| `microbiology_cultures_microbial_resistance.csv` | V1 training | `training/` |
 
-## API Endpoints
+Once downloaded, place the V2 files in `datasets/` and the two V1 Dryad files in `training/` before running any training script.
 
-Base URL in local development: `http://localhost:8000`
+---
+
+## Training the V2 Model
+
+The ARMD dataset files must be present in `datasets/` (they are not committed to git — see [Datasets](#datasets) above). Once the files are in place, run the two training scripts in order:
+
+### Step 1 — Train the recommendation model
+
+```bash
+cd armd_model
+pip install -r requirements.txt
+python train_armd.py
+```
+
+This reads all 6 ARMD CSV files from `datasets/`, trains a RandomForest pipeline across 32 antibiotics, tunes the decision threshold on a validation split, evaluates held-out test results, and saves artifacts to `armd_model/artifacts/`:
+
+```
+armd_model/artifacts/
+  rf_top3_recommender_optimized.joblib   ← main RF pipeline
+  feature_cols.joblib                    ← feature column order
+  selected_antibiotics.joblib            ← 32 antibiotic names
+  best_threshold.joblib                  ← tuned decision threshold
+  split_test_summary.joblib              ← held-out test metrics
+  feature_importances.joblib
+  metadata_optimized.json
+```
+
+### Step 2 — Train the dosage model
+
+```bash
+python train_dosage.py
+```
+
+This reads `datasets/d_dose.csv`, builds an exact lookup table, trains fallback RF models for unseen combinations, and saves:
+
+```
+armd_model/artifacts/
+  dose_route_lookup.csv                  ← exact lookup table
+  dose_model_hybrid.pkl                  ← dose range fallback model
+  route_model_hybrid.pkl                 ← route fallback model
+```
+
+After both scripts complete, restart the backend and the V2 endpoint becomes fully operational.
+
+---
+
+## Manual Setup
+
+### Backend (both V1 + V2)
+
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
+npm run dev
+```
+
+### V1 model retraining (optional)
+
+Requires the two Dryad CSV files placed in `training/` — download from the [Google Drive folder](https://drive.google.com/drive/folders/1agc1hXlVinXAPM-7E8RFfAFopKVrIota?usp=sharing).
+
+```bash
+cd training
+pip install -r requirements.txt
+python preprocess.py
+python train.py
+python evaluate.py
+cp training/output/antibiotic_model.pkl  backend/model/
+cp training/output/model_metadata.json   backend/model/
+```
+
+### Tests
+
+```bash
+cd backend && pytest tests/ -v
+```
+
+---
+
+## Configuration
+
+| Variable | Default | Used by | Description |
+|---|---|---|---|
+| `ENVIRONMENT` | `development` | Backend | Startup log label |
+| `ALLOWED_ORIGINS` | `http://localhost:3000` | Backend | CORS allowlist (comma-separated) |
+| `LOG_LEVEL` | `INFO` | Backend | Logging verbosity |
+| `PORT` | `8000` | Backend | Uvicorn bind port |
+| `MODEL_PATH` | `model/antibiotic_model.pkl` | Backend (V1) | V1 CatBoost model path |
+| `MODEL_METADATA_PATH` | `model/model_metadata.json` | Backend (V1) | V1 metadata path |
+| `ARMD_ARTIFACTS_DIR` | `../armd_model/artifacts` | Backend (V2) | V2 model artifacts directory |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Frontend | Client-side API base URL |
+| `API_URL` | `http://backend:8000` | Frontend (Docker) | Server-side API URL |
+
+Copy `.env.example` to `.env` and adjust values.
+
+---
+
+## API Reference
+
+Full documentation: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md)
+
+### V1 endpoints (CatBoost)
 
 | Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/` | API welcome message |
-| GET | `/health` | Health check |
-| GET | `/api/v1/organisms` | Supported organisms |
-| GET | `/api/v1/antibiotics` | Available antibiotics |
-| POST | `/api/v1/recommend` | Rank antibiotics and dosing suggestions |
-| GET | `/api/v1/model-info` | Model metadata and evaluation summary |
+|---|---|---|
+| `GET` | `/api/v1/organisms` | Supported organism list (14 items) |
+| `GET` | `/api/v1/antibiotics` | Available antibiotics from loaded model |
+| `POST` | `/api/v1/recommend` | Top 3 recommendations + dosing + SHAP |
+| `POST/GET` | `/api/v1/explain` | SHAP feature importance for one antibiotic |
+| `GET` | `/api/v1/model-info` | Per-antibiotic AUC/F1/accuracy table |
 
-### Recommendation Request
-
+**V1 request:**
 ```json
 {
   "organism": "E. coli",
@@ -159,121 +323,155 @@ Base URL in local development: `http://localhost:8000`
 }
 ```
 
-### Recommendation Response
+### V2 endpoints (ARMD RandomForest)
 
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v2/recommend` | Top 3 recommendations + dose range + route |
+| `GET` | `/api/v2/organisms` | Culture sites and valid organisms for the selected culture site |
+| `GET` | `/api/v2/model-info` | ARMD model inventory, test results, feature importances, dosage model status |
+
+**V2 request:**
 ```json
 {
-  "organism": "E. coli",
-  "patient_factors": {
-    "age": 65,
-    "gender": "F",
-    "kidney_function": "normal",
-    "severity": "medium"
-  },
-  "recommendations": [
-    {
-      "antibiotic": "Ampicillin",
-      "probability": 0.91,
-      "dose": "1-2 g",
-      "route": "IV",
-      "frequency": "Every 6 hours",
-      "duration": "7-14 days",
-      "clinical_notes": "..."
-    }
-  ],
-  "all_predictions": []
+  "culture_description": "urine",
+  "organism": "klebsiella pneumoniae",
+  "age": 45,
+  "gender": "female",
+  "wbc": 12.5,
+  "cr": 1.2,
+  "lactate": 1.8,
+  "procalcitonin": 2.5,
+  "ward": "er"
 }
 ```
 
-## Local Setup
-
-### Docker
-
-```bash
-docker-compose up --build
+**V2 response:**
+```json
+{
+  "recommendations": [
+    {
+      "antibiotic": "meropenem",
+      "probability": 0.871,
+      "dose_range": "500-1000 mg",
+      "route": "IV",
+      "dose_source": "lookup"
+    }
+  ],
+  "patient_factors": { ... },
+  "culture_description": "urine",
+  "all_predictions": [ ... ]
+}
 ```
 
-This starts:
+---
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- OpenAPI docs: http://localhost:8000/docs
+## Model Performance
 
-### Manual Setup
+The `/model-info` dashboard now tracks the V2 production workflow:
 
-#### Training
+- **Recommendation model:** ARMD RandomForest pipeline, 32 antibiotics, 42 model features, tuned threshold 0.23
+- **Held-out test results at threshold 0.23:** ROC AUC 84.5%, F1 91.8%, recall 99.5%, precision 85.2%, accuracy 85.2%
+- **Dosage model:** hybrid exact lookup plus RandomForest fallback for dose range and route
+- **Feature reporting:** categorical/numeric/binary feature groups plus top global feature importances
 
-```bash
-cd training
-pip install -r requirements.txt
-python train.py
-python evaluate.py
-```
+### V1 Model Performance
 
-#### Backend
+23 antibiotics trained on 22,946 Dryad samples. 3 excluded (AUC < 0.65).
 
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+| Antibiotic | AUC | F1 | Accuracy |
+|---|---:|---:|---:|
+| Ampicillin | 0.902 | 0.840 | 0.817 |
+| Penicillin | 0.898 | 0.751 | 0.828 |
+| Erythromycin | 0.836 | 0.628 | 0.739 |
+| Vancomycin | 0.807 | 0.203 | 0.751 |
+| Meropenem | 0.787 | 0.127 | 0.765 |
+| Ciprofloxacin | 0.742 | 0.542 | 0.719 |
+| Ceftriaxone | 0.710 | 0.318 | 0.583 |
+| Cefazolin | 0.708 | 0.532 | 0.617 |
+| Levofloxacin | 0.703 | 0.508 | 0.681 |
+| *(+ 14 more)* | | | |
 
-#### Frontend
+Full table: [`docs/MODEL.md`](docs/MODEL.md)
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+---
 
-## Configuration
+## V2 Model Details
 
-Important environment variables:
+- **Algorithm:** sklearn `RandomForestClassifier` (300 trees, max_depth=18, balanced_subsample)
+- **Strategy:** Single pipeline; antibiotic is injected as a feature and scored for all 32 candidates per request
+- **Threshold tuning:** Recall-first policy on validation split (min precision 0.85)
+- **Feature groups:**
+  - Core: `culture_description`, `organism`, `antibiotic`
+  - Demographics: `age`, `gender`
+  - Labs: `wbc_median`, `cr_median`, `lactate_median`, `procalcitonin_median`
+  - Ward: `ward__icu`, `ward__er`, `ward__ip`
+  - Prior history: `prior_abxclass__*`, `prior_org__*` (default 0 at inference)
+- **32 Antibiotics:** amikacin, ampicillin, aztreonam, cefazolin, cefepime, cefotaxime, cefoxitin, cefpodoxime, ceftazidime, ceftriaxone, cefuroxime, chloramphenicol, ciprofloxacin, clarithromycin, clindamycin, doripenem, doxycycline, ertapenem, erythromycin, fosfomycin, gentamicin, levofloxacin, linezolid, meropenem, metronidazole, moxifloxacin, nitrofurantoin, streptomycin, tetracycline, tigecycline, tobramycin, vancomycin
 
-- `ALLOWED_ORIGINS` controls backend CORS.
-- `LOG_LEVEL` controls backend logging verbosity.
-- `PORT` controls the backend port.
-- `NEXT_PUBLIC_API_URL` controls the frontend API base URL.
-- `API_URL` is used server-side by the frontend container.
-- `MODEL_PATH` and `MODEL_METADATA_PATH` point to backend model artifacts.
+Full methodology: [`docs/MODEL.md`](docs/MODEL.md)
 
-## Frontend Highlights
+---
 
-- A dashboard-style home page with the recommendation workflow.
-- Inline validation and reset behavior in the form.
-- Result timestamp and request tracing support.
-- A model-info page that summarizes evaluation metadata.
-- A resistance overview chart that surfaces the full prediction surface.
+## Deployment
 
-## Backend Highlights
+Full guide: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 
-- Request IDs propagated through `X-Request-ID`.
-- Structured logging for startup and request handling.
-- Explicit validation for age and supported organisms.
-- Env-driven startup configuration and CORS.
-- Metadata loading from the exported model artifacts.
+| Target | Config | Notes |
+|---|---|---|
+| Docker local | `docker-compose.yml` | V1 ready; V2 needs training |
+| Vercel (frontend) | `vercel.json` | Auto-deploys on push to main |
+| Render (backend) | `render.yaml` | Free-tier web service |
+| Vercel (serverless) | `backend/vercel.json` | Size limit may exclude large models |
+
+---
+
+## Build Status
+
+See [`docs/BUILD_STATUS.md`](docs/BUILD_STATUS.md) for the full feature tracker covering completed work, pending items, and known issues for both V1 and V2.
+
+---
 
 ## Limitations
 
-- The source dataset does not contain every bedside clinical variable, so some fields are synthetic for modeling and demonstration.
-- This is a decision support system, not an autonomous prescribing system.
-- Local susceptibility patterns, stewardship policy, and clinician judgment still override model output.
-- Some antibiotics have weak predictive performance and are excluded from deployment.
+- **V1:** Some clinical features (kidney function, severity) are synthetically assigned in preprocessing. Not from real records.
+- **V2:** Prior antibiotic class exposure and prior organism history features default to zero at inference (not captured in the UI). This reduces prediction precision for patients with complex histories.
+- Neither version is suitable for autonomous clinical prescribing. Clinician judgment, local resistance patterns, and stewardship policies always take precedence.
+- V2 requires the full ARMD dataset to retrain. Keep generated artifacts in `armd_model/artifacts/` available to the backend.
+
+---
 
 ## Future Work
 
-- Incorporate more real-world covariates such as comorbidities, infection site, and prior antibiotic exposure.
-- Add calibration analysis and threshold tuning per antibiotic.
-- Extend monitoring with drift detection and audit logging.
-- Replace synthetic fields with real intake data when available.
-- Add external validation on an independent dataset.
+- Capture prior antibiotic exposure and prior organism history in the V2 UI form.
+- Calibrate V2 probability outputs (isotonic regression / Platt scaling).
+- Add per-prediction feature importance to V2 (TreeSHAP on the RF model).
+- Add concept drift detection and automated retraining pipeline.
+- External validation on an independent hospital dataset.
+- User authentication and audit logging for compliance scenarios.
+- Polymicrobial infection support.
+
+---
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch conventions, code style, and the PR process.
+
+---
 
 ## References
 
-- Prokhorenkova, L. et al. CatBoost: gradient boosting with categorical features support. arXiv, 2018. [Paper](https://arxiv.org/abs/1810.11363)
-- Infectious Diseases Society of America clinical practice guidelines index. [IDSA](https://www.idsociety.org/practice-guideline/)
-- Dryad Digital Repository. [Dryad](https://datadryad.org/)
+- Prokhorenkova et al. *CatBoost: gradient boosting with categorical features support.* NeurIPS, 2018. [arXiv:1810.11363](https://arxiv.org/abs/1810.11363)
+- Breiman, L. *Random Forests.* Machine Learning, 45(1), 5–32, 2001.
+- IDSA Clinical Practice Guidelines. [idsociety.org](https://www.idsociety.org/practice-guideline/)
+- Dryad Digital Repository. [datadryad.org](https://datadryad.org/)
 
-## Disclaimer
+---
 
-This project is for educational and research purposes. It must not be used as the sole basis for antibiotic prescribing. Always confirm recommendations against current microbiology results, local resistance patterns, institutional protocols, and specialist guidance.
+## License
+
+[MIT](LICENSE) © 2024 AURA Project Contributors
+
+---
+
+> **Disclaimer:** This project is for educational and research purposes only. It must not be used as the sole basis for antibiotic prescribing decisions. Always confirm recommendations against current microbiology results, local resistance patterns, institutional stewardship protocols, and specialist guidance.

@@ -8,14 +8,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY requirements.txt .
+COPY backend/requirements.txt ./requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY app/ ./app/
-COPY model/ ./model/
+COPY backend/app/ ./app/
+COPY backend/model/ ./model/
+COPY armd_model/artifacts/ ./armd_model/artifacts/
+
+# Ensure the V2 services know where to find the generated model artifacts.
+ENV ARMD_ARTIFACTS_DIR=/app/armd_model/artifacts
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app

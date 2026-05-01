@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: antibiotic-ai-backend
     ports:
       - "8000:8000"
@@ -12,8 +10,12 @@ services:
       - .env
     environment:
       - PYTHONPATH=/app
+      - MODEL_PATH=/app/model/antibiotic_model.pkl
+      - MODEL_METADATA_PATH=/app/model/model_metadata.json
+      - ARMD_ARTIFACTS_DIR=/app/armd_model/artifacts
     volumes:
       - ./backend/model:/app/model
+      - ./armd_model/artifacts:/app/armd_model/artifacts
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
