@@ -1,6 +1,11 @@
 """
 Rule-based dosing engine for antibiotic recommendations.
 Applies clinical dosing rules based on patient factors.
+
+V1 (CatBoost) dosing — DISABLED / DEPRECATED.
+Superseded by the V2 hybrid DosageService (app/services/dosage_service.py),
+which has its own lookup + RandomForest + static-fallback dosing. This module
+is no longer imported by the API and is kept for reference only.
 """
 
 from typing import Dict, Any, Optional

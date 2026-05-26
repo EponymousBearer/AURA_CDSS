@@ -33,9 +33,9 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GroupShuffleSplit
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 
 warnings.filterwarnings("ignore")
 pd.set_option("display.max_columns", 200)
@@ -63,7 +63,11 @@ TOP_N_ORGANISMS = 40
 TOP_N_CULTURE_SITES = 25
 MAX_BINARY_FEATURES = 120
 
-THRESHOLD_POLICY = 'recall_first'
+# Threshold selection policy:
+#   'balanced'     -> threshold maximizing balanced accuracy (clinically meaningful)
+#   'recall_first' -> highest recall subject to precision >= MIN_PRECISION_FOR_RECALL_POLICY
+#   'f1'           -> best F1
+THRESHOLD_POLICY = 'balanced'
 MIN_PRECISION_FOR_RECALL_POLICY = 0.85
 
 SELECTED_ANTIBIOTICS = [
@@ -311,25 +315,40 @@ def main():
     # [3/8] LABS
     print("\n[3/8] Loading labs...")
     labs_path = paths['microbiology_cultures_labs.csv']
-    labs_cols = choose_existing_columns(labs_path, [
-        'anon_id', 'wbc_median', 'cr_median', 'lactate_median', 'procalcitonin_median',
-    ])
+    # NOTE: the labs file stores per-period medians as median_wbc / median_cr /
+    # median_lactate / median_procalcitonin (NOT wbc_median etc.). Map them to the
+    # downstream feature names so the lab values actually merge into the model.
+    LAB_COLUMN_MAP = {
+        'median_wbc': 'wbc_median',
+        'median_cr': 'cr_median',
+        'median_lactate': 'lactate_median',
+        'median_procalcitonin': 'procalcitonin_median',
+    }
+    labs_wanted = ['anon_id'] + list(LAB_COLUMN_MAP.keys())
+    labs_cols = choose_existing_columns(labs_path, labs_wanted)
 
     labs = pd.read_csv(
         labs_path,
         usecols=labs_cols,
         dtype={
             'anon_id': 'string',
-            'wbc_median': 'float32',
-            'cr_median': 'float32',
-            'lactate_median': 'float32',
-            'procalcitonin_median': 'float32',
+            'median_wbc': 'float32',
+            'median_cr': 'float32',
+            'median_lactate': 'float32',
+            'median_procalcitonin': 'float32',
         },
+        na_values=['Null'],  # this dataset uses the literal 'Null' for missing values
         low_memory=False,
     )
     labs = labs[labs['anon_id'].astype(str).isin(cohort_ids)].copy()
-    labs = labs.drop_duplicates(subset=['anon_id'])
+
+    # A patient can have several period rows; collapse to one row per anon_id by
+    # averaging the available median lab values (NaNs ignored).
+    lab_value_cols = [c for c in LAB_COLUMN_MAP if c in labs.columns]
+    labs = labs.groupby('anon_id', as_index=False)[lab_value_cols].mean()
+    labs = labs.rename(columns=LAB_COLUMN_MAP)
     print_shape('labs filtered', labs)
+    print(f"  Lab feature columns merged: {[LAB_COLUMN_MAP[c] for c in lab_value_cols]}")
 
     # [4/8] PRIOR ANTIBIOTIC CLASS EXPOSURE (CHUNKED)
     print("\n[4/8] Loading prior antibiotic class exposure (chunked)...")
@@ -552,16 +571,30 @@ def main():
     print(y.value_counts(normalize=True).rename('proportion'))
 
     # TRAIN / VAL / TEST SPLIT
-    print("\n  Splitting data...")
-    X_train_full, X_test, y_train_full, y_test = train_test_split(
-        X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
-    )
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train_full, y_train_full,
-        test_size=VALID_SIZE_FROM_TRAIN,
-        random_state=RANDOM_STATE,
-        stratify=y_train_full,
-    )
+    # Group by anon_id so the same patient never appears in more than one split
+    # (row-level splitting leaks patient signal across train/test and inflates metrics).
+    print("\n  Splitting data (grouped by anon_id to prevent patient leakage)...")
+    groups = df['anon_id'].astype(str).values
+
+    gss_test = GroupShuffleSplit(n_splits=1, test_size=TEST_SIZE, random_state=RANDOM_STATE)
+    train_full_idx, test_idx = next(gss_test.split(X, y, groups))
+    X_train_full, X_test = X.iloc[train_full_idx], X.iloc[test_idx]
+    y_train_full, y_test = y.iloc[train_full_idx], y.iloc[test_idx]
+    groups_train_full = groups[train_full_idx]
+
+    gss_val = GroupShuffleSplit(n_splits=1, test_size=VALID_SIZE_FROM_TRAIN, random_state=RANDOM_STATE)
+    train_idx, val_idx = next(gss_val.split(X_train_full, y_train_full, groups_train_full))
+    X_train, X_val = X_train_full.iloc[train_idx], X_train_full.iloc[val_idx]
+    y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
+
+    # Sanity check: no patient should straddle splits
+    train_ids = set(groups[train_full_idx][train_idx])
+    test_ids = set(groups[test_idx])
+    val_ids = set(groups_train_full[val_idx])
+    assert not (train_ids & test_ids), "Patient leakage: train/test overlap"
+    assert not (train_ids & val_ids), "Patient leakage: train/val overlap"
+    assert not (val_ids & test_ids), "Patient leakage: val/test overlap"
+    print(f"  Patients -> train: {len(train_ids):,}  val: {len(val_ids):,}  test: {len(test_ids):,}")
     print(f"  Train: {X_train.shape}  Validation: {X_val.shape}  Test: {X_test.shape}")
     print("  Train target distribution:")
     print(y_train.value_counts(normalize=True).rename('proportion'))
@@ -573,7 +606,11 @@ def main():
                 'cat',
                 Pipeline([
                     ('imputer', SimpleImputer(strategy='most_frequent')),
-                    ('encoder', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)),
+                    # One-hot (not ordinal): lets the forest split on specific
+                    # organism / antibiotic / culture values and learn
+                    # organism x antibiotic interactions, instead of treating them
+                    # as arbitrary integers and collapsing to a global per-antibiotic prior.
+                    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False)),
                 ]),
                 categorical_cols,
             ),
@@ -627,7 +664,11 @@ def main():
 
     threshold_df = pd.DataFrame(rows_thr)
 
-    if THRESHOLD_POLICY == 'recall_first':
+    if THRESHOLD_POLICY == 'balanced':
+        # Maximize balanced accuracy (tie-break on F1) for a clinically meaningful
+        # operating point rather than one that labels almost everything susceptible.
+        best_row = threshold_df.sort_values(['balanced_accuracy', 'f1_1'], ascending=False).iloc[0]
+    elif THRESHOLD_POLICY == 'recall_first':
         eligible = threshold_df[threshold_df['precision_1'] >= MIN_PRECISION_FOR_RECALL_POLICY]
         if len(eligible) == 0:
             print(f"  No threshold reached precision >= {MIN_PRECISION_FOR_RECALL_POLICY}; falling back to best F1.")
@@ -713,7 +754,12 @@ def main():
 
     # FEATURE IMPORTANCE
     rf_model = model.named_steps['rf']
-    processed_feature_names = categorical_cols + numeric_cols + binary_cols
+    # One-hot encoding expands the transformed feature count, so pull the real
+    # expanded names from the fitted ColumnTransformer (e.g. 'cat__organism_e. coli').
+    try:
+        processed_feature_names = list(model.named_steps['prep'].get_feature_names_out())
+    except Exception:
+        processed_feature_names = categorical_cols + numeric_cols + binary_cols
     importances = pd.DataFrame({
         'feature': processed_feature_names,
         'importance': rf_model.feature_importances_,

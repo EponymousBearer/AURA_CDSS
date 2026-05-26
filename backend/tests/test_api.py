@@ -13,6 +13,11 @@ def test_health_check():
     assert response.json() == {'status': 'healthy', 'service': 'antibiotic-ai-cdss'}
 
 
+# ═════════════════════════════════════════════════════════════════════════════
+# V1 (CatBoost) /api/v1/* tests — DISABLED. The endpoints were removed; these
+# tests are commented out (kept for reference). See test_v2_api.py for V2.
+# ═════════════════════════════════════════════════════════════════════════════
+'''
 def test_recommend_valid_request():
     payload = {
         'organism': 'E. coli',
@@ -68,3 +73,5 @@ def test_organisms_endpoint():
     assert 'organisms' in body
     assert isinstance(body['organisms'], list)
     assert len(body['organisms']) > 0
+'''
+# ───────────────────────── End of disabled V1 tests ─────────────────────────

@@ -1,7 +1,7 @@
 """
 API routes for the Antibiotic AI CDSS.
-v1: CatBoost-based (/api/v1/*)
-v2: ARMD RandomForest-based (/api/v2/*)
+v1: CatBoost-based (/api/v1/*)  — DISABLED, superseded by v2 (commented out below)
+v2: ARMD RandomForest-based (/api/v2/*)  — ACTIVE
 """
 
 from fastapi import APIRouter, HTTPException, status, Response, Query
@@ -11,26 +11,27 @@ from uuid import uuid4
 from typing import Dict
 
 from app.schemas.request import (
-    AntibioticRecommendationRequest,
-    AntibioticRecommendationResponse,
-    AntibioticExplainRequest,
+    # --- V1 schemas (CatBoost) — DISABLED ---
+    # AntibioticRecommendationRequest,
+    # AntibioticRecommendationResponse,
+    # AntibioticExplainRequest,
     ARMDRecommendationRequest,
     ARMDRecommendationResponse,
     ErrorResponse,
 )
-from app.services.predictor import PredictionService
-from app.services.rules import DosingRuleEngine
+# --- V1 services (CatBoost) — DISABLED ---
+# from app.services.predictor import PredictionService
+# from app.services.rules import DosingRuleEngine
 from app.services.armd_predictor import ARMDPredictorService
 from app.services.dosage_service import DosageService
 from app.services.clinical_catalog import ClinicalCatalogService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
-
-# V1 services (CatBoost)
-prediction_service = PredictionService()
-dosing_engine = DosingRuleEngine()
+# --- V1 router + services (CatBoost) — DISABLED, superseded by v2 ARMD ---
+# router = APIRouter()
+# prediction_service = PredictionService()
+# dosing_engine = DosingRuleEngine()
 
 # V2 services (ARMD RandomForest)
 armd_service = ARMDPredictorService()
@@ -38,6 +39,11 @@ dosage_service = DosageService()
 clinical_catalog_service = ClinicalCatalogService()
 
 
+# ═════════════════════════════════════════════════════════════════════════════
+# V1 routes (CatBoost) — DISABLED. Superseded by V2 ARMD RandomForest routes.
+# The block below is commented out (kept for reference) and not mounted in main.py.
+# ═════════════════════════════════════════════════════════════════════════════
+'''
 def _validate_age(age: int, request_id: str) -> None:
     if age < 0 or age > 150:
         raise HTTPException(
@@ -324,6 +330,8 @@ async def get_model_info():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch model information"
         )
+'''
+# ───────────────────────── End of disabled V1 block ─────────────────────────
 
 
 # ─────────────────────────────────────────────────────────────────────────────

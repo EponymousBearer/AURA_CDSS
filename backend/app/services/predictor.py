@@ -1,5 +1,10 @@
 """
 ML Prediction service using trained CatBoost models.
+
+V1 (CatBoost) — DISABLED / DEPRECATED.
+Superseded by the V2 ARMD RandomForest stack (app/services/armd_predictor.py).
+This module is no longer imported by the API (see app/api/routes.py) and is
+kept for reference only.
 """
 
 import os

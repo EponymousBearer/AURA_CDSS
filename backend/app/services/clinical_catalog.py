@@ -50,14 +50,20 @@ class ClinicalCatalogService:
             df = df[
                 (df['culture_description'] != '') &
                 (df['organism'] != '') &
-                (df['organism'] != 'null')
+                (df['organism'] != 'null') &
+                (~df['organism'].str.startswith('zzz'))
             ]
 
-            top_organisms = set(df['organism'].value_counts().head(self.top_n_organisms).index)
             catalog: dict[str, list[str]] = {}
             for culture_site, group in df.groupby('culture_description'):
-                organisms = sorted(set(group['organism']).intersection(top_organisms))
-                catalog[culture_site] = organisms + ['other']
+                top = (
+                    group['organism']
+                    .value_counts()
+                    .head(self.top_n_organisms)
+                    .index
+                    .tolist()
+                )
+                catalog[culture_site] = top + ['other']
 
             self.catalog = catalog or fallback
             self.culture_sites = sorted(self.catalog)

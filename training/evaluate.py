@@ -1,4 +1,9 @@
-"""Held-out model evaluation script for presentation-ready reporting."""
+"""Held-out model evaluation script for presentation-ready reporting.
+
+V1 (CatBoost) evaluation — DEPRECATED. Part of the V1 CatBoost training
+pipeline, superseded by the V2 ARMD RandomForest pipeline in armd_model/.
+Retained for reference only; not used by V2.
+"""
 
 import json
 import pickle

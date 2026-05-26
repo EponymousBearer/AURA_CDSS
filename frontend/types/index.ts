@@ -1,5 +1,7 @@
-// ─── V1 types (CatBoost model) ───────────────────────────────────────────────
-
+// ─── V1 types (CatBoost model) — DISABLED (superseded by V2 ARMD types) ──────
+// Note: ResistanceChartProps and ApiError (further below) remain ACTIVE — they
+// are still used by the V2 UI — so they are kept outside this commented block.
+/*
 export interface PatientFormData {
   organism: string
   age: number
@@ -50,6 +52,9 @@ export interface ExplainabilityModalData {
   antibiotic: string
   featureImportances: Record<string, number>
 }
+*/
+
+// ─── Shared types still used by V2 ───────────────────────────────────────────
 
 export interface ResistanceChartProps {
   allPredictions: {

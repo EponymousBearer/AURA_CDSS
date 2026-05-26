@@ -44,6 +44,7 @@ class ARMDPredictorService:
         self.metadata: dict = {}
         self.test_summary: list[dict] = []
         self.feature_importances: list[dict] = []
+        self.organism_panel: dict = {}  # organism -> clinically-tested antibiotics (antibiogram)
         self._load_artifacts()
 
     def _resolve_artifacts_dir(self) -> Path:
@@ -95,6 +96,12 @@ class ARMDPredictorService:
                     }
                     for _, row in importances_df.head(10).iterrows()
                 ]
+
+            panel_path = artifacts_dir / 'organism_antibiotic_panel.json'
+            if panel_path.exists():
+                with open(panel_path) as f:
+                    self.organism_panel = json.load(f).get('panel', {})
+                logger.info(f"Antibiogram panel loaded for {len(self.organism_panel)} organisms")
 
             logger.info(
                 f"ARMD model loaded. antibiotics={len(self.selected_antibiotics)} "
@@ -157,8 +164,19 @@ class ARMDPredictorService:
             'ward__ip': int(ward_ip),
         }
 
+        # Layer 2 (clinical filter): restrict candidates to antibiotics the lab
+        # actually tests for this organism (data-derived antibiogram). Drugs never
+        # tested for the organism (e.g. metronidazole vs E. coli, ertapenem vs
+        # Pseudomonas) are excluded so they can't dominate the ranking. Unknown
+        # organisms fall back to the full panel rather than returning nothing.
+        org_norm = self._normalize(organism)
+        allowed = self.organism_panel.get(org_norm)
+        candidates = [ab for ab in self.selected_antibiotics if ab in allowed] if allowed else []
+        if not candidates:
+            candidates = list(self.selected_antibiotics)
+
         rows = []
-        for ab in self.selected_antibiotics:
+        for ab in candidates:
             row = {c: 0 for c in self.feature_cols}
             for k, v in base_patient.items():
                 if k in row:
@@ -169,10 +187,11 @@ class ARMDPredictorService:
         score_df = pd.DataFrame(rows)[self.feature_cols]
         probs = self.model.predict_proba(score_df)[:, 1]
 
+        # Layer 3 (ranking): rank the allowed candidates by absolute P(susceptible).
         all_scores = sorted(
             [
                 {'antibiotic': ab, 'probability': round(float(p), 4)}
-                for ab, p in zip(self.selected_antibiotics, probs)
+                for ab, p in zip(candidates, probs)
             ],
             key=lambda x: x['probability'],
             reverse=True,

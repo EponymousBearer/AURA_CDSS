@@ -15,6 +15,16 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+# The recommender works in culture SITES (urine/blood/respiratory) but the dose
+# table is keyed by clinical DISEASE. Map each site to its best-covered disease in
+# dose_route_lookup.csv so exact dose lookups actually hit (chosen by antibiotic
+# coverage: UTI=19 drugs, Bacteremia=12, Pneumonia=23, all across child/adult/elderly).
+_CULTURE_SITE_TO_DISEASE: dict[str, str] = {
+    'urine': 'Urinary Tract Infection',
+    'blood': 'Bacteremia',
+    'respiratory': 'Pneumonia',
+}
+
 # Static fallback dosing rules (used if artifacts not trained yet)
 _FALLBACK_DOSING: dict[str, dict] = {
     'amikacin':       {'dose_range': '15-20 mg/kg',        'route': 'IV'},
@@ -80,12 +90,18 @@ class DosageService:
             lookup_path = artifacts_dir / 'dose_route_lookup.csv'
             if lookup_path.exists():
                 lookup_df = pd.read_csv(lookup_path)
+                # Keys are lowercased so they match the normalized lookup key built
+                # in get_dosage (the CSV stores Title-Case disease names).
                 self.exact_dose_lookup = {
-                    (str(r['generic']), str(r['disease']), str(r['age_group'])): str(r['dose_range'])
+                    (str(r['generic']).strip().lower(),
+                     str(r['disease']).strip().lower(),
+                     str(r['age_group']).strip().lower()): str(r['dose_range'])
                     for _, r in lookup_df.iterrows()
                 }
                 self.exact_route_lookup = {
-                    (str(r['generic']), str(r['disease']), str(r['age_group'])): str(r['route'])
+                    (str(r['generic']).strip().lower(),
+                     str(r['disease']).strip().lower(),
+                     str(r['age_group']).strip().lower()): str(r['route'])
                     for _, r in lookup_df.iterrows()
                 }
                 logger.info(f"Dosage lookup table loaded: {len(self.exact_dose_lookup)} entries")
@@ -113,37 +129,52 @@ class DosageService:
         source is one of: 'lookup', 'model', 'fallback'
         """
         ab_norm = antibiotic.strip().lower()
-        disease_norm = disease.strip().lower()
+        # Translate culture site -> disease (Title-Case preserved for the ML model,
+        # which was trained on the CSV's disease casing); lowercased copy for lookup.
+        disease_mapped = _CULTURE_SITE_TO_DISEASE.get(disease.strip().lower(), disease)
         ag = self._age_group(age)
-        key = (ab_norm, disease_norm, ag)
+        key = (ab_norm, disease_mapped.strip().lower(), ag)
 
-        # 1. Exact lookup
-        if key in self.exact_dose_lookup:
-            return {
-                'dose_range': self.exact_dose_lookup[key],
-                'route': self.exact_route_lookup.get(key, 'IV'),
-                'source': 'lookup',
-            }
+        def _usable(v) -> bool:
+            # Many d_dose rows carry a route but no numeric dose -> 'unknown'.
+            return v is not None and str(v).strip().lower() not in {'unknown', 'nan', '', 'none'}
 
-        # 2. ML model fallback
-        if self.dose_model is not None:
+        static = _FALLBACK_DOSING.get(ab_norm, {'dose_range': 'Consult pharmacy', 'route': 'IV'})
+
+        # 1. Exact lookup (preferred — but only when it carries a real dose/route)
+        look_dose = self.exact_dose_lookup.get(key)
+        look_route = self.exact_route_lookup.get(key)
+
+        # 2. ML model — only run if the lookup is missing or unusable
+        ml_dose = ml_route = None
+        if (not _usable(look_dose) or not _usable(look_route)) and self.dose_model is not None:
             try:
                 input_df = pd.DataFrame([{
                     'generic': ab_norm,
-                    'disease': disease_norm,
+                    'disease': disease_mapped,
                     'age_group': ag,
                 }])
-                return {
-                    'dose_range': str(self.dose_model.predict(input_df)[0]),
-                    'route': str(self.route_model.predict(input_df)[0]),
-                    'source': 'model',
-                }
+                ml_dose = str(self.dose_model.predict(input_df)[0])
+                ml_route = str(self.route_model.predict(input_df)[0])
             except Exception as exc:
                 logger.warning(f"Dosage ML model failed for {antibiotic}: {exc}")
 
-        # 3. Static rules fallback
-        entry = _FALLBACK_DOSING.get(ab_norm, {'dose_range': 'Consult pharmacy', 'route': 'IV'})
-        return {**entry, 'source': 'fallback'}
+        # Resolve dose and route independently, never surfacing 'unknown'.
+        if _usable(look_dose):
+            dose, source = look_dose, 'lookup'
+        elif _usable(ml_dose):
+            dose, source = ml_dose, 'model'
+        else:
+            dose, source = static['dose_range'], 'fallback'
+
+        if _usable(look_route):
+            route = look_route
+        elif _usable(ml_route):
+            route = ml_route
+        else:
+            route = static['route']
+
+        return {'dose_range': dose, 'route': route, 'source': source}
 
     def get_model_info(self) -> dict:
         return {

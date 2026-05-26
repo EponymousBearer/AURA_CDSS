@@ -10,7 +10,9 @@ import logging
 import os
 import time
 
-from app.api.routes import router as api_router, v2_router
+# V1 router (CatBoost) is disabled — only the v2 ARMD router is mounted.
+# from app.api.routes import router as api_router, v2_router
+from app.api.routes import v2_router
 from app.utils.logger import setup_logging
 
 # Setup logging
@@ -40,15 +42,14 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     """Log service readiness and model loading status at startup."""
-    from app.api.routes import prediction_service
+    from app.api.routes import armd_service
 
     environment = os.getenv("ENVIRONMENT", "development")
-    model_loaded = len(prediction_service.antibiotic_list) > 0 and len(prediction_service.models) > 0
+    model_loaded = armd_service.is_available()
     logger.info(
-        "Startup status | environment=%s | model_loaded=%s | antibiotics=%s",
+        "Startup status | environment=%s | v2_armd_model_loaded=%s",
         environment,
         model_loaded,
-        len(prediction_service.antibiotic_list),
     )
 
 
@@ -102,7 +103,7 @@ async def root():
         "status": "operational",
         "docs_url": "/docs",
         "endpoints": {
-            "recommend": "/api/v1/recommend"
+            "recommend": "/api/v2/recommend"
         }
     }
 
@@ -117,7 +118,8 @@ async def health_check():
 
 
 # Include API routes
-app.include_router(api_router, prefix="/api/v1")
+# V1 (CatBoost) router is disabled:
+# app.include_router(api_router, prefix="/api/v1")
 app.include_router(v2_router, prefix="/api/v2")
 
 

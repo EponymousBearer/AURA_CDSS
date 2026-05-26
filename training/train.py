@@ -1,6 +1,11 @@
 """
 Training module for antibiotic susceptibility prediction using CatBoost.
 Trains separate binary classifiers for each antibiotic.
+
+V1 (CatBoost) training pipeline — DEPRECATED.
+Superseded by the V2 ARMD RandomForest training in armd_model/ (train_armd.py
+for recommendations, train_dosage.py for dose/route). This script is retained
+for reference and reproducibility of the V1 model only; it is not used by V2.
 """
 
 import os

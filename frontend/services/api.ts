@@ -1,7 +1,8 @@
 import axios from 'axios'
 import {
-  PatientFormData,
-  RecommendationResponse,
+  // V1 types (CatBoost) — disabled:
+  // PatientFormData,
+  // RecommendationResponse,
   ARMDFormData,
   ARMDRecommendationResponse,
   ARMDOrganismCatalog,
@@ -15,8 +16,8 @@ const api = axios.create({
   timeout: 30000,
 })
 
-// V1 (CatBoost)
-
+// ─── V1 (CatBoost) — DISABLED. Superseded by the V2 ARMD functions below. ───
+/*
 export async function getRecommendation(
   data: PatientFormData
 ): Promise<RecommendationResponse> {
@@ -86,6 +87,8 @@ export async function getModelInfo(): Promise<ModelInfoResponse> {
   const response = await api.get('/api/v1/model-info')
   return response.data
 }
+*/
+// ───────────────────── End of disabled V1 functions ─────────────────────
 
 // V2 (ARMD RandomForest)
 

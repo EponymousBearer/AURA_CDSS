@@ -1,6 +1,10 @@
 """
 Data preprocessing module for antibiotic susceptibility prediction.
 Handles data cleaning, feature encoding, and train/validation splits.
+
+V1 (CatBoost) preprocessing — DEPRECATED.
+Part of the V1 CatBoost training pipeline, superseded by the V2 ARMD
+RandomForest pipeline in armd_model/. Retained for reference only; not used by V2.
 """
 
 import pandas as pd

@@ -1,7 +1,7 @@
 """
 Pydantic schemas for request/response validation.
-v1 schemas: CatBoost-based (organism/age/gender/kidney_function/severity)
-v2 schemas: ARMD RandomForest (culture_description/organism/age/gender/labs/ward)
+v1 schemas: CatBoost-based (organism/age/gender/kidney_function/severity) — DISABLED
+v2 schemas: ARMD RandomForest (culture_description/organism/age/gender/labs/ward) — ACTIVE
 """
 
 from typing import List, Optional, Dict, Any
@@ -9,6 +9,11 @@ from pydantic import BaseModel, Field, validator
 from enum import Enum
 
 
+# ═════════════════════════════════════════════════════════════════════════════
+# V1 schemas (CatBoost) — DISABLED. Superseded by V2 ARMD schemas (below).
+# The block below is commented out (kept for reference); no longer imported.
+# ═════════════════════════════════════════════════════════════════════════════
+'''
 class OrganismEnum(str, Enum):
     """Supported bacterial organisms."""
     E_COLI = "E. coli"
@@ -186,11 +191,13 @@ class AntibioticExplainRequest(AntibioticRecommendationRequest):
                 "antibiotic": "Ceftriaxone"
             }
         }
+'''
+# ───────────────────────── End of disabled V1 schemas ───────────────────────
 
 
 class ErrorResponse(BaseModel):
     """
-    Error response schema.
+    Error response schema (shared by v1 and v2 error responses).
     """
     error: str = Field(..., description="Error type")
     detail: str = Field(..., description="Error details")

@@ -83,8 +83,6 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
   const [organismsByCulture, setOrganismsByCulture] = useState<Record<string, string[]>>(
     FALLBACK_ORGANISMS_BY_CULTURE
   )
-  const [organismQuery, setOrganismQuery] = useState('')
-  const [organismOpen, setOrganismOpen] = useState(false)
   const [form, setForm] = useState<FormState>({
     culture_description: '',
     organism: '',
@@ -131,14 +129,6 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
     [form.culture_description, organismsByCulture]
   )
 
-  const filteredOrganisms = useMemo(() => {
-    const query = organismQuery.trim().toLowerCase()
-    if (!query) return organismOptions.slice(0, 30)
-    return organismOptions
-      .filter((organism) => organism.includes(query))
-      .slice(0, 30)
-  }, [organismOptions, organismQuery])
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({
@@ -146,30 +136,9 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
       [name]: value,
       ...(name === 'culture_description' ? { organism: '' } : {}),
     }))
-    if (name === 'culture_description') {
-      setOrganismQuery('')
-      setOrganismOpen(false)
-    }
     if (name in errors) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
     }
-  }
-
-  const handleOrganismQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setOrganismQuery(value)
-    setForm((prev) => ({ ...prev, organism: '' }))
-    setOrganismOpen(true)
-    if (errors.organism) {
-      setErrors((prev) => ({ ...prev, organism: '' }))
-    }
-  }
-
-  const selectOrganism = (organism: string) => {
-    setForm((prev) => ({ ...prev, organism }))
-    setOrganismQuery(displayName(organism))
-    setOrganismOpen(false)
-    setErrors((prev) => ({ ...prev, organism: '' }))
   }
 
   const validateAge = (v: string) => {
@@ -222,8 +191,6 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
       procalcitonin: '',
       ward: 'general',
     })
-    setOrganismQuery('')
-    setOrganismOpen(false)
     setErrors({})
     onReset?.()
   }
@@ -231,8 +198,7 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
   const canSubmit =
     !loading &&
     Boolean(form.culture_description) &&
-    Boolean(form.organism.trim()) &&
-    organismOptions.includes(form.organism) &&
+    Boolean(form.organism) &&
     !validateAge(form.age)
 
   return (
@@ -283,48 +249,26 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
               <label htmlFor="organism" className="block text-sm font-medium text-gray-700 mb-1">
                 Organism <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="organism"
-                  name="organism"
-                  value={organismQuery}
-                  onChange={handleOrganismQueryChange}
-                  onFocus={() => setOrganismOpen(Boolean(form.culture_description))}
-                  onBlur={() => window.setTimeout(() => setOrganismOpen(false), 120)}
-                  disabled={!form.culture_description}
-                  placeholder={form.culture_description ? 'Search organisms...' : 'Select culture site first'}
-                  autoComplete="off"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors placeholder:text-gray-300"
-                />
-                {organismOpen && form.culture_description && (
-                  <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                    {filteredOrganisms.length > 0 ? (
-                      filteredOrganisms.map((organism) => (
-                        <button
-                          key={organism}
-                          type="button"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => selectOrganism(organism)}
-                          className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                        >
-                          {displayName(organism)}
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-3 py-2 text-sm text-gray-500">
-                        No organism found
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <select
+                id="organism"
+                name="organism"
+                value={form.organism}
+                onChange={handleChange}
+                disabled={!form.culture_description}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
+              >
+                <option value="">
+                  {form.culture_description ? 'Select organism…' : 'Select culture site first'}
+                </option>
+                {organismOptions.map((o) => (
+                  <option key={o} value={o}>
+                    {displayName(o)}
+                  </option>
+                ))}
+              </select>
               {errors.organism && (
                 <p className="mt-1 text-xs text-red-600">{errors.organism}</p>
               )}
-              <p className="mt-1 text-xs text-gray-400">
-                Options are filtered by the selected culture site
-              </p>
             </div>
           </div>
         </div>

@@ -1,3 +1,8 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# V1 (CatBoost) PredictionService tests — DISABLED. PredictionService is
+# deprecated and no longer wired into the API. Entire module commented out.
+# ═════════════════════════════════════════════════════════════════════════════
+'''
 from app.services.predictor import PredictionService
 
 
@@ -48,3 +53,5 @@ def test_organism_compatibility():
 
     assert good_score == 1.0
     assert bad_score < 1.0
+'''
+# ───────────────────────── End of disabled V1 tests ─────────────────────────
