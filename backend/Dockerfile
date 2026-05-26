@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# NOTE: build context must be the REPO ROOT (paths below are repo-root-relative).
+# On Render set: Root Directory = (blank), Dockerfile Path = backend/Dockerfile.
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -15,22 +18,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY backend/app/ ./app/
-COPY backend/model/ ./model/
+# V2 model artifacts. The large dose/route .pkl stay out of git (rebuilt locally);
+# the committed RF recommender, dose_route_lookup.csv and antibiogram panel ship here.
+# Missing dose ML models -> dosage_service falls back to lookup + static rules.
 COPY armd_model/artifacts/ ./armd_model/artifacts/
 
-# Ensure the V2 services know where to find the generated model artifacts.
+# Tell the V2 services where the model artifacts live.
 ENV ARMD_ARTIFACTS_DIR=/app/armd_model/artifacts
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Expose port
+# Render injects $PORT and probes it via healthCheckPath (/health); bind to it.
 EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
-
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

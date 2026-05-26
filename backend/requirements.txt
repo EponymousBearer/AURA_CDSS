@@ -6,6 +6,7 @@ python-multipart==0.0.6
 httpx==0.27.2
 numpy==1.24.3
 pandas==2.1.4
-catboost==1.2.2
+# catboost (V1 CatBoost models) removed: V1 is disabled on this branch and the
+# package is never imported at runtime. Re-add if V1 (/api/v1) is restored.
 scikit-learn==1.3.2
 joblib==1.3.2

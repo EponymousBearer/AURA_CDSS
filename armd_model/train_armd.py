@@ -52,9 +52,11 @@ ARTIFACT_DIR = Path(__file__).parent / 'artifacts'
 # =========================
 CHUNK_SIZE = 150_000
 MAX_PRIOR_ORGS = 50
-N_ESTIMATORS = 300
-MAX_DEPTH = 18
-MIN_SAMPLES_LEAF = 3
+# Sized to fit Render free tier (512 MB RAM) and stay under GitHub's 100 MB file
+# limit once compressed. Larger values improve accuracy but bloat the artifact.
+N_ESTIMATORS = 150
+MAX_DEPTH = 16
+MIN_SAMPLES_LEAF = 4
 TEST_SIZE = 0.20
 VALID_SIZE_FROM_TRAIN = 0.15
 RANDOM_STATE = 42
@@ -771,7 +773,9 @@ def main():
 
     # SAVE ARTIFACTS
     print(f"\nSaving artifacts to: {ARTIFACT_DIR}")
-    joblib.dump(model, ARTIFACT_DIR / 'rf_top3_recommender_optimized.joblib')
+    # compress=3 keeps the artifact under GitHub's 100 MB limit (committed for the
+    # Docker deploy). RAM at load time is governed by n_estimators/max_depth above.
+    joblib.dump(model, ARTIFACT_DIR / 'rf_top3_recommender_optimized.joblib', compress=3)
     joblib.dump(feature_cols, ARTIFACT_DIR / 'feature_cols.joblib')
     joblib.dump(SELECTED_ANTIBIOTICS, ARTIFACT_DIR / 'selected_antibiotics.joblib')
     joblib.dump(importances, ARTIFACT_DIR / 'feature_importances.joblib')

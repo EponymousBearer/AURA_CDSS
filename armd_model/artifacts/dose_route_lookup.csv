@@ -1,0 +1,841 @@
+generic,disease,age_group,dose_range,route,support
+amikacin,Bacteremia,adult,10-15 mg,IM,2
+amikacin,Bacteremia,child,10-15 mg,IM,2
+amikacin,Bacteremia,elderly,10-15 mg,IM,4
+amikacin,Bacterial Infection,adult,10-15 mg,IM,2
+amikacin,Bacterial Infection,child,unknown,IM,10
+amikacin,Bone and Joint Infection,adult,10-15 mg,IM,2
+amikacin,Bone and Joint Infection,child,10-15 mg,IM,2
+amikacin,Bone and Joint Infection,elderly,10-15 mg,IM,4
+amikacin,Intraabdominal Infection,adult,10-15 mg,IM,2
+amikacin,Intraabdominal Infection,child,10-15 mg,IM,2
+amikacin,Intraabdominal Infection,elderly,10-15 mg,IM,4
+amikacin,Meningitis,adult,10-15 mg,IM,2
+amikacin,Meningitis,child,10-15 mg,IM,2
+amikacin,Mycobacterium avium-intracellulare - Treatment,adult,10-15 mg,IM,2
+amikacin,Mycobacterium avium-intracellulare - Treatment,child,10-15 mg,IV,1
+amikacin,Osteomyelitis,adult,10-15 mg,IM,2
+amikacin,Osteomyelitis,child,10-15 mg,IM,2
+amikacin,Osteomyelitis,elderly,10-15 mg,IM,4
+amikacin,Peritonitis,adult,10-15 mg,IM,2
+amikacin,Peritonitis,child,10-15 mg,IM,2
+amikacin,Pneumonia,adult,10-15 mg,IM,2
+amikacin,Pneumonia,child,10-15 mg,IM,2
+amikacin,Pneumonia,elderly,10-15 mg,IM,4
+amikacin,Skin or Soft Tissue Infection,adult,10-15 mg,IM,2
+amikacin,Skin or Soft Tissue Infection,child,10-15 mg,IM,2
+amikacin,Skin or Soft Tissue Infection,elderly,10-15 mg,IM,4
+amikacin,Tuberculosis - Active,adult,10-15 mg,IM,2
+amikacin,Tuberculosis - Active,child,10-15 mg,IM,2
+amikacin,Tuberculosis - Active,elderly,10-15 mg,IM,4
+amikacin,Urinary Tract Infection,adult,10-15 mg,IM,2
+amikacin,Urinary Tract Infection,child,10-15 mg,IM,2
+ampicillin,Bacterial Endocarditis Prophylaxis,child,50-100 mg,IM,2
+ampicillin,Bacterial Endocarditis Prophylaxis,elderly,unknown,IM,2
+ampicillin,Bacterial Infection,child,50-200 mg,IM,7
+ampicillin,Bronchitis,child,unknown,IM,6
+ampicillin,Bronchitis,elderly,unknown,PO,4
+ampicillin,Cutaneous Bacillus anthracis,child,200-400 mg,IM,6
+ampicillin,Cutaneous Bacillus anthracis,elderly,unknown,IV,1
+ampicillin,Endocarditis,child,300-400 mg,IM,4
+ampicillin,Gastroenteritis,child,unknown,IM,6
+ampicillin,Gastroenteritis,elderly,unknown,IM,3
+ampicillin,Gonococcal Infection - Uncomplicated,elderly,unknown,IM,3
+ampicillin,Inhalation Bacillus anthracis,child,200-400 mg,IM,6
+ampicillin,Inhalation Bacillus anthracis,elderly,unknown,IV,1
+ampicillin,Intraabdominal Infection,child,unknown,IM,6
+ampicillin,Intraabdominal Infection,elderly,unknown,IM,3
+ampicillin,Meningitis,child,150-400 mg,IM,6
+ampicillin,Meningitis,elderly,150-200 mg,IM,2
+ampicillin,Meningitis - Streptococcus Group B,child,300-370 mg,IM,6
+ampicillin,Meningitis - Streptococcus Group B,elderly,unknown,IV,1
+ampicillin,Pharyngitis,child,unknown,IM,6
+ampicillin,Pharyngitis,elderly,unknown,IM,3
+ampicillin,Pneumonia,child,unknown,IM,6
+ampicillin,Pneumonia,elderly,unknown,IM,3
+ampicillin,Septicemia,child,150-200 mg,IM,6
+ampicillin,Septicemia,elderly,150-200 mg,IV,1
+ampicillin,Shigellosis,child,unknown,IM,6
+ampicillin,Shigellosis,elderly,unknown,IM,3
+ampicillin,Sinusitis,child,unknown,IM,6
+ampicillin,Sinusitis,elderly,unknown,IM,3
+ampicillin,Skin or Soft Tissue Infection,child,50-62 mg,IM,4
+ampicillin,Skin or Soft Tissue Infection,elderly,unknown,IM,2
+ampicillin,Surgical Prophylaxis,child,50-100 mg,IM,2
+ampicillin,Surgical Prophylaxis,elderly,unknown,IV,1
+ampicillin,Typhoid Fever,child,unknown,IM,6
+ampicillin,Typhoid Fever,elderly,unknown,IM,3
+ampicillin,Upper Respiratory Tract Infection,child,unknown,IM,6
+ampicillin,Upper Respiratory Tract Infection,elderly,unknown,IM,3
+ampicillin,Urinary Tract Infection,child,unknown,IM,6
+ampicillin,Urinary Tract Infection,elderly,unknown,IM,3
+aztreonam,Bacteremia,elderly,unknown,IV,1
+aztreonam,Bacterial Infection,adult,90-120 mg,IV,1
+aztreonam,Bacterial Infection,child,90-120 mg,IV,5
+aztreonam,Bacterial Infection,elderly,unknown,IV,1
+aztreonam,Febrile Neutropenia,elderly,unknown,IV,1
+aztreonam,Intraabdominal Infection,adult,90-120 mg,IV,1
+aztreonam,Intraabdominal Infection,child,90-120 mg,IV,5
+aztreonam,Intraabdominal Infection,elderly,unknown,IV,1
+aztreonam,Osteomyelitis,elderly,unknown,IV,1
+aztreonam,Pelvic Inflammatory Disease,elderly,unknown,IV,1
+aztreonam,Peritonitis,elderly,unknown,IV,1
+aztreonam,Pneumonia,adult,90-120 mg,IV,1
+aztreonam,Pneumonia,child,90-120 mg,IV,5
+aztreonam,Pneumonia,elderly,unknown,IV,1
+aztreonam,Pyelonephritis,elderly,unknown,IV,1
+aztreonam,Skin and Structure Infection,adult,90-120 mg,IV,1
+aztreonam,Skin and Structure Infection,child,90-120 mg,IV,5
+aztreonam,Skin or Soft Tissue Infection,elderly,unknown,IV,1
+aztreonam,Urinary Tract Infection,adult,90-120 mg,IV,1
+aztreonam,Urinary Tract Infection,child,90-120 mg,IV,5
+aztreonam,Urinary Tract Infection,elderly,unknown,IV,1
+cefazolin,Bacterial Endocarditis Prophylaxis,child,50-100 mg,IM,2
+cefazolin,Bacterial Endocarditis Prophylaxis,elderly,unknown,IM,2
+cefazolin,Bacterial Infection,child,25-150 mg,IM,6
+cefazolin,Bacterial Infection (Mild Infections),elderly,unknown,IM,4
+cefazolin,Bacterial Infection (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Bacterial Infection (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Bone and Joint Infection,child,25-150 mg,IM,6
+cefazolin,Bone and Joint Infection (Mild Infections),elderly,unknown,IM,4
+cefazolin,Bone and Joint Infection (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Bone and Joint Infection (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Cholecystitis,child,25-150 mg,IM,6
+cefazolin,Cholecystitis (Mild infections),elderly,unknown,IM,4
+cefazolin,Cholecystitis (Moderate infections),elderly,unknown,IM,4
+cefazolin,"Cholecystitis (Severe, life-threatening infections)",elderly,unknown,IM,4
+cefazolin,Endocarditis,child,100-133 mg,IM,2
+cefazolin,Endocarditis,elderly,unknown,IM,2
+cefazolin,Epididymitis - Non-Specific,child,25-150 mg,IM,6
+cefazolin,Epididymitis - Non-Specific (Mild Infections),elderly,unknown,IM,4
+cefazolin,Epididymitis - Non-Specific (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Epididymitis - Non-Specific (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Meningitis - Streptococcus Group B,elderly,unknown,IM,2
+cefazolin,Osteomyelitis,child,25-150 mg,IM,6
+cefazolin,Osteomyelitis (Mild Infections),elderly,unknown,IM,4
+cefazolin,Osteomyelitis (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Osteomyelitis (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Peritonitis,child,25-50 mg,IM,2
+cefazolin,Pneumonia,child,25-150 mg,IM,6
+cefazolin,Pneumonia,elderly,unknown,IM,2
+cefazolin,Prostatitis,child,25-150 mg,IM,6
+cefazolin,Prostatitis (Mild Infections),elderly,unknown,IM,4
+cefazolin,Prostatitis (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Prostatitis (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Septicemia,child,100-125 mg,IM,2
+cefazolin,Septicemia (Mild Infections),elderly,unknown,IM,4
+cefazolin,Septicemia (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Septicemia (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Skin and Structure Infection,child,25-150 mg,IM,6
+cefazolin,Skin and Structure Infection (Mild Infections),elderly,unknown,IM,4
+cefazolin,Skin and Structure Infection (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Skin and Structure Infection (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Skin or Soft Tissue Infection,child,25-150 mg,IM,6
+cefazolin,Skin or Soft Tissue Infection (Mild Infections),elderly,unknown,IM,4
+cefazolin,Skin or Soft Tissue Infection (Moderate Infections),elderly,unknown,IM,4
+cefazolin,"Skin or Soft Tissue Infection (Severe, life-threatening)",elderly,unknown,IM,4
+cefazolin,Surgical Prophylaxis,child,30-60 mg,IM,2
+cefazolin,Surgical Prophylaxis,elderly,unknown,IM,2
+cefazolin,Urinary Tract Infection,child,25-150 mg,IM,6
+cefazolin,Urinary Tract Infection,elderly,unknown,IM,2
+cefepime,Bacteremia,child,100-150 mg,IV,3
+cefepime,Bacteremia,elderly,unknown,IV,1
+cefepime,Bacterial Infection,child,100-150 mg,IV,3
+cefepime,Bone and Joint Infection,elderly,unknown,IV,1
+cefepime,Endocarditis,child,100-150 mg,IV,2
+cefepime,Endocarditis,elderly,unknown,IV,1
+cefepime,Febrile Neutropenia,child,100-150 mg,IV,3
+cefepime,Febrile Neutropenia,elderly,unknown,IV,1
+cefepime,Intraabdominal Infection,child,100-150 mg,IV,1
+cefepime,Intraabdominal Infection,elderly,unknown,IV,1
+cefepime,Meningitis,child,100-150 mg,IV,2
+cefepime,Meningitis,elderly,unknown,IV,1
+cefepime,Meningitis - Haemophilus influenzae,child,100-150 mg,IV,2
+cefepime,Meningitis - Haemophilus influenzae,elderly,unknown,IV,1
+cefepime,Meningitis - Listeriosis,child,100-150 mg,IV,2
+cefepime,Meningitis - Listeriosis,elderly,unknown,IV,1
+cefepime,Meningitis - Meningococcal,child,100-150 mg,IV,2
+cefepime,Meningitis - Meningococcal,elderly,unknown,IV,1
+cefepime,Meningitis - Pneumococcal,child,100-150 mg,IV,2
+cefepime,Meningitis - Pneumococcal,elderly,unknown,IV,1
+cefepime,Meningitis - Streptococcus Group B,child,100-150 mg,IV,2
+cefepime,Meningitis - Streptococcus Group B,elderly,unknown,IV,1
+cefepime,Nosocomial Pneumonia,elderly,unknown,IV,1
+cefepime,Osteomyelitis,elderly,unknown,IV,1
+cefepime,Peritonitis,child,15-30 mg,IV,2
+cefepime,Peritonitis,elderly,unknown,IV,1
+cefepime,Pneumonia,adult,100-150 mg,IV,1
+cefepime,Pneumonia,elderly,unknown,IV,1
+cefepime,Pyelonephritis,adult,unknown,IV,2
+cefepime,Skin and Structure Infection,adult,100-150 mg,IV,1
+cefepime,Skin and Structure Infection,elderly,unknown,IV,1
+cefepime,Urinary Tract Infection,adult,unknown,IV,2
+cefotaxime,Bacteremia,child,50-180 mg,IM,6
+cefotaxime,Bacteremia,elderly,unknown,IM,2
+cefotaxime,Bone and Joint Infection,child,50-180 mg,IM,6
+cefotaxime,Bone and Joint Infection,elderly,unknown,IM,2
+cefotaxime,CNS Infection,child,50-180 mg,IM,6
+cefotaxime,CNS Infection,elderly,unknown,IM,2
+cefotaxime,Cesarean Section,elderly,unknown,IM,2
+cefotaxime,Endometritis,elderly,unknown,IM,2
+cefotaxime,Gonococcal Infection - Disseminated,child,50-75 mg,IM,2
+cefotaxime,Gonococcal Infection - Disseminated,elderly,unknown,IM,2
+cefotaxime,Gonococcal Infection - Uncomplicated,elderly,unknown,IM,2
+cefotaxime,Intraabdominal Infection,child,50-180 mg,IM,6
+cefotaxime,Intraabdominal Infection,elderly,unknown,IM,2
+cefotaxime,Lyme Disease - Neurologic,child,150-200 mg,IM,2
+cefotaxime,Lyme Disease - Neurologic,elderly,unknown,IM,2
+cefotaxime,Meningitis,child,50-180 mg,IM,6
+cefotaxime,Meningitis,elderly,unknown,IM,2
+cefotaxime,Osteomyelitis,child,50-180 mg,IM,6
+cefotaxime,Osteomyelitis,elderly,unknown,IM,2
+cefotaxime,Pelvic Inflammatory Disease,elderly,unknown,IM,2
+cefotaxime,Peritonitis,child,50-180 mg,IM,6
+cefotaxime,Peritonitis,elderly,unknown,IM,2
+cefotaxime,Pneumonia,child,50-180 mg,IM,6
+cefotaxime,Pneumonia,elderly,unknown,IM,2
+cefotaxime,Rhinitis,child,50-180 mg,IM,2
+cefotaxime,Rhinitis,elderly,unknown,IM,2
+cefotaxime,Sepsis,child,50-180 mg,IM,6
+cefotaxime,Sepsis,elderly,unknown,IM,2
+cefotaxime,Septicemia,child,50-180 mg,IM,6
+cefotaxime,Septicemia,elderly,unknown,IM,2
+cefotaxime,Sinusitis,child,100-200 mg,IM,2
+cefotaxime,Sinusitis,elderly,unknown,IM,2
+cefotaxime,Skin or Soft Tissue Infection,child,50-180 mg,IM,6
+cefotaxime,Skin or Soft Tissue Infection,elderly,unknown,IM,2
+cefotaxime,Surgical Prophylaxis,child,50-100 mg,IM,2
+cefotaxime,Surgical Prophylaxis,elderly,unknown,IM,2
+cefotaxime,Urinary Tract Infection,child,50-180 mg,IM,6
+cefotaxime,Urinary Tract Infection,elderly,unknown,IM,2
+cefoxitin,Aspiration Pneumonia,elderly,unknown,IV,1
+cefoxitin,Bacterial Infection,child,80-160 mg,IV,1
+cefoxitin,Bacterial Infection,elderly,unknown,IV,1
+cefoxitin,Bone and Joint Infection,child,80-160 mg,IV,1
+cefoxitin,Bone and Joint Infection,elderly,unknown,IV,1
+cefoxitin,Cesarean Section,child,80-160 mg,IV,1
+cefoxitin,Cesarean Section,elderly,unknown,IV,1
+cefoxitin,Endometritis,child,80-160 mg,IV,1
+cefoxitin,Endometritis,elderly,unknown,IV,1
+cefoxitin,Gonococcal Infection - Uncomplicated,child,80-160 mg,IV,1
+cefoxitin,Gonococcal Infection - Uncomplicated,elderly,unknown,IV,1
+cefoxitin,Intraabdominal Infection,child,80-160 mg,IV,1
+cefoxitin,Intraabdominal Infection,elderly,unknown,IV,1
+cefoxitin,Osteomyelitis,child,80-160 mg,IV,1
+cefoxitin,Osteomyelitis,elderly,unknown,IV,1
+cefoxitin,Pelvic Inflammatory Disease,child,80-160 mg,IV,1
+cefoxitin,Pelvic Inflammatory Disease,elderly,unknown,IV,1
+cefoxitin,Peritonitis,child,80-160 mg,IV,1
+cefoxitin,Peritonitis,elderly,unknown,IV,1
+cefoxitin,Pneumonia,child,80-160 mg,IV,1
+cefoxitin,Pneumonia,elderly,unknown,IV,1
+cefoxitin,Septicemia,child,80-160 mg,IV,1
+cefoxitin,Septicemia,elderly,unknown,IV,1
+cefoxitin,Skin and Structure Infection,child,80-160 mg,IV,1
+cefoxitin,Skin and Structure Infection,elderly,unknown,IV,1
+cefoxitin,Surgical Prophylaxis,child,80-160 mg,IV,1
+cefoxitin,Surgical Prophylaxis,elderly,unknown,IV,1
+cefoxitin,Urinary Tract Infection,child,80-160 mg,IV,1
+cefoxitin,Urinary Tract Infection,elderly,unknown,IV,1
+cefpodoxime,Cystitis,elderly,unknown,PO,1
+cefpodoxime,Gonococcal Infection - Disseminated,elderly,unknown,PO,1
+cefpodoxime,Gonococcal Infection - Uncomplicated,elderly,unknown,PO,1
+cefpodoxime,Otitis Media,child,10-15 mg,PO,1
+cefpodoxime,Pneumonia,elderly,unknown,PO,1
+cefpodoxime,Pyelonephritis,elderly,unknown,PO,1
+cefpodoxime,Sinusitis,child,10-15 mg,PO,1
+cefpodoxime,Sinusitis,elderly,unknown,PO,1
+cefpodoxime,Skin or Soft Tissue Infection,elderly,unknown,PO,1
+cefpodoxime,Tonsillitis/Pharyngitis,child,10-15 mg,PO,1
+cefpodoxime,Tonsillitis/Pharyngitis,elderly,unknown,PO,1
+cefpodoxime,Upper Respiratory Tract Infection,elderly,unknown,PO,1
+ceftazidime,Bacteremia,child,90-200 mg,IV,2
+ceftazidime,Bacteremia,elderly,unknown,IV,1
+ceftazidime,Bacterial Infection,child,90-200 mg,IV,2
+ceftazidime,Bone and Joint Infection,child,90-200 mg,IV,2
+ceftazidime,Bone and Joint Infection,elderly,unknown,IV,1
+ceftazidime,Cystitis,child,90-200 mg,IV,2
+ceftazidime,Cystitis,elderly,unknown,IV,1
+ceftazidime,Endocarditis,child,90-200 mg,IV,2
+ceftazidime,Endocarditis,elderly,unknown,IV,1
+ceftazidime,Endometriosis,elderly,unknown,IV,1
+ceftazidime,Endometritis,elderly,unknown,IV,1
+ceftazidime,Febrile Neutropenia,elderly,unknown,IV,1
+ceftazidime,Intraabdominal Infection,child,90-200 mg,IV,2
+ceftazidime,Intraabdominal Infection,elderly,unknown,IV,1
+ceftazidime,Meningitis,child,90-200 mg,IV,2
+ceftazidime,Meningitis,elderly,unknown,IV,1
+ceftazidime,Nosocomial Pneumonia,child,90-200 mg,IV,2
+ceftazidime,Nosocomial Pneumonia,elderly,unknown,IV,1
+ceftazidime,Osteomyelitis,child,90-200 mg,IV,2
+ceftazidime,Osteomyelitis,elderly,unknown,IV,1
+ceftazidime,Pelvic Infections,elderly,unknown,IV,1
+ceftazidime,Pelvic Inflammatory Disease,elderly,unknown,IV,1
+ceftazidime,Peritonitis,child,90-200 mg,IV,2
+ceftazidime,Peritonitis,elderly,unknown,IV,1
+ceftazidime,Pneumonia,child,90-200 mg,IV,2
+ceftazidime,Pneumonia,elderly,unknown,IV,1
+ceftazidime,Pneumonia with Cystic Fibrosis,child,90-200 mg,IV,2
+ceftazidime,Pneumonia with Cystic Fibrosis,elderly,unknown,IV,1
+ceftazidime,Pyelonephritis,child,90-200 mg,IV,2
+ceftazidime,Sepsis,elderly,unknown,IV,1
+ceftazidime,Septicemia,child,90-200 mg,IV,2
+ceftazidime,Skin and Structure Infection,child,90-200 mg,IV,2
+ceftazidime,Skin or Soft Tissue Infection,elderly,unknown,IV,1
+ceftazidime,Urinary Tract Infection,child,90-200 mg,IV,2
+ceftazidime,Urinary Tract Infection,elderly,unknown,IV,1
+ceftriaxone,Bacteremia,child,50-100 mg,IM,4
+ceftriaxone,Bacteremia,elderly,unknown,IM,2
+ceftriaxone,Bacterial Endocarditis Prophylaxis,child,50-100 mg,IM,2
+ceftriaxone,Bacterial Endocarditis Prophylaxis,elderly,unknown,IM,2
+ceftriaxone,Bacterial Infection,child,50-100 mg,IM,4
+ceftriaxone,Bacterial Infection,elderly,unknown,IM,2
+ceftriaxone,Bone and Joint Infection,child,50-100 mg,IM,4
+ceftriaxone,Bone and Joint Infection,elderly,unknown,IM,2
+ceftriaxone,Bronchitis,child,50-75 mg,IM,2
+ceftriaxone,Bronchitis,elderly,unknown,IM,2
+ceftriaxone,Chancroid,child,50-100 mg,IM,2
+ceftriaxone,Chancroid,elderly,unknown,IM,1
+ceftriaxone,Conjunctivitis,elderly,unknown,IM,1
+ceftriaxone,Endocarditis,child,80-100 mg,IM,2
+ceftriaxone,Endocarditis,elderly,unknown,IM,2
+ceftriaxone,Gonococcal Infection - Disseminated,child,50-75 mg,IM,4
+ceftriaxone,Gonococcal Infection - Disseminated,elderly,unknown,IM,2
+ceftriaxone,Gonococcal Infection - Uncomplicated,child,25-50 mg,IV,3
+ceftriaxone,Gonococcal Infection - Uncomplicated,elderly,unknown,IM,1
+ceftriaxone,Intraabdominal Infection,child,50-75 mg,IM,2
+ceftriaxone,Intraabdominal Infection,elderly,unknown,IM,2
+ceftriaxone,Lyme Disease,child,50-75 mg,IM,2
+ceftriaxone,Lyme Disease - Arthritis,elderly,unknown,IV,1
+ceftriaxone,Lyme Disease - Carditis,elderly,unknown,IV,1
+ceftriaxone,Lyme Disease - Neurologic,elderly,unknown,IV,1
+ceftriaxone,Meningitis,child,100-150 mg,IM,4
+ceftriaxone,Meningitis,elderly,unknown,IM,2
+ceftriaxone,Meningococcal Meningitis Prophylaxis,adult,unknown,IM,1
+ceftriaxone,Meningococcal Meningitis Prophylaxis,elderly,unknown,IM,1
+ceftriaxone,Neurosyphilis,elderly,unknown,IM,2
+ceftriaxone,Ocular Infection,child,25-50 mg,IM,2
+ceftriaxone,Osteomyelitis,child,50-100 mg,IM,4
+ceftriaxone,Osteomyelitis,elderly,unknown,IM,2
+ceftriaxone,Otitis Media,child,50-100 mg,IM,2
+ceftriaxone,Pelvic Inflammatory Disease,elderly,unknown,IM,2
+ceftriaxone,Pneumonia,child,50-75 mg,IM,2
+ceftriaxone,Pneumonia,elderly,unknown,IM,2
+ceftriaxone,Proctitis,elderly,unknown,IM,1
+ceftriaxone,STD Prophylaxis,elderly,unknown,IM,1
+ceftriaxone,Salmonella Enteric Fever,elderly,unknown,IV,1
+ceftriaxone,Salmonella Gastroenteritis,elderly,unknown,IV,1
+ceftriaxone,Septicemia,child,50-100 mg,IM,4
+ceftriaxone,Septicemia,elderly,unknown,IM,2
+ceftriaxone,Skin and Structure Infection,child,50-75 mg,IM,2
+ceftriaxone,Skin and Structure Infection,elderly,unknown,IM,2
+ceftriaxone,Skin or Soft Tissue Infection,elderly,unknown,IM,2
+ceftriaxone,Surgical Prophylaxis,child,50-75 mg,IV,1
+ceftriaxone,Surgical Prophylaxis,elderly,unknown,IV,1
+ceftriaxone,Syphilis - Early,elderly,unknown,IM,2
+ceftriaxone,Urinary Tract Infection,child,50-100 mg,IM,2
+ceftriaxone,Urinary Tract Infection,elderly,unknown,IM,2
+cefuroxime,Appendicitis,elderly,unknown,IV,1
+cefuroxime,Bacterial Infection,child,50-150 mg,IM,5
+cefuroxime,Bacterial Infection,elderly,unknown,IM,3
+cefuroxime,Bone and Joint Infection,child,150-200 mg,IM,2
+cefuroxime,Bone and Joint Infection,elderly,unknown,IM,2
+cefuroxime,Bronchitis,child,50-100 mg,IM,2
+cefuroxime,Bronchitis,elderly,unknown,IM,3
+cefuroxime,Cholecystitis,elderly,unknown,IV,1
+cefuroxime,Gonococcal Infection - Disseminated,elderly,unknown,IM,2
+cefuroxime,Gonococcal Infection - Uncomplicated,elderly,unknown,IM,2
+cefuroxime,Impetigo,child,30-45 mg,PO,1
+cefuroxime,Intraabdominal Infection,child,150-200 mg,IV,1
+cefuroxime,Intraabdominal Infection,elderly,unknown,IV,1
+cefuroxime,Lyme Disease,elderly,unknown,PO,1
+cefuroxime,Meningitis,child,200-240 mg,IM,2
+cefuroxime,Meningitis,elderly,unknown,IV,1
+cefuroxime,Osteomyelitis,child,150-200 mg,IM,2
+cefuroxime,Osteomyelitis,elderly,unknown,IM,2
+cefuroxime,Otitis Media,child,30-45 mg,PO,1
+cefuroxime,Pneumonia,child,50-100 mg,IM,2
+cefuroxime,Pneumonia,elderly,unknown,IM,3
+cefuroxime,Septicemia,child,50-100 mg,IM,2
+cefuroxime,Septicemia,elderly,unknown,IV,3
+cefuroxime,Sinusitis,child,30-45 mg,PO,1
+cefuroxime,Sinusitis,elderly,unknown,PO,1
+cefuroxime,Skin and Structure Infection,child,50-100 mg,IM,2
+cefuroxime,Skin and Structure Infection,elderly,unknown,IM,3
+cefuroxime,Skin or Soft Tissue Infection,elderly,unknown,IM,3
+cefuroxime,Surgical Prophylaxis,elderly,unknown,IM,2
+cefuroxime,Tonsillitis/Pharyngitis,child,20-30 mg,PO,1
+cefuroxime,Tonsillitis/Pharyngitis,elderly,unknown,PO,1
+cefuroxime,Urinary Tract Infection,child,50-100 mg,IM,2
+cefuroxime,Urinary Tract Infection,elderly,unknown,IM,3
+cefuroxime,Wound Infection,elderly,unknown,IV,2
+chloramphenicol,Bacteremia,child,50-100 mg,IV,2
+chloramphenicol,Bacteremia,elderly,50-100 mg,IV,1
+chloramphenicol,Bacterial Infection,child,50-100 mg,IV,2
+chloramphenicol,Bacterial Infection,elderly,50-100 mg,IV,1
+chloramphenicol,Cutaneous Bacillus anthracis,child,50-100 mg,IV,2
+chloramphenicol,Cutaneous Bacillus anthracis,elderly,unknown,IV,1
+chloramphenicol,Cystic Fibrosis,child,50-100 mg,IV,2
+chloramphenicol,Cystic Fibrosis,elderly,50-100 mg,IV,1
+chloramphenicol,Gram Negative Infection,child,50-100 mg,IV,2
+chloramphenicol,Gram Negative Infection,elderly,50-100 mg,IV,1
+chloramphenicol,Inhalation Bacillus anthracis,child,50-100 mg,IV,2
+chloramphenicol,Inhalation Bacillus anthracis,elderly,unknown,IV,1
+chloramphenicol,Meningitis,child,50-100 mg,IV,2
+chloramphenicol,Meningitis,elderly,50-100 mg,IV,1
+chloramphenicol,Ornithosis,child,50-100 mg,IV,2
+chloramphenicol,Ornithosis,elderly,50-100 mg,IV,1
+chloramphenicol,Plague,child,100-125 mg,IV,1
+chloramphenicol,Plague,elderly,100-125 mg,IV,1
+chloramphenicol,Psittacosis,child,50-100 mg,IV,2
+chloramphenicol,Psittacosis,elderly,50-100 mg,IV,1
+chloramphenicol,Rickettsial Infection,child,50-100 mg,IV,2
+chloramphenicol,Rickettsial Infection,elderly,50-100 mg,IV,1
+chloramphenicol,Tularemia,child,60-75 mg,IV,1
+chloramphenicol,Tularemia,elderly,60-75 mg,IV,1
+chloramphenicol,Typhoid Fever,child,50-100 mg,IV,2
+chloramphenicol,Typhoid Fever,elderly,50-100 mg,IV,1
+ciprofloxacin,Anthrax Prophylaxis,child,20-30 mg,PO,6
+ciprofloxacin,Anthrax Prophylaxis,elderly,unknown,IV,2
+ciprofloxacin,Bone and Joint Infection,elderly,unknown,IV,2
+ciprofloxacin,Bronchitis,elderly,unknown,IV,2
+ciprofloxacin,Chancroid,elderly,unknown,PO,1
+ciprofloxacin,Cutaneous Bacillus anthracis,child,20-30 mg,PO,6
+ciprofloxacin,Cutaneous Bacillus anthracis,elderly,unknown,IV,2
+ciprofloxacin,Cystitis,elderly,unknown,PO,1
+ciprofloxacin,Febrile Neutropenia,elderly,unknown,IV,1
+ciprofloxacin,Gonococcal Infection - Uncomplicated,elderly,unknown,PO,1
+ciprofloxacin,Granuloma Inguinale,elderly,unknown,PO,1
+ciprofloxacin,Infectious Diarrhea,elderly,unknown,IV,2
+ciprofloxacin,Inhalation Bacillus anthracis,child,20-30 mg,PO,6
+ciprofloxacin,Inhalation Bacillus anthracis,elderly,unknown,IV,2
+ciprofloxacin,Intraabdominal Infection,elderly,unknown,IV,2
+ciprofloxacin,Meningococcal Meningitis Prophylaxis,elderly,unknown,PO,1
+ciprofloxacin,Nosocomial Pneumonia,elderly,unknown,IV,1
+ciprofloxacin,Osteomyelitis,elderly,unknown,IV,2
+ciprofloxacin,Plague,child,unknown,PO,6
+ciprofloxacin,Plague,elderly,unknown,IV,2
+ciprofloxacin,Plague Prophylaxis,child,unknown,PO,5
+ciprofloxacin,Plague Prophylaxis,elderly,unknown,IV,2
+ciprofloxacin,Pneumonia,elderly,unknown,IV,2
+ciprofloxacin,Pneumonia with Cystic Fibrosis,child,30-40 mg,PO,1
+ciprofloxacin,Prostatitis,elderly,unknown,IV,2
+ciprofloxacin,Pyelonephritis,child,unknown,PO,6
+ciprofloxacin,Pyelonephritis,elderly,unknown,PO,1
+ciprofloxacin,Salmonella Enteric Fever,elderly,unknown,IV,2
+ciprofloxacin,Salmonella Gastroenteritis,elderly,unknown,IV,2
+ciprofloxacin,Shigellosis,elderly,unknown,IV,2
+ciprofloxacin,Sinusitis,elderly,unknown,IV,2
+ciprofloxacin,Skin and Structure Infection,elderly,unknown,IV,2
+ciprofloxacin,Skin or Soft Tissue Infection,elderly,unknown,IV,2
+ciprofloxacin,Surgical Prophylaxis,child,10-20 mg,IV,1
+ciprofloxacin,Surgical Prophylaxis,elderly,unknown,IV,1
+ciprofloxacin,Tularemia,child,30-45 mg,IV,2
+ciprofloxacin,Tularemia,elderly,unknown,IV,2
+ciprofloxacin,Typhoid Fever,elderly,unknown,IV,2
+ciprofloxacin,Urinary Tract Infection,child,unknown,PO,6
+ciprofloxacin,Urinary Tract Infection,elderly,unknown,IV,2
+clarithromycin,Bacterial Endocarditis Prophylaxis,child,15-22 mg,PO,1
+clarithromycin,Bacterial Endocarditis Prophylaxis,elderly,unknown,PO,1
+clarithromycin,Bronchitis,elderly,unknown,PO,1
+clarithromycin,Helicobacter pylori Infection,elderly,unknown,PO,1
+clarithromycin,Legionella Pneumonia,elderly,unknown,PO,1
+clarithromycin,Mycobacterium avium-intracellulare - Prophylaxis,child,15-22 mg,PO,1
+clarithromycin,Mycobacterium avium-intracellulare - Prophylaxis,elderly,unknown,PO,1
+clarithromycin,Mycobacterium avium-intracellulare - Treatment,child,15-22 mg,PO,1
+clarithromycin,Mycobacterium avium-intracellulare - Treatment,elderly,unknown,PO,1
+clarithromycin,Mycoplasma Pneumonia,child,15-22 mg,PO,1
+clarithromycin,Mycoplasma Pneumonia,elderly,unknown,PO,1
+clarithromycin,Otitis Media,child,15-22 mg,PO,1
+clarithromycin,Pertussis Prophylaxis,child,15-22 mg,PO,2
+clarithromycin,Pertussis Prophylaxis,elderly,unknown,PO,2
+clarithromycin,Pneumonia,child,15-22 mg,PO,1
+clarithromycin,Pneumonia,elderly,unknown,PO,1
+clarithromycin,Sinusitis,child,15-22 mg,PO,1
+clarithromycin,Sinusitis,elderly,unknown,PO,1
+clarithromycin,Skin and Structure Infection,child,15-22 mg,PO,1
+clarithromycin,Skin and Structure Infection,elderly,unknown,PO,1
+clarithromycin,Tonsillitis/Pharyngitis,child,15-22 mg,PO,1
+clarithromycin,Tonsillitis/Pharyngitis,elderly,unknown,PO,1
+clindamycin,Bacterial Infection,child,20-40 mg,IV,5
+clindamycin,Bacterial Infection,elderly,unknown,IM,3
+doripenem,Intraabdominal Infection,elderly,unknown,IV,1
+doripenem,Pyelonephritis,elderly,unknown,IV,1
+doripenem,Urinary Tract Infection,elderly,unknown,IV,1
+doxycycline,Acne,child,2-4 mg,IV,2
+doxycycline,Acne,elderly,unknown,IV,2
+doxycycline,Acne Rosacea,elderly,unknown,PO,1
+doxycycline,Actinomycosis,child,2-4 mg,IV,2
+doxycycline,Actinomycosis,elderly,unknown,IV,2
+doxycycline,Amebiasis,child,2-4 mg,IV,2
+doxycycline,Amebiasis,elderly,unknown,IV,2
+doxycycline,Anthrax Prophylaxis,child,4-6 mg,IV,4
+doxycycline,Anthrax Prophylaxis,elderly,unknown,IV,2
+doxycycline,Bacterial Infection,child,2-4 mg,IV,2
+doxycycline,Bacterial Infection,elderly,unknown,IV,2
+doxycycline,Bartonellosis,child,2-4 mg,IV,2
+doxycycline,Bartonellosis,elderly,unknown,IV,2
+doxycycline,Bone and Joint Infection,elderly,unknown,PO,1
+doxycycline,Bronchitis,child,2-4 mg,IV,2
+doxycycline,Bronchitis,elderly,unknown,IV,2
+doxycycline,Brucellosis,child,2-4 mg,IV,2
+doxycycline,Brucellosis,elderly,unknown,IV,2
+doxycycline,Cervicitis,child,unknown,PO,1
+doxycycline,Cervicitis,elderly,unknown,PO,1
+doxycycline,Chancroid,child,2-4 mg,IV,2
+doxycycline,Chancroid,elderly,unknown,IV,2
+doxycycline,Chlamydia Infection,child,unknown,PO,1
+doxycycline,Chlamydia Infection,elderly,unknown,IV,2
+doxycycline,Cholera,child,2-4 mg,IV,2
+doxycycline,Cholera,elderly,unknown,IV,2
+doxycycline,Cutaneous Bacillus anthracis,child,4-6 mg,IV,4
+doxycycline,Cutaneous Bacillus anthracis,elderly,unknown,IV,2
+doxycycline,Epididymitis - Sexually Transmitted,elderly,unknown,IV,2
+doxycycline,Gonococcal Infection - Uncomplicated,elderly,unknown,IV,2
+doxycycline,Granuloma Inguinale,child,2-4 mg,IV,2
+doxycycline,Granuloma Inguinale,elderly,unknown,IV,2
+doxycycline,Inclusion Conjunctivitis,child,2-4 mg,IV,2
+doxycycline,Inclusion Conjunctivitis,elderly,unknown,IV,2
+doxycycline,Inhalation Bacillus anthracis,child,4-6 mg,IV,4
+doxycycline,Inhalation Bacillus anthracis,elderly,unknown,IV,2
+doxycycline,Lyme Disease,child,4-6 mg,PO,1
+doxycycline,Lyme Disease,elderly,unknown,PO,1
+doxycycline,Lyme Disease - Arthritis,child,4-6 mg,PO,1
+doxycycline,Lyme Disease - Arthritis,elderly,unknown,PO,1
+doxycycline,Lyme Disease - Carditis,child,4-6 mg,PO,1
+doxycycline,Lyme Disease - Carditis,elderly,unknown,PO,1
+doxycycline,Lyme Disease - Erythema Chronicum Migrans,child,4-6 mg,PO,1
+doxycycline,Lyme Disease - Erythema Chronicum Migrans,elderly,unknown,PO,1
+doxycycline,Lyme Disease - Neurologic,child,4-8 mg,PO,1
+doxycycline,Lyme Disease - Neurologic,elderly,unknown,PO,1
+doxycycline,Lymphogranuloma Venereum,child,2-4 mg,IV,2
+doxycycline,Lymphogranuloma Venereum,elderly,unknown,IV,2
+doxycycline,Malaria,child,2-4 mg,PO,1
+doxycycline,Malaria,elderly,unknown,IV,2
+doxycycline,Malaria Prophylaxis,child,2-4 mg,PO,1
+doxycycline,Malaria Prophylaxis,elderly,unknown,IV,2
+doxycycline,Melioidosis,elderly,unknown,PO,1
+doxycycline,Mycoplasma Pneumonia,child,2-4 mg,IV,2
+doxycycline,Mycoplasma Pneumonia,elderly,unknown,IV,2
+doxycycline,Nongonococcal Urethritis,child,unknown,PO,2
+doxycycline,Nongonococcal Urethritis,elderly,unknown,IV,2
+doxycycline,Ornithosis,child,2-4 mg,IV,2
+doxycycline,Ornithosis,elderly,unknown,IV,2
+doxycycline,Pelvic Inflammatory Disease,elderly,unknown,PO,1
+doxycycline,Periodontitis,elderly,unknown,IV,2
+doxycycline,Plague,child,2-4 mg,IV,2
+doxycycline,Plague,elderly,unknown,IV,2
+doxycycline,Plague Prophylaxis,child,2-4 mg,PO,1
+doxycycline,Plague Prophylaxis,elderly,unknown,IV,2
+doxycycline,Pleural Effusion,elderly,unknown,IV,1
+doxycycline,Pneumonia,child,2-4 mg,IV,2
+doxycycline,Pneumonia,elderly,unknown,IV,2
+doxycycline,Proctitis,elderly,unknown,PO,1
+doxycycline,Psittacosis,child,2-4 mg,IV,2
+doxycycline,Psittacosis,elderly,unknown,IV,2
+doxycycline,Q Fever,child,2-4 mg,IV,2
+doxycycline,Q Fever,elderly,unknown,IV,2
+doxycycline,Rickettsial Infection,child,2-4 mg,IV,2
+doxycycline,Rickettsial Infection,elderly,unknown,IV,2
+doxycycline,STD Prophylaxis,child,unknown,PO,1
+doxycycline,Sinusitis,elderly,unknown,PO,1
+doxycycline,Skin or Soft Tissue Infection,child,2-4 mg,IV,2
+doxycycline,Skin or Soft Tissue Infection,elderly,unknown,IV,2
+doxycycline,Syphilis - Early,elderly,unknown,IV,2
+doxycycline,Syphilis - Latent,elderly,unknown,IV,2
+doxycycline,Trachoma,child,2-4 mg,IV,2
+doxycycline,Trachoma,elderly,unknown,IV,2
+doxycycline,Tularemia,child,2-4 mg,IV,2
+doxycycline,Tularemia,elderly,unknown,IV,2
+doxycycline,Upper Respiratory Tract Infection,child,2-4 mg,IV,2
+doxycycline,Upper Respiratory Tract Infection,elderly,unknown,IV,2
+doxycycline,Urinary Tract Infection,child,2-4 mg,IV,1
+doxycycline,Urinary Tract Infection,elderly,unknown,IV,2
+doxycycline,Wound Infection,elderly,unknown,IV,2
+ertapenem,Infection Prophylaxis,elderly,unknown,IM,2
+ertapenem,Intraabdominal Infection,child,30-45 mg,IM,2
+ertapenem,Intraabdominal Infection,elderly,unknown,IM,2
+ertapenem,Pelvic Infections,child,30-45 mg,IM,2
+ertapenem,Pelvic Infections,elderly,unknown,IM,2
+ertapenem,Pneumonia,child,30-45 mg,IM,2
+ertapenem,Pneumonia,elderly,unknown,IM,2
+ertapenem,Pyelonephritis,child,30-45 mg,IM,2
+ertapenem,Pyelonephritis,elderly,unknown,IM,2
+ertapenem,Skin or Soft Tissue Infection,child,30-45 mg,IM,2
+ertapenem,Skin or Soft Tissue Infection,elderly,unknown,IM,2
+ertapenem,Urinary Tract Infection,child,30-45 mg,IM,2
+ertapenem,Urinary Tract Infection,elderly,unknown,IM,2
+erythromycin,Amebiasis,child,30-50 mg,PO,1
+erythromycin,Amebiasis,elderly,15-20 mg,IV,2
+erythromycin,Bacteremia,child,40-50 mg,PO,1
+erythromycin,Bacteremia,elderly,unknown,IV,2
+erythromycin,Bacterial Endocarditis Prophylaxis,child,10-20 mg,PO,1
+erythromycin,Bacterial Endocarditis Prophylaxis,elderly,unknown,PO,1
+erythromycin,Bacterial Infection,child,40-50 mg,IV,4
+erythromycin,Bartonellosis,child,40-50 mg,PO,1
+erythromycin,Bartonellosis,elderly,unknown,IV,2
+erythromycin,Bowel Preparation,elderly,unknown,PO,1
+erythromycin,Bronchitis,child,15-20 mg,IV,2
+erythromycin,Bronchitis,elderly,15-20 mg,IV,2
+erythromycin,Campylobacter Gastroenteritis,child,15-20 mg,IV,2
+erythromycin,Campylobacter Gastroenteritis,elderly,15-20 mg,IV,2
+erythromycin,Chancroid,elderly,unknown,PO,1
+erythromycin,Chlamydia Infection,child,unknown,PO,1
+erythromycin,Chlamydia Infection,elderly,unknown,PO,1
+erythromycin,Diphtheria,child,15-20 mg,IV,2
+erythromycin,Diphtheria,elderly,15-20 mg,IV,2
+erythromycin,Gastroenteritis,child,15-20 mg,IV,2
+erythromycin,Gastroenteritis,elderly,15-20 mg,IV,2
+erythromycin,Granuloma Inguinale,elderly,unknown,PO,1
+erythromycin,Impetigo,child,40-50 mg,PO,1
+erythromycin,Impetigo,elderly,unknown,IV,2
+erythromycin,Legionella Pneumonia,elderly,unknown,IV,2
+erythromycin,Lyme Disease,child,50-62 mg,PO,1
+erythromycin,Lyme Disease,elderly,unknown,PO,1
+erythromycin,Lymphogranuloma Venereum,elderly,unknown,PO,1
+erythromycin,Mycoplasma Pneumonia,child,15-20 mg,IV,2
+erythromycin,Mycoplasma Pneumonia,elderly,15-20 mg,IV,2
+erythromycin,Nongonococcal Urethritis,child,unknown,PO,1
+erythromycin,Nongonococcal Urethritis,elderly,unknown,PO,1
+erythromycin,Osteomyelitis,child,40-50 mg,PO,1
+erythromycin,Osteomyelitis,elderly,unknown,IV,2
+erythromycin,Otitis Media,child,15-20 mg,IV,2
+erythromycin,Otitis Media,elderly,15-20 mg,IV,2
+erythromycin,Pelvic Inflammatory Disease,elderly,unknown,IV,2
+erythromycin,Pertussis Prophylaxis,child,unknown,PO,1
+erythromycin,Pertussis Prophylaxis,elderly,40-50 mg,PO,1
+erythromycin,Pharyngitis,child,15-20 mg,IV,2
+erythromycin,Pharyngitis,elderly,15-20 mg,IV,2
+erythromycin,Pneumonia,child,15-20 mg,IV,2
+erythromycin,Pneumonia,elderly,15-20 mg,IV,2
+erythromycin,Rheumatic Fever Prophylaxis,child,unknown,PO,1
+erythromycin,Rheumatic Fever Prophylaxis,elderly,unknown,PO,1
+erythromycin,Skin and Structure Infection,child,40-60 mg,PO,1
+erythromycin,Skin and Structure Infection,elderly,unknown,PO,1
+erythromycin,Skin or Soft Tissue Infection,child,15-20 mg,IV,2
+erythromycin,Skin or Soft Tissue Infection,elderly,15-20 mg,IV,2
+erythromycin,Surgical Prophylaxis,child,20-40 mg,PO,1
+erythromycin,Syphilis - Early,elderly,unknown,PO,1
+erythromycin,Upper Respiratory Tract Infection,child,15-20 mg,IV,2
+erythromycin,Upper Respiratory Tract Infection,elderly,15-20 mg,IV,2
+fosfomycin,Bacterial Meningitis,child,200-400 mg,IV,3
+fosfomycin,Bacterial Meningitis,elderly,unknown,IV,1
+fosfomycin,Nosocomial Lower Respiratory Track Infection,child,200-400 mg,IV,3
+fosfomycin,Nosocomial Lower Respiratory Track Infection,elderly,unknown,IV,1
+fosfomycin,Osteomyelitis,child,200-400 mg,IV,3
+fosfomycin,Osteomyelitis,elderly,unknown,IV,1
+fosfomycin,Urinary Tract Infection,child,200-400 mg,IV,3
+fosfomycin,Urinary Tract Infection,elderly,unknown,IV,1
+gentamicin,Bacteremia,elderly,3-4 mg,IM,2
+gentamicin,Bacterial Infection,child,6-7 mg,IM,4
+gentamicin,Bacterial Infection,elderly,3-5 mg,IM,2
+gentamicin,Bartonellosis,child,3-4 mg,IM,2
+gentamicin,Bartonellosis,elderly,3-5 mg,IM,2
+gentamicin,Burns - External,child,6-7 mg,IM,4
+gentamicin,Burns - External,elderly,3-5 mg,IM,2
+gentamicin,CNS Infection,child,6-7 mg,IM,4
+gentamicin,CNS Infection,elderly,3-5 mg,IM,2
+gentamicin,Endocarditis,child,6-7 mg,IM,4
+gentamicin,Endocarditis,elderly,3-5 mg,IM,2
+gentamicin,Intraabdominal Infection,child,6-7 mg,IM,4
+gentamicin,Intraabdominal Infection,elderly,3-5 mg,IM,2
+gentamicin,Meningitis,child,6-7 mg,IM,4
+gentamicin,Meningitis,elderly,3-5 mg,IM,2
+gentamicin,Osteomyelitis,child,5-7 mg,IM,2
+gentamicin,Osteomyelitis,elderly,3-5 mg,IM,2
+gentamicin,Pelvic Inflammatory Disease,elderly,3-5 mg,IM,2
+gentamicin,Peritonitis,child,6-7 mg,IM,4
+gentamicin,Peritonitis,elderly,3-5 mg,IM,2
+gentamicin,Plague,elderly,4-6 mg,IM,2
+gentamicin,Pneumonia,elderly,3-5 mg,IM,2
+gentamicin,Sepsis,child,6-7 mg,IM,4
+gentamicin,Sepsis,elderly,3-7 mg,IM,2
+gentamicin,Skin or Soft Tissue Infection,child,6-7 mg,IM,4
+gentamicin,Skin or Soft Tissue Infection,elderly,3-5 mg,IM,2
+gentamicin,Surgical Prophylaxis,child,2-5 mg,IM,4
+gentamicin,Surgical Prophylaxis,elderly,5-10 mg,IM,2
+gentamicin,Tularemia,child,6-7 mg,IM,2
+gentamicin,Tularemia,elderly,4-6 mg,IM,2
+gentamicin,Upper Respiratory Tract Infection,child,6-7 mg,IM,4
+gentamicin,Upper Respiratory Tract Infection,elderly,3-5 mg,IM,2
+gentamicin,Urinary Tract Infection,child,6-7 mg,IM,4
+gentamicin,Urinary Tract Infection,elderly,3-5 mg,IM,2
+levofloxacin,Anthrax Prophylaxis,child,16-24 mg,IV,2
+levofloxacin,Anthrax Prophylaxis,elderly,unknown,IV,2
+levofloxacin,Bronchitis,elderly,unknown,IV,2
+levofloxacin,Chlamydia Infection,elderly,unknown,IV,2
+levofloxacin,Cutaneous Bacillus anthracis,child,16-24 mg,IV,2
+levofloxacin,Cutaneous Bacillus anthracis,elderly,unknown,IV,2
+levofloxacin,Cystitis,elderly,unknown,IV,2
+levofloxacin,Epididymitis - Sexually Transmitted,elderly,unknown,IV,2
+levofloxacin,Inhalation Bacillus anthracis,child,16-24 mg,IV,2
+levofloxacin,Inhalation Bacillus anthracis,elderly,unknown,IV,2
+levofloxacin,Nongonococcal Urethritis,elderly,unknown,IV,2
+levofloxacin,Nosocomial Pneumonia,elderly,unknown,IV,2
+levofloxacin,Pelvic Inflammatory Disease,elderly,unknown,IV,2
+levofloxacin,Plague,child,16-24 mg,IV,2
+levofloxacin,Plague,elderly,unknown,IV,2
+levofloxacin,Plague Prophylaxis,child,16-24 mg,IV,2
+levofloxacin,Plague Prophylaxis,elderly,unknown,IV,2
+levofloxacin,Pneumonia,elderly,unknown,IV,2
+levofloxacin,Prostatitis,elderly,unknown,IV,2
+levofloxacin,Pyelonephritis,elderly,unknown,IV,2
+levofloxacin,Sinusitis,elderly,unknown,IV,2
+levofloxacin,Skin and Structure Infection,elderly,unknown,IV,2
+levofloxacin,Tuberculosis - Active,elderly,unknown,IV,2
+levofloxacin,Urinary Tract Infection,elderly,unknown,IV,2
+linezolid,Bacteremia,child,30-40 mg,IV,4
+linezolid,Bacteremia,elderly,unknown,IV,2
+linezolid,Bacterial Infection,child,30-40 mg,IV,4
+linezolid,Bacterial Infection,elderly,unknown,IV,2
+linezolid,Nosocomial Pneumonia,child,30-40 mg,IV,4
+linezolid,Nosocomial Pneumonia,elderly,unknown,IV,2
+linezolid,Pneumonia,child,30-40 mg,IV,4
+linezolid,Pneumonia,elderly,unknown,IV,2
+linezolid,Skin and Structure Infection,child,30-40 mg,IV,4
+linezolid,Skin and Structure Infection,elderly,unknown,IV,2
+meropenem,Intraabdominal Infection,child,60-80 mg,IV,1
+meropenem,Intraabdominal Infection,elderly,unknown,IV,1
+meropenem,Meningitis,child,120-140 mg,IV,1
+meropenem,Meningitis,elderly,unknown,IV,1
+meropenem,Nosocomial Pneumonia,elderly,unknown,IV,1
+meropenem,Skin and Structure Infection,child,30-40 mg,IV,1
+meropenem,Skin and Structure Infection,elderly,unknown,IV,1
+metronidazole,Amebiasis,child,35-50 mg,PO,1
+metronidazole,Amebiasis,elderly,unknown,PO,1
+metronidazole,Bacterial Infection,child,22-40 mg,IV,3
+metronidazole,Bacterial Infection,elderly,15-30 mg,IV,2
+metronidazole,Bacterial Vaginosis,adult,unknown,PO,1
+metronidazole,Bacterial Vaginosis,child,15-25 mg,PO,2
+metronidazole,Bacterial Vaginosis,elderly,unknown,PO,1
+metronidazole,Balantidium coli,child,35-50 mg,PO,1
+metronidazole,Balantidium coli,elderly,unknown,PO,1
+metronidazole,Bone and Joint Infection,elderly,15-30 mg,IV,2
+metronidazole,Dientamoeba fragilis,child,35-50 mg,PO,1
+metronidazole,Dientamoeba fragilis,elderly,unknown,PO,1
+metronidazole,Giardiasis,child,15-20 mg,PO,1
+metronidazole,Giardiasis,elderly,unknown,PO,1
+metronidazole,Helicobacter pylori Infection,elderly,unknown,PO,1
+metronidazole,Intraabdominal Infection,child,30-40 mg,IV,1
+metronidazole,Intraabdominal Infection,elderly,15-30 mg,IV,2
+metronidazole,Liver Abscess,elderly,15-30 mg,IV,2
+metronidazole,Meningitis,child,120-140 mg,IV,1
+metronidazole,Nongonococcal Urethritis,adult,unknown,PO,1
+metronidazole,Nongonococcal Urethritis,child,unknown,PO,1
+metronidazole,Nongonococcal Urethritis,elderly,unknown,PO,1
+metronidazole,Osteomyelitis,elderly,15-30 mg,IV,2
+metronidazole,Pelvic Inflammatory Disease,adult,unknown,PO,1
+metronidazole,Pelvic Inflammatory Disease,elderly,unknown,PO,1
+metronidazole,Peritonitis,elderly,15-30 mg,IV,2
+metronidazole,Pseudomembranous Colitis,child,30-37 mg,PO,1
+metronidazole,Pseudomembranous Colitis,elderly,unknown,IV,2
+metronidazole,STD Prophylaxis,adult,unknown,PO,1
+metronidazole,STD Prophylaxis,elderly,unknown,PO,1
+metronidazole,Skin and Structure Infection,child,30-37 mg,PO,1
+metronidazole,Skin and Structure Infection,elderly,15-30 mg,IV,2
+metronidazole,Skin or Soft Tissue Infection,child,30-37 mg,PO,1
+metronidazole,Skin or Soft Tissue Infection,elderly,15-30 mg,IV,2
+metronidazole,Surgical Prophylaxis,child,15-30 mg,IV,3
+metronidazole,Surgical Prophylaxis,elderly,7-15 mg,IV,1
+metronidazole,Trichomoniasis,adult,unknown,PO,1
+metronidazole,Trichomoniasis,child,45-60 mg,PO,2
+metronidazole,Trichomoniasis,elderly,unknown,PO,1
+metronidazole,Wound Infection,elderly,15-30 mg,IV,2
+moxifloxacin,Anthrax Prophylaxis,elderly,unknown,IV,2
+moxifloxacin,Bronchitis,elderly,unknown,IV,2
+moxifloxacin,Cutaneous Bacillus anthracis,child,10-15 mg,IV,4
+moxifloxacin,Cutaneous Bacillus anthracis,elderly,unknown,IV,2
+moxifloxacin,Inhalation Bacillus anthracis,child,10-15 mg,IV,3
+moxifloxacin,Inhalation Bacillus anthracis,elderly,unknown,IV,2
+moxifloxacin,Intraabdominal Infection,elderly,unknown,IV,2
+moxifloxacin,Plague,elderly,unknown,IV,2
+moxifloxacin,Plague Prophylaxis,elderly,unknown,IV,2
+moxifloxacin,Pneumonia,elderly,unknown,IV,2
+moxifloxacin,Sinusitis,elderly,unknown,IV,2
+moxifloxacin,Skin and Structure Infection,elderly,unknown,IV,2
+moxifloxacin,Skin or Soft Tissue Infection,elderly,unknown,IV,2
+moxifloxacin,Surgical Prophylaxis,elderly,unknown,IV,2
+moxifloxacin,Tuberculosis - Active,elderly,unknown,IV,2
+nitrofurantoin,Cystitis,child,5-7 mg,PO,1
+nitrofurantoin,Cystitis,elderly,unknown,PO,1
+nitrofurantoin,Cystitis Prophylaxis,child,1-2 mg,PO,1
+nitrofurantoin,Cystitis Prophylaxis,elderly,unknown,PO,1
+nitrofurantoin,Long Term Suppresive Therapy,elderly,unknown,PO,1
+nitrofurantoin,Urinary Tract Infection,child,5-7 mg,PO,1
+nitrofurantoin,Urinary Tract Infection,elderly,unknown,PO,1
+streptomycin,Bacteremia,child,20-40 mg,IM,1
+streptomycin,Bacteremia,elderly,unknown,IM,2
+streptomycin,Brucellosis,child,20-40 mg,IM,1
+streptomycin,Brucellosis,elderly,15-30 mg,IM,2
+streptomycin,Chancroid,child,20-40 mg,IM,1
+streptomycin,Chancroid,elderly,unknown,IM,2
+streptomycin,Endocarditis,adult,unknown,IM,1
+streptomycin,Endocarditis,elderly,unknown,IM,2
+streptomycin,Granuloma Inguinale,child,20-40 mg,IM,1
+streptomycin,Granuloma Inguinale,elderly,unknown,IM,2
+streptomycin,Meningitis,child,20-40 mg,IM,1
+streptomycin,Meningitis,elderly,unknown,IM,2
+streptomycin,Mycobacterium avium-intracellulare - Treatment,elderly,unknown,IM,2
+streptomycin,Mycobacterium kansasii,elderly,unknown,IM,2
+streptomycin,Plague,child,15-30 mg,IM,1
+streptomycin,Plague,elderly,unknown,IM,1
+streptomycin,Pneumonia,child,20-40 mg,IM,1
+streptomycin,Pneumonia,elderly,unknown,IM,2
+streptomycin,Tuberculosis - Active,child,20-40 mg,IM,1
+streptomycin,Tuberculosis - Active,elderly,15-25 mg,IM,6
+streptomycin,Tularemia,child,15-30 mg,IM,1
+streptomycin,Tularemia,elderly,unknown,IM,1
+streptomycin,Upper Respiratory Tract Infection,child,20-40 mg,IM,1
+streptomycin,Upper Respiratory Tract Infection,elderly,unknown,IM,2
+streptomycin,Urinary Tract Infection,child,20-40 mg,IM,1
+streptomycin,Urinary Tract Infection,elderly,unknown,IM,2
+tigecycline,Intraabdominal Infection,child,2-3 mg,IV,1
+tigecycline,Intraabdominal Infection,elderly,unknown,IV,1
+tigecycline,Pneumonia,child,2-3 mg,IV,1
+tigecycline,Pneumonia,elderly,unknown,IV,1
+tigecycline,Skin and Structure Infection,child,2-3 mg,IV,1
+tigecycline,Skin and Structure Infection,elderly,unknown,IV,1
+tigecycline,Skin or Soft Tissue Infection,elderly,unknown,IV,1
+tigecycline,Trichomoniasis,elderly,unknown,PO,1
+vancomycin,Bacteremia,adult,30-40 mg,IV,2
+vancomycin,Bacteremia,child,unknown,IV,2
+vancomycin,Bacteremia,elderly,30-60 mg,IV,2
+vancomycin,Bacterial Infection,adult,30-40 mg,IV,2
+vancomycin,Bacterial Infection,child,15-30 mg,IV,2
+vancomycin,Bacterial Infection,elderly,unknown,IV,2
+vancomycin,CNS Infection,adult,30-40 mg,IV,2
+vancomycin,CNS Infection,elderly,30-60 mg,IV,2
+vancomycin,Endocarditis,adult,30-40 mg,IV,2
+vancomycin,Endocarditis,child,15-30 mg,IV,2
+vancomycin,Endocarditis,elderly,unknown,IV,2
+vancomycin,Enterocolitis,adult,30-40 mg,PO,2
+vancomycin,Enterocolitis,elderly,unknown,PO,2
+vancomycin,Febrile Neutropenia,elderly,30-45 mg,IV,2
+vancomycin,Head Injury,adult,60-80 mg,IV,2
+vancomycin,Head Injury,elderly,unknown,IV,2
+vancomycin,Intraabdominal Infection,adult,30-40 mg,IV,2
+vancomycin,Intraabdominal Infection,elderly,30-60 mg,IV,2
+vancomycin,Meningitis,adult,30-40 mg,IV,2
+vancomycin,Meningitis,elderly,30-60 mg,IV,2
+vancomycin,Meningitis - Streptococcus Group B,elderly,unknown,IV,2
+vancomycin,Nosocomial Pneumonia,elderly,unknown,IV,2
+vancomycin,Osteomyelitis,adult,30-40 mg,IV,2
+vancomycin,Osteomyelitis,child,15-30 mg,IV,2
+vancomycin,Osteomyelitis,elderly,unknown,IV,2
+vancomycin,Peritonitis,adult,30-40 mg,IV,2
+vancomycin,Peritonitis,elderly,30-60 mg,IV,2
+vancomycin,Pneumonia,adult,30-40 mg,IV,2
+vancomycin,Pneumonia,elderly,unknown,IV,2
+vancomycin,Pseudomembranous Colitis,adult,30-40 mg,PO,2
+vancomycin,Pseudomembranous Colitis,elderly,unknown,PO,2
+vancomycin,Sepsis,adult,30-40 mg,IV,2
+vancomycin,Sepsis,child,15-30 mg,IV,2
+vancomycin,Sepsis,elderly,unknown,IV,2
+vancomycin,Shunt Infection,adult,unknown,IV,2
+vancomycin,Shunt Infection,elderly,unknown,IV,2
+vancomycin,Skin or Soft Tissue Infection,adult,30-40 mg,IV,2
+vancomycin,Skin or Soft Tissue Infection,child,15-30 mg,IV,2
+vancomycin,Skin or Soft Tissue Infection,elderly,unknown,IV,2
+vancomycin,Surgical Prophylaxis,adult,30-40 mg,IV,2
+vancomycin,Surgical Prophylaxis,child,15-30 mg,IV,2
+vancomycin,Surgical Prophylaxis,elderly,15-30 mg,IV,2

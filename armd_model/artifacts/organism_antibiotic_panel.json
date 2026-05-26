@@ -1,0 +1,3774 @@
+{
+  "min_isolates": 30,
+  "source": "microbiology_cultures_cohort.csv",
+  "note": "organism -> antibiotics tested >= min_isolates times (CLSI M39 antibiogram rule)",
+  "panel": {
+    "achromobacter xylosoxidans": [
+      "aztreonam",
+      "gentamicin",
+      "tobramycin",
+      "amikacin",
+      "cefepime",
+      "ciprofloxacin",
+      "ceftazidime",
+      "meropenem",
+      "levofloxacin"
+    ],
+    "acinetobacter baumannii": [
+      "tobramycin",
+      "cefepime",
+      "ciprofloxacin",
+      "gentamicin"
+    ],
+    "acinetobacter baumannii complex": [
+      "gentamicin",
+      "ciprofloxacin",
+      "ceftazidime",
+      "meropenem",
+      "tobramycin",
+      "levofloxacin",
+      "amikacin",
+      "cefepime"
+    ],
+    "acinetobacter lwoffi": [
+      "ciprofloxacin",
+      "gentamicin",
+      "tobramycin",
+      "cefepime"
+    ],
+    "acinetobacter species": [
+      "ciprofloxacin",
+      "gentamicin",
+      "tobramycin",
+      "cefepime",
+      "amikacin",
+      "meropenem",
+      "ceftazidime",
+      "levofloxacin"
+    ],
+    "bacteroides fragilis": [
+      "metronidazole",
+      "meropenem",
+      "clindamycin"
+    ],
+    "burkholderia cenocepacia": [
+      "ceftazidime",
+      "meropenem",
+      "levofloxacin"
+    ],
+    "burkholderia cepacia": [
+      "ceftazidime",
+      "meropenem"
+    ],
+    "burkholderia gladioli": [
+      "cefepime",
+      "ciprofloxacin",
+      "tobramycin"
+    ],
+    "burkholderia multivorans": [
+      "meropenem",
+      "ceftazidime"
+    ],
+    "citrobacter amalonaticus complex": [
+      "amikacin",
+      "cefazolin",
+      "ceftazidime",
+      "ceftriaxone",
+      "ciprofloxacin",
+      "ertapenem",
+      "gentamicin",
+      "meropenem"
+    ],
+    "citrobacter braakii": [
+      "gentamicin",
+      "levofloxacin",
+      "ciprofloxacin"
+    ],
+    "citrobacter freundii": [
+      "gentamicin",
+      "levofloxacin",
+      "ciprofloxacin",
+      "cefazolin",
+      "nitrofurantoin",
+      "ceftriaxone",
+      "ceftazidime",
+      "cefepime",
+      "cefoxitin",
+      "meropenem",
+      "cefuroxime",
+      "ampicillin",
+      "aztreonam"
+    ],
+    "citrobacter freundii complex": [
+      "gentamicin",
+      "ceftriaxone",
+      "ceftazidime",
+      "ciprofloxacin",
+      "cefazolin",
+      "meropenem",
+      "ertapenem",
+      "amikacin",
+      "cefoxitin",
+      "nitrofurantoin",
+      "levofloxacin",
+      "tetracycline",
+      "tobramycin",
+      "cefepime",
+      "aztreonam",
+      "ampicillin",
+      "cefuroxime",
+      "tigecycline",
+      "moxifloxacin"
+    ],
+    "citrobacter freundii complex (carbapenem resistant)": [
+      "ciprofloxacin",
+      "gentamicin",
+      "levofloxacin",
+      "ceftazidime",
+      "ceftriaxone",
+      "cefoxitin",
+      "cefazolin",
+      "nitrofurantoin",
+      "cefepime"
+    ],
+    "citrobacter koseri": [
+      "gentamicin",
+      "ceftriaxone",
+      "ciprofloxacin",
+      "ceftazidime",
+      "ertapenem",
+      "meropenem",
+      "amikacin",
+      "cefazolin",
+      "levofloxacin",
+      "nitrofurantoin",
+      "tobramycin",
+      "tetracycline",
+      "cefoxitin",
+      "cefepime",
+      "aztreonam",
+      "ampicillin",
+      "cefuroxime",
+      "tigecycline",
+      "moxifloxacin"
+    ],
+    "citrobacter koseri (carbapenem resistant)": [
+      "gentamicin",
+      "levofloxacin",
+      "ciprofloxacin",
+      "cefazolin",
+      "nitrofurantoin",
+      "cefepime",
+      "ceftriaxone",
+      "ampicillin"
+    ],
+    "citrobacter species": [
+      "ciprofloxacin",
+      "gentamicin",
+      "cefazolin",
+      "aztreonam",
+      "ceftazidime",
+      "ceftriaxone",
+      "ertapenem",
+      "cefepime",
+      "nitrofurantoin",
+      "amikacin"
+    ],
+    "clostridium perfringens": [
+      "metronidazole",
+      "meropenem",
+      "clindamycin"
+    ],
+    "coag negative staphylococcus": [
+      "vancomycin",
+      "erythromycin",
+      "clindamycin",
+      "gentamicin",
+      "linezolid",
+      "levofloxacin",
+      "tetracycline",
+      "moxifloxacin",
+      "cefazolin",
+      "nitrofurantoin"
+    ],
+    "corynebacterium accolens": [
+      "vancomycin",
+      "erythromycin"
+    ],
+    "corynebacterium propinquum": [
+      "vancomycin",
+      "erythromycin",
+      "clindamycin"
+    ],
+    "corynebacterium pseudodiphtheriticum": [
+      "vancomycin",
+      "erythromycin",
+      "clindamycin"
+    ],
+    "corynebacterium species": [
+      "vancomycin",
+      "ciprofloxacin",
+      "doxycycline"
+    ],
+    "corynebacterium striatum": [
+      "vancomycin",
+      "ciprofloxacin",
+      "doxycycline"
+    ],
+    "corynebacterium urealyticum": [
+      "vancomycin",
+      "ciprofloxacin",
+      "doxycycline"
+    ],
+    "enterobacter cloacae": [
+      "gentamicin",
+      "ciprofloxacin",
+      "levofloxacin",
+      "cefazolin",
+      "ceftriaxone",
+      "ceftazidime",
+      "cefoxitin",
+      "cefepime",
+      "meropenem",
+      "ampicillin",
+      "cefuroxime",
+      "nitrofurantoin",
+      "aztreonam",
+      "cefotaxime",
+      "ertapenem"
+    ],
+    "enterobacter cloacae complex": [
+      "gentamicin",
+      "ciprofloxacin",
+      "ceftazidime",
+      "ceftriaxone",
+      "cefazolin",
+      "meropenem",
+      "cefoxitin",
+      "levofloxacin",
+      "ertapenem",
+      "amikacin",
+      "tetracycline",
+      "tobramycin",
+      "nitrofurantoin",
+      "cefepime",
+      "aztreonam",
+      "ampicillin",
+      "cefuroxime",
+      "tigecycline",
+      "moxifloxacin"
+    ],
+    "enterococcus casseliflavus": [
+      "ampicillin",
+      "vancomycin"
+    ],
+    "enterococcus faecalis": [
+      "ampicillin",
+      "vancomycin",
+      "linezolid",
+      "nitrofurantoin",
+      "tetracycline",
+      "ciprofloxacin",
+      "levofloxacin"
+    ],
+    "enterococcus faecium": [
+      "ampicillin",
+      "vancomycin",
+      "linezolid",
+      "tetracycline",
+      "ciprofloxacin",
+      "levofloxacin",
+      "nitrofurantoin",
+      "doxycycline"
+    ],
+    "enterococcus faecium -  vanco resistant": [
+      "ampicillin",
+      "vancomycin",
+      "linezolid"
+    ],
+    "enterococcus gallinarum": [
+      "ampicillin"
+    ],
+    "enterococcus species": [
+      "ampicillin",
+      "tetracycline",
+      "levofloxacin",
+      "nitrofurantoin",
+      "ciprofloxacin",
+      "vancomycin",
+      "linezolid",
+      "doxycycline"
+    ],
+    "escherichia coli": [
+      "gentamicin",
+      "ciprofloxacin",
+      "ampicillin",
+      "cefazolin",
+      "nitrofurantoin",
+      "levofloxacin",
+      "ceftriaxone",
+      "meropenem",
+      "amikacin",
+      "ertapenem",
+      "ceftazidime",
+      "tetracycline",
+      "cefoxitin",
+      "tobramycin",
+      "cefepime",
+      "aztreonam",
+      "cefuroxime",
+      "tigecycline",
+      "moxifloxacin",
+      "fosfomycin",
+      "cefotaxime",
+      "doripenem"
+    ],
+    "hafnia alvei": [
+      "ciprofloxacin",
+      "gentamicin",
+      "ampicillin",
+      "levofloxacin",
+      "cefazolin",
+      "ceftriaxone",
+      "nitrofurantoin",
+      "meropenem",
+      "amikacin",
+      "ceftazidime",
+      "ertapenem",
+      "cefoxitin",
+      "tobramycin"
+    ],
+    "klebsiella aerogenes": [
+      "gentamicin",
+      "amikacin",
+      "ciprofloxacin",
+      "ertapenem",
+      "ceftriaxone",
+      "ceftazidime",
+      "cefazolin",
+      "meropenem",
+      "cefoxitin",
+      "tetracycline",
+      "tobramycin",
+      "levofloxacin",
+      "cefepime",
+      "aztreonam",
+      "nitrofurantoin",
+      "ampicillin",
+      "cefuroxime",
+      "moxifloxacin",
+      "tigecycline"
+    ],
+    "klebsiella oxytoca": [
+      "gentamicin",
+      "ciprofloxacin",
+      "ampicillin",
+      "levofloxacin",
+      "ceftriaxone",
+      "cefazolin",
+      "meropenem",
+      "ertapenem",
+      "ceftazidime",
+      "amikacin",
+      "nitrofurantoin",
+      "tetracycline",
+      "cefoxitin",
+      "tobramycin",
+      "cefepime",
+      "aztreonam",
+      "cefuroxime",
+      "tigecycline",
+      "moxifloxacin"
+    ],
+    "klebsiella pneumoniae": [
+      "gentamicin",
+      "ampicillin",
+      "ciprofloxacin",
+      "cefazolin",
+      "levofloxacin",
+      "ceftriaxone",
+      "meropenem",
+      "ertapenem",
+      "amikacin",
+      "ceftazidime",
+      "tetracycline",
+      "cefoxitin",
+      "tobramycin",
+      "nitrofurantoin",
+      "cefepime",
+      "aztreonam",
+      "cefuroxime",
+      "tigecycline",
+      "moxifloxacin",
+      "cefotaxime",
+      "doripenem"
+    ],
+    "morganella morganii": [
+      "gentamicin",
+      "ciprofloxacin",
+      "cefazolin",
+      "ampicillin",
+      "ceftazidime",
+      "ceftriaxone",
+      "nitrofurantoin",
+      "levofloxacin",
+      "meropenem",
+      "amikacin",
+      "ertapenem",
+      "tetracycline",
+      "tobramycin",
+      "cefoxitin",
+      "cefepime",
+      "aztreonam",
+      "cefuroxime",
+      "tigecycline"
+    ],
+    "mucoid pseudomonas aeruginosa": [
+      "tobramycin",
+      "ceftazidime",
+      "aztreonam",
+      "amikacin",
+      "meropenem",
+      "ciprofloxacin",
+      "cefepime",
+      "doripenem",
+      "levofloxacin",
+      "gentamicin"
+    ],
+    "mycobacterium abscessus": [
+      "clarithromycin",
+      "amikacin",
+      "linezolid",
+      "ciprofloxacin",
+      "doxycycline",
+      "cefoxitin"
+    ],
+    "mycobacterium abscessus group": [
+      "clarithromycin",
+      "amikacin",
+      "moxifloxacin",
+      "ciprofloxacin",
+      "doxycycline",
+      "tobramycin",
+      "linezolid"
+    ],
+    "mycobacterium avium complex": [
+      "clarithromycin",
+      "moxifloxacin",
+      "linezolid",
+      "amikacin"
+    ],
+    "mycobacterium chelonae": [
+      "tobramycin",
+      "clarithromycin",
+      "linezolid",
+      "ciprofloxacin",
+      "doxycycline",
+      "cefoxitin"
+    ],
+    "mycobacterium fortuitum species group": [
+      "amikacin",
+      "ciprofloxacin",
+      "doxycycline"
+    ],
+    "non fermenting gram negative rods": [
+      "gentamicin",
+      "cefepime",
+      "ciprofloxacin",
+      "tobramycin",
+      "aztreonam",
+      "amikacin",
+      "meropenem",
+      "ceftazidime"
+    ],
+    "nonfermenting gram negative rods - unidentified": [
+      "ciprofloxacin",
+      "cefepime",
+      "gentamicin",
+      "tobramycin"
+    ],
+    "pantoea agglomerans": [
+      "ciprofloxacin",
+      "gentamicin",
+      "levofloxacin"
+    ],
+    "proteus mirabilis": [
+      "ampicillin",
+      "ciprofloxacin",
+      "gentamicin",
+      "cefazolin",
+      "nitrofurantoin",
+      "ceftriaxone",
+      "levofloxacin",
+      "meropenem",
+      "amikacin",
+      "ceftazidime",
+      "tetracycline",
+      "ertapenem",
+      "cefoxitin",
+      "tobramycin",
+      "cefepime",
+      "aztreonam",
+      "cefuroxime",
+      "moxifloxacin"
+    ],
+    "proteus vulgaris group": [
+      "amikacin",
+      "ampicillin",
+      "ceftriaxone",
+      "gentamicin",
+      "ceftazidime",
+      "ciprofloxacin",
+      "cefazolin",
+      "ertapenem",
+      "nitrofurantoin",
+      "meropenem",
+      "tetracycline",
+      "tobramycin",
+      "levofloxacin",
+      "cefoxitin",
+      "aztreonam",
+      "cefepime"
+    ],
+    "providencia rettgeri": [
+      "ampicillin",
+      "gentamicin",
+      "ciprofloxacin",
+      "cefazolin",
+      "nitrofurantoin",
+      "ceftriaxone",
+      "levofloxacin",
+      "amikacin",
+      "ceftazidime",
+      "meropenem",
+      "tetracycline",
+      "tobramycin",
+      "ertapenem",
+      "cefoxitin",
+      "cefepime"
+    ],
+    "providencia stuartii": [
+      "ampicillin",
+      "gentamicin",
+      "ceftriaxone",
+      "amikacin",
+      "cefazolin",
+      "ciprofloxacin",
+      "nitrofurantoin",
+      "ceftazidime",
+      "ertapenem",
+      "meropenem",
+      "levofloxacin",
+      "tobramycin",
+      "cefepime",
+      "tetracycline",
+      "aztreonam"
+    ],
+    "pseudomonas aeruginosa": [
+      "ciprofloxacin",
+      "tobramycin",
+      "cefepime",
+      "gentamicin",
+      "amikacin",
+      "ceftazidime",
+      "meropenem",
+      "levofloxacin",
+      "aztreonam",
+      "doripenem"
+    ],
+    "pseudomonas aeruginosa (non-mucoid cf)": [
+      "ceftazidime",
+      "meropenem",
+      "tobramycin",
+      "aztreonam",
+      "amikacin",
+      "cefepime",
+      "ciprofloxacin",
+      "doripenem",
+      "levofloxacin"
+    ],
+    "pseudomonas putida group": [
+      "gentamicin",
+      "ciprofloxacin",
+      "tobramycin",
+      "cefepime",
+      "amikacin",
+      "ceftazidime",
+      "meropenem",
+      "levofloxacin",
+      "aztreonam"
+    ],
+    "pseudomonas species - fluorescens/putida group": [
+      "tobramycin",
+      "gentamicin",
+      "cefepime",
+      "ciprofloxacin"
+    ],
+    "pseudomonas species - not p.aeruginosa": [
+      "gentamicin",
+      "ciprofloxacin",
+      "cefepime",
+      "tobramycin",
+      "aztreonam",
+      "amikacin",
+      "ceftazidime",
+      "meropenem",
+      "levofloxacin"
+    ],
+    "raoultella ornithinolytica": [
+      "gentamicin",
+      "ciprofloxacin",
+      "ampicillin",
+      "levofloxacin",
+      "cefazolin",
+      "ceftriaxone",
+      "cefepime",
+      "nitrofurantoin"
+    ],
+    "salmonella enterica": [
+      "ceftriaxone",
+      "ampicillin",
+      "ciprofloxacin"
+    ],
+    "serratia liquefaciens": [
+      "ciprofloxacin",
+      "gentamicin",
+      "levofloxacin",
+      "cefazolin",
+      "ceftriaxone",
+      "ceftazidime",
+      "meropenem"
+    ],
+    "serratia marcescens": [
+      "gentamicin",
+      "ciprofloxacin",
+      "ceftriaxone",
+      "ceftazidime",
+      "levofloxacin",
+      "cefazolin",
+      "cefoxitin",
+      "meropenem",
+      "ertapenem",
+      "amikacin",
+      "cefepime",
+      "cefuroxime",
+      "ampicillin",
+      "tetracycline",
+      "tobramycin",
+      "aztreonam",
+      "nitrofurantoin",
+      "tigecycline",
+      "moxifloxacin",
+      "cefotaxime"
+    ],
+    "staph aureus {mrsa}": [
+      "linezolid",
+      "vancomycin",
+      "tetracycline",
+      "clindamycin",
+      "erythromycin",
+      "moxifloxacin",
+      "levofloxacin",
+      "gentamicin",
+      "cefazolin",
+      "doxycycline",
+      "tigecycline",
+      "nitrofurantoin"
+    ],
+    "staph aureus(colony variant - small colony or other morphotype)": [
+      "vancomycin",
+      "erythromycin",
+      "clindamycin",
+      "ciprofloxacin",
+      "moxifloxacin"
+    ],
+    "staphylococcus aureus": [
+      "vancomycin",
+      "clindamycin",
+      "erythromycin",
+      "gentamicin",
+      "moxifloxacin",
+      "levofloxacin",
+      "tetracycline",
+      "linezolid",
+      "ciprofloxacin",
+      "cefazolin",
+      "tigecycline",
+      "doxycycline",
+      "nitrofurantoin"
+    ],
+    "staphylococcus lugdunensis": [
+      "vancomycin",
+      "clindamycin",
+      "erythromycin",
+      "gentamicin",
+      "tetracycline",
+      "linezolid",
+      "moxifloxacin",
+      "levofloxacin"
+    ],
+    "staphylococcus species - coag negative, not staph saprophyticus": [
+      "vancomycin",
+      "nitrofurantoin",
+      "tetracycline",
+      "gentamicin",
+      "levofloxacin",
+      "moxifloxacin",
+      "linezolid"
+    ],
+    "staphylococcus species -not staph. aureus": [
+      "clindamycin",
+      "erythromycin",
+      "vancomycin",
+      "gentamicin",
+      "tetracycline",
+      "levofloxacin",
+      "moxifloxacin",
+      "linezolid"
+    ],
+    "stenotrophomonas maltophilia": [
+      "levofloxacin",
+      "ceftazidime"
+    ],
+    "streptococcus agalactiae (group b)": [
+      "clindamycin",
+      "levofloxacin",
+      "erythromycin",
+      "vancomycin",
+      "ceftriaxone",
+      "linezolid"
+    ],
+    "streptococcus agalactiae {group b}": [
+      "clindamycin",
+      "erythromycin",
+      "levofloxacin",
+      "vancomycin"
+    ],
+    "streptococcus anginosus group": [
+      "ceftriaxone",
+      "clindamycin",
+      "erythromycin",
+      "vancomycin",
+      "levofloxacin"
+    ],
+    "streptococcus bovis gp.": [
+      "ceftriaxone",
+      "vancomycin",
+      "erythromycin",
+      "clindamycin"
+    ],
+    "streptococcus dysgalactiae": [
+      "vancomycin",
+      "clindamycin",
+      "erythromycin"
+    ],
+    "streptococcus gallolyticus": [
+      "ceftriaxone",
+      "vancomycin",
+      "erythromycin",
+      "clindamycin"
+    ],
+    "streptococcus mitis group": [
+      "ceftriaxone",
+      "vancomycin",
+      "clindamycin",
+      "erythromycin",
+      "levofloxacin",
+      "linezolid"
+    ],
+    "streptococcus mitis/streptococcus oralis": [
+      "vancomycin",
+      "clindamycin",
+      "ceftriaxone",
+      "erythromycin"
+    ],
+    "streptococcus pneumoniae": [
+      "vancomycin",
+      "erythromycin",
+      "moxifloxacin",
+      "ceftriaxone",
+      "clindamycin",
+      "doxycycline",
+      "levofloxacin",
+      "meropenem",
+      "cefuroxime",
+      "linezolid"
+    ],
+    "streptococcus pyogenes (group a)": [
+      "vancomycin",
+      "erythromycin",
+      "clindamycin",
+      "levofloxacin",
+      "ceftriaxone",
+      "linezolid"
+    ],
+    "streptococcus pyogenes {group a}": [
+      "erythromycin",
+      "vancomycin",
+      "clindamycin"
+    ],
+    "streptococcus salivarius group": [
+      "ceftriaxone",
+      "erythromycin",
+      "clindamycin",
+      "vancomycin"
+    ],
+    "viridans group streptococci": [
+      "ceftriaxone",
+      "vancomycin",
+      "clindamycin",
+      "erythromycin",
+      "levofloxacin"
+    ],
+    "zzzcitrobacter amalonaticus": [
+      "ciprofloxacin",
+      "gentamicin",
+      "cefazolin",
+      "levofloxacin"
+    ],
+    "zzzenterobacter aerogenes": [
+      "gentamicin",
+      "ciprofloxacin",
+      "levofloxacin",
+      "cefazolin",
+      "ceftriaxone",
+      "ceftazidime",
+      "cefoxitin",
+      "meropenem",
+      "cefepime",
+      "ertapenem",
+      "nitrofurantoin",
+      "amikacin",
+      "tetracycline",
+      "tobramycin",
+      "ampicillin",
+      "cefuroxime",
+      "aztreonam",
+      "tigecycline",
+      "moxifloxacin"
+    ],
+    "zzzproteus vulgaris": [
+      "ampicillin",
+      "gentamicin",
+      "levofloxacin",
+      "ciprofloxacin",
+      "cefazolin",
+      "nitrofurantoin",
+      "tetracycline",
+      "ceftriaxone",
+      "cefepime"
+    ]
+  },
+  "stats": {
+    "achromobacter xylosoxidans": {
+      "aztreonam": {
+        "n_tested": 481,
+        "pct_sus": 0.0229
+      },
+      "gentamicin": {
+        "n_tested": 480,
+        "pct_sus": 0.0688
+      },
+      "tobramycin": {
+        "n_tested": 474,
+        "pct_sus": 0.0717
+      },
+      "amikacin": {
+        "n_tested": 443,
+        "pct_sus": 0.0813
+      },
+      "cefepime": {
+        "n_tested": 418,
+        "pct_sus": 0.1411
+      },
+      "ciprofloxacin": {
+        "n_tested": 403,
+        "pct_sus": 0.2084
+      },
+      "ceftazidime": {
+        "n_tested": 386,
+        "pct_sus": 0.4663
+      },
+      "meropenem": {
+        "n_tested": 347,
+        "pct_sus": 0.6888
+      },
+      "levofloxacin": {
+        "n_tested": 343,
+        "pct_sus": 0.5015
+      }
+    },
+    "acinetobacter baumannii": {
+      "tobramycin": {
+        "n_tested": 48,
+        "pct_sus": 0.8542
+      },
+      "cefepime": {
+        "n_tested": 47,
+        "pct_sus": 0.8511
+      },
+      "ciprofloxacin": {
+        "n_tested": 46,
+        "pct_sus": 0.8478
+      },
+      "gentamicin": {
+        "n_tested": 45,
+        "pct_sus": 0.8889
+      }
+    },
+    "acinetobacter baumannii complex": {
+      "gentamicin": {
+        "n_tested": 95,
+        "pct_sus": 0.8947
+      },
+      "ciprofloxacin": {
+        "n_tested": 94,
+        "pct_sus": 0.8617
+      },
+      "ceftazidime": {
+        "n_tested": 91,
+        "pct_sus": 0.8462
+      },
+      "meropenem": {
+        "n_tested": 87,
+        "pct_sus": 0.8391
+      },
+      "tobramycin": {
+        "n_tested": 85,
+        "pct_sus": 0.9059
+      },
+      "levofloxacin": {
+        "n_tested": 84,
+        "pct_sus": 0.869
+      },
+      "amikacin": {
+        "n_tested": 83,
+        "pct_sus": 0.8916
+      },
+      "cefepime": {
+        "n_tested": 80,
+        "pct_sus": 0.8625
+      }
+    },
+    "acinetobacter lwoffi": {
+      "ciprofloxacin": {
+        "n_tested": 42,
+        "pct_sus": 1.0
+      },
+      "gentamicin": {
+        "n_tested": 40,
+        "pct_sus": 1.0
+      },
+      "tobramycin": {
+        "n_tested": 38,
+        "pct_sus": 1.0
+      },
+      "cefepime": {
+        "n_tested": 37,
+        "pct_sus": 1.0
+      }
+    },
+    "acinetobacter species": {
+      "ciprofloxacin": {
+        "n_tested": 149,
+        "pct_sus": 0.9866
+      },
+      "gentamicin": {
+        "n_tested": 149,
+        "pct_sus": 0.9732
+      },
+      "tobramycin": {
+        "n_tested": 143,
+        "pct_sus": 0.965
+      },
+      "cefepime": {
+        "n_tested": 137,
+        "pct_sus": 0.9781
+      },
+      "amikacin": {
+        "n_tested": 123,
+        "pct_sus": 0.9919
+      },
+      "meropenem": {
+        "n_tested": 84,
+        "pct_sus": 0.9881
+      },
+      "ceftazidime": {
+        "n_tested": 74,
+        "pct_sus": 0.8649
+      },
+      "levofloxacin": {
+        "n_tested": 74,
+        "pct_sus": 0.9865
+      }
+    },
+    "bacteroides fragilis": {
+      "metronidazole": {
+        "n_tested": 95,
+        "pct_sus": 1.0
+      },
+      "meropenem": {
+        "n_tested": 92,
+        "pct_sus": 0.9674
+      },
+      "clindamycin": {
+        "n_tested": 79,
+        "pct_sus": 0.6835
+      }
+    },
+    "burkholderia cenocepacia": {
+      "ceftazidime": {
+        "n_tested": 49,
+        "pct_sus": 0.8163
+      },
+      "meropenem": {
+        "n_tested": 43,
+        "pct_sus": 0.8605
+      },
+      "levofloxacin": {
+        "n_tested": 32,
+        "pct_sus": 0.125
+      }
+    },
+    "burkholderia cepacia": {
+      "ceftazidime": {
+        "n_tested": 73,
+        "pct_sus": 0.6986
+      },
+      "meropenem": {
+        "n_tested": 58,
+        "pct_sus": 0.6724
+      }
+    },
+    "burkholderia gladioli": {
+      "cefepime": {
+        "n_tested": 31,
+        "pct_sus": 0.3548
+      },
+      "ciprofloxacin": {
+        "n_tested": 31,
+        "pct_sus": 0.6129
+      },
+      "tobramycin": {
+        "n_tested": 31,
+        "pct_sus": 0.6774
+      }
+    },
+    "burkholderia multivorans": {
+      "meropenem": {
+        "n_tested": 36,
+        "pct_sus": 0.4444
+      },
+      "ceftazidime": {
+        "n_tested": 33,
+        "pct_sus": 0.8182
+      }
+    },
+    "citrobacter amalonaticus complex": {
+      "amikacin": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 33,
+        "pct_sus": 0.2121
+      },
+      "ceftazidime": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "ceftriaxone": {
+        "n_tested": 33,
+        "pct_sus": 0.697
+      },
+      "ciprofloxacin": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "ertapenem": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "gentamicin": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "meropenem": {
+        "n_tested": 30,
+        "pct_sus": 1.0
+      }
+    },
+    "citrobacter braakii": {
+      "gentamicin": {
+        "n_tested": 31,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 31,
+        "pct_sus": 0.9677
+      },
+      "ciprofloxacin": {
+        "n_tested": 30,
+        "pct_sus": 0.9667
+      }
+    },
+    "citrobacter freundii": {
+      "gentamicin": {
+        "n_tested": 202,
+        "pct_sus": 0.9208
+      },
+      "levofloxacin": {
+        "n_tested": 198,
+        "pct_sus": 0.9747
+      },
+      "ciprofloxacin": {
+        "n_tested": 197,
+        "pct_sus": 0.9594
+      },
+      "cefazolin": {
+        "n_tested": 172,
+        "pct_sus": 0.0233
+      },
+      "nitrofurantoin": {
+        "n_tested": 163,
+        "pct_sus": 0.9755
+      },
+      "ceftriaxone": {
+        "n_tested": 133,
+        "pct_sus": 0.8797
+      },
+      "ceftazidime": {
+        "n_tested": 128,
+        "pct_sus": 0.8203
+      },
+      "cefepime": {
+        "n_tested": 122,
+        "pct_sus": 1.0
+      },
+      "cefoxitin": {
+        "n_tested": 119,
+        "pct_sus": 0.0084
+      },
+      "meropenem": {
+        "n_tested": 104,
+        "pct_sus": 1.0
+      },
+      "cefuroxime": {
+        "n_tested": 52,
+        "pct_sus": 0.4615
+      },
+      "ampicillin": {
+        "n_tested": 41,
+        "pct_sus": 0.3171
+      },
+      "aztreonam": {
+        "n_tested": 40,
+        "pct_sus": 0.875
+      }
+    },
+    "citrobacter freundii complex": {
+      "gentamicin": {
+        "n_tested": 805,
+        "pct_sus": 0.9366
+      },
+      "ceftriaxone": {
+        "n_tested": 801,
+        "pct_sus": 0.824
+      },
+      "ceftazidime": {
+        "n_tested": 798,
+        "pct_sus": 0.8371
+      },
+      "ciprofloxacin": {
+        "n_tested": 787,
+        "pct_sus": 0.9479
+      },
+      "cefazolin": {
+        "n_tested": 766,
+        "pct_sus": 0.0
+      },
+      "meropenem": {
+        "n_tested": 733,
+        "pct_sus": 1.0
+      },
+      "ertapenem": {
+        "n_tested": 732,
+        "pct_sus": 0.9945
+      },
+      "amikacin": {
+        "n_tested": 719,
+        "pct_sus": 0.9986
+      },
+      "cefoxitin": {
+        "n_tested": 695,
+        "pct_sus": 0.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 690,
+        "pct_sus": 0.9739
+      },
+      "levofloxacin": {
+        "n_tested": 650,
+        "pct_sus": 0.9585
+      },
+      "tetracycline": {
+        "n_tested": 611,
+        "pct_sus": 0.7987
+      },
+      "tobramycin": {
+        "n_tested": 583,
+        "pct_sus": 0.9777
+      },
+      "cefepime": {
+        "n_tested": 235,
+        "pct_sus": 0.9957
+      },
+      "aztreonam": {
+        "n_tested": 159,
+        "pct_sus": 0.8428
+      },
+      "ampicillin": {
+        "n_tested": 63,
+        "pct_sus": 0.0
+      },
+      "cefuroxime": {
+        "n_tested": 58,
+        "pct_sus": 0.0
+      },
+      "tigecycline": {
+        "n_tested": 40,
+        "pct_sus": 1.0
+      },
+      "moxifloxacin": {
+        "n_tested": 32,
+        "pct_sus": 0.9688
+      }
+    },
+    "citrobacter freundii complex (carbapenem resistant)": {
+      "ciprofloxacin": {
+        "n_tested": 87,
+        "pct_sus": 0.9655
+      },
+      "gentamicin": {
+        "n_tested": 86,
+        "pct_sus": 0.9884
+      },
+      "levofloxacin": {
+        "n_tested": 85,
+        "pct_sus": 0.9882
+      },
+      "ceftazidime": {
+        "n_tested": 83,
+        "pct_sus": 0.8795
+      },
+      "ceftriaxone": {
+        "n_tested": 83,
+        "pct_sus": 0.8193
+      },
+      "cefoxitin": {
+        "n_tested": 81,
+        "pct_sus": 0.0
+      },
+      "cefazolin": {
+        "n_tested": 79,
+        "pct_sus": 0.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 67,
+        "pct_sus": 0.9403
+      },
+      "cefepime": {
+        "n_tested": 43,
+        "pct_sus": 1.0
+      }
+    },
+    "citrobacter koseri": {
+      "gentamicin": {
+        "n_tested": 1060,
+        "pct_sus": 0.9953
+      },
+      "ceftriaxone": {
+        "n_tested": 1059,
+        "pct_sus": 0.9915
+      },
+      "ciprofloxacin": {
+        "n_tested": 1055,
+        "pct_sus": 0.9943
+      },
+      "ceftazidime": {
+        "n_tested": 947,
+        "pct_sus": 0.9937
+      },
+      "ertapenem": {
+        "n_tested": 947,
+        "pct_sus": 0.9989
+      },
+      "meropenem": {
+        "n_tested": 946,
+        "pct_sus": 0.9989
+      },
+      "amikacin": {
+        "n_tested": 945,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 912,
+        "pct_sus": 0.9803
+      },
+      "levofloxacin": {
+        "n_tested": 862,
+        "pct_sus": 0.9954
+      },
+      "nitrofurantoin": {
+        "n_tested": 837,
+        "pct_sus": 0.9916
+      },
+      "tobramycin": {
+        "n_tested": 756,
+        "pct_sus": 0.9974
+      },
+      "tetracycline": {
+        "n_tested": 755,
+        "pct_sus": 0.9801
+      },
+      "cefoxitin": {
+        "n_tested": 729,
+        "pct_sus": 0.9739
+      },
+      "cefepime": {
+        "n_tested": 357,
+        "pct_sus": 1.0
+      },
+      "aztreonam": {
+        "n_tested": 271,
+        "pct_sus": 0.9926
+      },
+      "ampicillin": {
+        "n_tested": 115,
+        "pct_sus": 0.0
+      },
+      "cefuroxime": {
+        "n_tested": 86,
+        "pct_sus": 0.8605
+      },
+      "tigecycline": {
+        "n_tested": 79,
+        "pct_sus": 1.0
+      },
+      "moxifloxacin": {
+        "n_tested": 75,
+        "pct_sus": 0.96
+      }
+    },
+    "citrobacter koseri (carbapenem resistant)": {
+      "gentamicin": {
+        "n_tested": 331,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 330,
+        "pct_sus": 0.997
+      },
+      "ciprofloxacin": {
+        "n_tested": 329,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 291,
+        "pct_sus": 0.9863
+      },
+      "nitrofurantoin": {
+        "n_tested": 160,
+        "pct_sus": 0.9625
+      },
+      "cefepime": {
+        "n_tested": 62,
+        "pct_sus": 1.0
+      },
+      "ceftriaxone": {
+        "n_tested": 59,
+        "pct_sus": 0.9492
+      },
+      "ampicillin": {
+        "n_tested": 44,
+        "pct_sus": 0.0
+      }
+    },
+    "citrobacter species": {
+      "ciprofloxacin": {
+        "n_tested": 41,
+        "pct_sus": 0.9512
+      },
+      "gentamicin": {
+        "n_tested": 41,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 39,
+        "pct_sus": 0.0256
+      },
+      "aztreonam": {
+        "n_tested": 36,
+        "pct_sus": 0.6944
+      },
+      "ceftazidime": {
+        "n_tested": 36,
+        "pct_sus": 0.75
+      },
+      "ceftriaxone": {
+        "n_tested": 36,
+        "pct_sus": 0.6944
+      },
+      "ertapenem": {
+        "n_tested": 36,
+        "pct_sus": 0.9444
+      },
+      "cefepime": {
+        "n_tested": 34,
+        "pct_sus": 0.9412
+      },
+      "nitrofurantoin": {
+        "n_tested": 34,
+        "pct_sus": 0.9412
+      },
+      "amikacin": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      }
+    },
+    "clostridium perfringens": {
+      "metronidazole": {
+        "n_tested": 55,
+        "pct_sus": 1.0
+      },
+      "meropenem": {
+        "n_tested": 43,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 38,
+        "pct_sus": 0.8421
+      }
+    },
+    "coag negative staphylococcus": {
+      "vancomycin": {
+        "n_tested": 2228,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 2151,
+        "pct_sus": 0.3993
+      },
+      "clindamycin": {
+        "n_tested": 2096,
+        "pct_sus": 0.6121
+      },
+      "gentamicin": {
+        "n_tested": 1703,
+        "pct_sus": 0.7681
+      },
+      "linezolid": {
+        "n_tested": 1285,
+        "pct_sus": 0.9977
+      },
+      "levofloxacin": {
+        "n_tested": 1274,
+        "pct_sus": 0.3289
+      },
+      "tetracycline": {
+        "n_tested": 1220,
+        "pct_sus": 0.7738
+      },
+      "moxifloxacin": {
+        "n_tested": 1173,
+        "pct_sus": 0.4126
+      },
+      "cefazolin": {
+        "n_tested": 505,
+        "pct_sus": 0.5307
+      },
+      "nitrofurantoin": {
+        "n_tested": 163,
+        "pct_sus": 1.0
+      }
+    },
+    "corynebacterium accolens": {
+      "vancomycin": {
+        "n_tested": 48,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 32,
+        "pct_sus": 0.2812
+      }
+    },
+    "corynebacterium propinquum": {
+      "vancomycin": {
+        "n_tested": 141,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 112,
+        "pct_sus": 0.1786
+      },
+      "clindamycin": {
+        "n_tested": 104,
+        "pct_sus": 0.125
+      }
+    },
+    "corynebacterium pseudodiphtheriticum": {
+      "vancomycin": {
+        "n_tested": 127,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 108,
+        "pct_sus": 0.1667
+      },
+      "clindamycin": {
+        "n_tested": 98,
+        "pct_sus": 0.1327
+      }
+    },
+    "corynebacterium species": {
+      "vancomycin": {
+        "n_tested": 82,
+        "pct_sus": 1.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 54,
+        "pct_sus": 0.2778
+      },
+      "doxycycline": {
+        "n_tested": 54,
+        "pct_sus": 0.9815
+      }
+    },
+    "corynebacterium striatum": {
+      "vancomycin": {
+        "n_tested": 72,
+        "pct_sus": 1.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 55,
+        "pct_sus": 0.0727
+      },
+      "doxycycline": {
+        "n_tested": 40,
+        "pct_sus": 0.3
+      }
+    },
+    "corynebacterium urealyticum": {
+      "vancomycin": {
+        "n_tested": 34,
+        "pct_sus": 1.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 31,
+        "pct_sus": 0.0645
+      },
+      "doxycycline": {
+        "n_tested": 30,
+        "pct_sus": 1.0
+      }
+    },
+    "enterobacter cloacae": {
+      "gentamicin": {
+        "n_tested": 380,
+        "pct_sus": 0.9763
+      },
+      "ciprofloxacin": {
+        "n_tested": 373,
+        "pct_sus": 0.9625
+      },
+      "levofloxacin": {
+        "n_tested": 370,
+        "pct_sus": 0.9757
+      },
+      "cefazolin": {
+        "n_tested": 302,
+        "pct_sus": 0.0
+      },
+      "ceftriaxone": {
+        "n_tested": 259,
+        "pct_sus": 0.7645
+      },
+      "ceftazidime": {
+        "n_tested": 236,
+        "pct_sus": 0.7415
+      },
+      "cefoxitin": {
+        "n_tested": 228,
+        "pct_sus": 0.0088
+      },
+      "cefepime": {
+        "n_tested": 171,
+        "pct_sus": 0.9649
+      },
+      "meropenem": {
+        "n_tested": 166,
+        "pct_sus": 0.988
+      },
+      "ampicillin": {
+        "n_tested": 142,
+        "pct_sus": 0.0
+      },
+      "cefuroxime": {
+        "n_tested": 131,
+        "pct_sus": 0.0763
+      },
+      "nitrofurantoin": {
+        "n_tested": 124,
+        "pct_sus": 0.6855
+      },
+      "aztreonam": {
+        "n_tested": 80,
+        "pct_sus": 0.75
+      },
+      "cefotaxime": {
+        "n_tested": 53,
+        "pct_sus": 0.7925
+      },
+      "ertapenem": {
+        "n_tested": 45,
+        "pct_sus": 0.8667
+      }
+    },
+    "enterobacter cloacae complex": {
+      "gentamicin": {
+        "n_tested": 1503,
+        "pct_sus": 0.9687
+      },
+      "ciprofloxacin": {
+        "n_tested": 1490,
+        "pct_sus": 0.9537
+      },
+      "ceftazidime": {
+        "n_tested": 1475,
+        "pct_sus": 0.8427
+      },
+      "ceftriaxone": {
+        "n_tested": 1473,
+        "pct_sus": 0.8147
+      },
+      "cefazolin": {
+        "n_tested": 1354,
+        "pct_sus": 0.0
+      },
+      "meropenem": {
+        "n_tested": 1298,
+        "pct_sus": 0.9961
+      },
+      "cefoxitin": {
+        "n_tested": 1293,
+        "pct_sus": 0.0
+      },
+      "levofloxacin": {
+        "n_tested": 1257,
+        "pct_sus": 0.9706
+      },
+      "ertapenem": {
+        "n_tested": 1246,
+        "pct_sus": 0.9647
+      },
+      "amikacin": {
+        "n_tested": 1198,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 987,
+        "pct_sus": 0.8501
+      },
+      "tobramycin": {
+        "n_tested": 969,
+        "pct_sus": 0.967
+      },
+      "nitrofurantoin": {
+        "n_tested": 638,
+        "pct_sus": 0.8166
+      },
+      "cefepime": {
+        "n_tested": 626,
+        "pct_sus": 0.992
+      },
+      "aztreonam": {
+        "n_tested": 453,
+        "pct_sus": 0.8543
+      },
+      "ampicillin": {
+        "n_tested": 302,
+        "pct_sus": 0.0
+      },
+      "cefuroxime": {
+        "n_tested": 296,
+        "pct_sus": 0.0034
+      },
+      "tigecycline": {
+        "n_tested": 176,
+        "pct_sus": 0.9943
+      },
+      "moxifloxacin": {
+        "n_tested": 173,
+        "pct_sus": 0.9653
+      }
+    },
+    "enterococcus casseliflavus": {
+      "ampicillin": {
+        "n_tested": 44,
+        "pct_sus": 1.0
+      },
+      "vancomycin": {
+        "n_tested": 31,
+        "pct_sus": 0.3548
+      }
+    },
+    "enterococcus faecalis": {
+      "ampicillin": {
+        "n_tested": 1576,
+        "pct_sus": 0.9981
+      },
+      "vancomycin": {
+        "n_tested": 1342,
+        "pct_sus": 0.9903
+      },
+      "linezolid": {
+        "n_tested": 1098,
+        "pct_sus": 0.9982
+      },
+      "nitrofurantoin": {
+        "n_tested": 999,
+        "pct_sus": 0.999
+      },
+      "tetracycline": {
+        "n_tested": 997,
+        "pct_sus": 0.2568
+      },
+      "ciprofloxacin": {
+        "n_tested": 979,
+        "pct_sus": 0.8672
+      },
+      "levofloxacin": {
+        "n_tested": 292,
+        "pct_sus": 0.8288
+      }
+    },
+    "enterococcus faecium": {
+      "ampicillin": {
+        "n_tested": 438,
+        "pct_sus": 0.3196
+      },
+      "vancomycin": {
+        "n_tested": 434,
+        "pct_sus": 0.6175
+      },
+      "linezolid": {
+        "n_tested": 365,
+        "pct_sus": 0.9945
+      },
+      "tetracycline": {
+        "n_tested": 211,
+        "pct_sus": 0.5071
+      },
+      "ciprofloxacin": {
+        "n_tested": 195,
+        "pct_sus": 0.1795
+      },
+      "levofloxacin": {
+        "n_tested": 151,
+        "pct_sus": 0.2185
+      },
+      "nitrofurantoin": {
+        "n_tested": 141,
+        "pct_sus": 0.844
+      },
+      "doxycycline": {
+        "n_tested": 32,
+        "pct_sus": 0.5625
+      }
+    },
+    "enterococcus faecium -  vanco resistant": {
+      "ampicillin": {
+        "n_tested": 72,
+        "pct_sus": 0.0139
+      },
+      "vancomycin": {
+        "n_tested": 72,
+        "pct_sus": 0.0
+      },
+      "linezolid": {
+        "n_tested": 70,
+        "pct_sus": 1.0
+      }
+    },
+    "enterococcus gallinarum": {
+      "ampicillin": {
+        "n_tested": 38,
+        "pct_sus": 1.0
+      }
+    },
+    "enterococcus species": {
+      "ampicillin": {
+        "n_tested": 9479,
+        "pct_sus": 0.9396
+      },
+      "tetracycline": {
+        "n_tested": 9362,
+        "pct_sus": 0.233
+      },
+      "levofloxacin": {
+        "n_tested": 9326,
+        "pct_sus": 0.8254
+      },
+      "nitrofurantoin": {
+        "n_tested": 9100,
+        "pct_sus": 0.9897
+      },
+      "ciprofloxacin": {
+        "n_tested": 8037,
+        "pct_sus": 0.8028
+      },
+      "vancomycin": {
+        "n_tested": 4714,
+        "pct_sus": 0.9183
+      },
+      "linezolid": {
+        "n_tested": 4585,
+        "pct_sus": 0.9987
+      },
+      "doxycycline": {
+        "n_tested": 219,
+        "pct_sus": 0.3699
+      }
+    },
+    "escherichia coli": {
+      "gentamicin": {
+        "n_tested": 61294,
+        "pct_sus": 0.9042
+      },
+      "ciprofloxacin": {
+        "n_tested": 60891,
+        "pct_sus": 0.7772
+      },
+      "ampicillin": {
+        "n_tested": 60785,
+        "pct_sus": 0.5341
+      },
+      "cefazolin": {
+        "n_tested": 58068,
+        "pct_sus": 0.8634
+      },
+      "nitrofurantoin": {
+        "n_tested": 56106,
+        "pct_sus": 0.9827
+      },
+      "levofloxacin": {
+        "n_tested": 51049,
+        "pct_sus": 0.776
+      },
+      "ceftriaxone": {
+        "n_tested": 48046,
+        "pct_sus": 0.8791
+      },
+      "meropenem": {
+        "n_tested": 41764,
+        "pct_sus": 0.9999
+      },
+      "amikacin": {
+        "n_tested": 40374,
+        "pct_sus": 0.998
+      },
+      "ertapenem": {
+        "n_tested": 40031,
+        "pct_sus": 0.9992
+      },
+      "ceftazidime": {
+        "n_tested": 39785,
+        "pct_sus": 0.9184
+      },
+      "tetracycline": {
+        "n_tested": 33139,
+        "pct_sus": 0.6333
+      },
+      "cefoxitin": {
+        "n_tested": 30064,
+        "pct_sus": 0.9427
+      },
+      "tobramycin": {
+        "n_tested": 28921,
+        "pct_sus": 0.9261
+      },
+      "cefepime": {
+        "n_tested": 18646,
+        "pct_sus": 0.9471
+      },
+      "aztreonam": {
+        "n_tested": 10859,
+        "pct_sus": 0.905
+      },
+      "cefuroxime": {
+        "n_tested": 2426,
+        "pct_sus": 0.7622
+      },
+      "tigecycline": {
+        "n_tested": 988,
+        "pct_sus": 1.0
+      },
+      "moxifloxacin": {
+        "n_tested": 840,
+        "pct_sus": 0.5107
+      },
+      "fosfomycin": {
+        "n_tested": 690,
+        "pct_sus": 0.9493
+      },
+      "cefotaxime": {
+        "n_tested": 393,
+        "pct_sus": 0.9262
+      },
+      "doripenem": {
+        "n_tested": 48,
+        "pct_sus": 1.0
+      }
+    },
+    "hafnia alvei": {
+      "ciprofloxacin": {
+        "n_tested": 50,
+        "pct_sus": 0.98
+      },
+      "gentamicin": {
+        "n_tested": 50,
+        "pct_sus": 0.98
+      },
+      "ampicillin": {
+        "n_tested": 47,
+        "pct_sus": 0.0213
+      },
+      "levofloxacin": {
+        "n_tested": 44,
+        "pct_sus": 0.9773
+      },
+      "cefazolin": {
+        "n_tested": 43,
+        "pct_sus": 0.0
+      },
+      "ceftriaxone": {
+        "n_tested": 42,
+        "pct_sus": 0.7857
+      },
+      "nitrofurantoin": {
+        "n_tested": 40,
+        "pct_sus": 1.0
+      },
+      "meropenem": {
+        "n_tested": 39,
+        "pct_sus": 1.0
+      },
+      "amikacin": {
+        "n_tested": 37,
+        "pct_sus": 1.0
+      },
+      "ceftazidime": {
+        "n_tested": 37,
+        "pct_sus": 0.7838
+      },
+      "ertapenem": {
+        "n_tested": 37,
+        "pct_sus": 1.0
+      },
+      "cefoxitin": {
+        "n_tested": 35,
+        "pct_sus": 0.0571
+      },
+      "tobramycin": {
+        "n_tested": 30,
+        "pct_sus": 1.0
+      }
+    },
+    "klebsiella aerogenes": {
+      "gentamicin": {
+        "n_tested": 690,
+        "pct_sus": 0.9942
+      },
+      "amikacin": {
+        "n_tested": 689,
+        "pct_sus": 1.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 685,
+        "pct_sus": 0.9796
+      },
+      "ertapenem": {
+        "n_tested": 684,
+        "pct_sus": 0.9971
+      },
+      "ceftriaxone": {
+        "n_tested": 672,
+        "pct_sus": 0.8304
+      },
+      "ceftazidime": {
+        "n_tested": 669,
+        "pct_sus": 0.852
+      },
+      "cefazolin": {
+        "n_tested": 635,
+        "pct_sus": 0.0
+      },
+      "meropenem": {
+        "n_tested": 623,
+        "pct_sus": 0.9984
+      },
+      "cefoxitin": {
+        "n_tested": 546,
+        "pct_sus": 0.0
+      },
+      "tetracycline": {
+        "n_tested": 543,
+        "pct_sus": 0.9595
+      },
+      "tobramycin": {
+        "n_tested": 543,
+        "pct_sus": 0.989
+      },
+      "levofloxacin": {
+        "n_tested": 534,
+        "pct_sus": 0.985
+      },
+      "cefepime": {
+        "n_tested": 228,
+        "pct_sus": 0.9956
+      },
+      "aztreonam": {
+        "n_tested": 222,
+        "pct_sus": 0.8739
+      },
+      "nitrofurantoin": {
+        "n_tested": 207,
+        "pct_sus": 0.4203
+      },
+      "ampicillin": {
+        "n_tested": 87,
+        "pct_sus": 0.0
+      },
+      "cefuroxime": {
+        "n_tested": 85,
+        "pct_sus": 0.0
+      },
+      "moxifloxacin": {
+        "n_tested": 84,
+        "pct_sus": 0.9643
+      },
+      "tigecycline": {
+        "n_tested": 82,
+        "pct_sus": 1.0
+      }
+    },
+    "klebsiella oxytoca": {
+      "gentamicin": {
+        "n_tested": 1670,
+        "pct_sus": 0.9617
+      },
+      "ciprofloxacin": {
+        "n_tested": 1641,
+        "pct_sus": 0.9622
+      },
+      "ampicillin": {
+        "n_tested": 1635,
+        "pct_sus": 0.0043
+      },
+      "levofloxacin": {
+        "n_tested": 1454,
+        "pct_sus": 0.9773
+      },
+      "ceftriaxone": {
+        "n_tested": 1369,
+        "pct_sus": 0.916
+      },
+      "cefazolin": {
+        "n_tested": 1365,
+        "pct_sus": 0.6286
+      },
+      "meropenem": {
+        "n_tested": 1230,
+        "pct_sus": 0.9992
+      },
+      "ertapenem": {
+        "n_tested": 1141,
+        "pct_sus": 0.9991
+      },
+      "ceftazidime": {
+        "n_tested": 1115,
+        "pct_sus": 0.9596
+      },
+      "amikacin": {
+        "n_tested": 1096,
+        "pct_sus": 1.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 1032,
+        "pct_sus": 0.9729
+      },
+      "tetracycline": {
+        "n_tested": 930,
+        "pct_sus": 0.8333
+      },
+      "cefoxitin": {
+        "n_tested": 920,
+        "pct_sus": 0.9815
+      },
+      "tobramycin": {
+        "n_tested": 900,
+        "pct_sus": 0.9311
+      },
+      "cefepime": {
+        "n_tested": 621,
+        "pct_sus": 0.9807
+      },
+      "aztreonam": {
+        "n_tested": 430,
+        "pct_sus": 0.9256
+      },
+      "cefuroxime": {
+        "n_tested": 242,
+        "pct_sus": 0.8843
+      },
+      "tigecycline": {
+        "n_tested": 168,
+        "pct_sus": 1.0
+      },
+      "moxifloxacin": {
+        "n_tested": 157,
+        "pct_sus": 0.9745
+      }
+    },
+    "klebsiella pneumoniae": {
+      "gentamicin": {
+        "n_tested": 10352,
+        "pct_sus": 0.9595
+      },
+      "ampicillin": {
+        "n_tested": 10344,
+        "pct_sus": 0.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 10189,
+        "pct_sus": 0.9305
+      },
+      "cefazolin": {
+        "n_tested": 9521,
+        "pct_sus": 0.9201
+      },
+      "levofloxacin": {
+        "n_tested": 8625,
+        "pct_sus": 0.9492
+      },
+      "ceftriaxone": {
+        "n_tested": 8538,
+        "pct_sus": 0.9191
+      },
+      "meropenem": {
+        "n_tested": 7587,
+        "pct_sus": 0.9975
+      },
+      "ertapenem": {
+        "n_tested": 7165,
+        "pct_sus": 0.9948
+      },
+      "amikacin": {
+        "n_tested": 7021,
+        "pct_sus": 0.9966
+      },
+      "ceftazidime": {
+        "n_tested": 6985,
+        "pct_sus": 0.9373
+      },
+      "tetracycline": {
+        "n_tested": 5743,
+        "pct_sus": 0.7883
+      },
+      "cefoxitin": {
+        "n_tested": 5691,
+        "pct_sus": 0.9589
+      },
+      "tobramycin": {
+        "n_tested": 5489,
+        "pct_sus": 0.9597
+      },
+      "nitrofurantoin": {
+        "n_tested": 4654,
+        "pct_sus": 0.4562
+      },
+      "cefepime": {
+        "n_tested": 3228,
+        "pct_sus": 0.965
+      },
+      "aztreonam": {
+        "n_tested": 2120,
+        "pct_sus": 0.9382
+      },
+      "cefuroxime": {
+        "n_tested": 758,
+        "pct_sus": 0.8641
+      },
+      "tigecycline": {
+        "n_tested": 367,
+        "pct_sus": 0.9782
+      },
+      "moxifloxacin": {
+        "n_tested": 325,
+        "pct_sus": 0.9015
+      },
+      "cefotaxime": {
+        "n_tested": 142,
+        "pct_sus": 0.9718
+      },
+      "doripenem": {
+        "n_tested": 30,
+        "pct_sus": 1.0
+      }
+    },
+    "morganella morganii": {
+      "gentamicin": {
+        "n_tested": 665,
+        "pct_sus": 0.8286
+      },
+      "ciprofloxacin": {
+        "n_tested": 650,
+        "pct_sus": 0.8077
+      },
+      "cefazolin": {
+        "n_tested": 616,
+        "pct_sus": 0.0032
+      },
+      "ampicillin": {
+        "n_tested": 614,
+        "pct_sus": 0.0016
+      },
+      "ceftazidime": {
+        "n_tested": 585,
+        "pct_sus": 0.9026
+      },
+      "ceftriaxone": {
+        "n_tested": 583,
+        "pct_sus": 0.9451
+      },
+      "nitrofurantoin": {
+        "n_tested": 563,
+        "pct_sus": 0.0
+      },
+      "levofloxacin": {
+        "n_tested": 512,
+        "pct_sus": 0.8633
+      },
+      "meropenem": {
+        "n_tested": 495,
+        "pct_sus": 1.0
+      },
+      "amikacin": {
+        "n_tested": 457,
+        "pct_sus": 1.0
+      },
+      "ertapenem": {
+        "n_tested": 450,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 417,
+        "pct_sus": 0.3213
+      },
+      "tobramycin": {
+        "n_tested": 328,
+        "pct_sus": 0.9573
+      },
+      "cefoxitin": {
+        "n_tested": 228,
+        "pct_sus": 0.7632
+      },
+      "cefepime": {
+        "n_tested": 194,
+        "pct_sus": 0.9794
+      },
+      "aztreonam": {
+        "n_tested": 169,
+        "pct_sus": 0.9467
+      },
+      "cefuroxime": {
+        "n_tested": 100,
+        "pct_sus": 0.0
+      },
+      "tigecycline": {
+        "n_tested": 49,
+        "pct_sus": 0.0
+      }
+    },
+    "mucoid pseudomonas aeruginosa": {
+      "tobramycin": {
+        "n_tested": 3237,
+        "pct_sus": 0.9141
+      },
+      "ceftazidime": {
+        "n_tested": 3235,
+        "pct_sus": 0.8998
+      },
+      "aztreonam": {
+        "n_tested": 3061,
+        "pct_sus": 0.871
+      },
+      "amikacin": {
+        "n_tested": 3009,
+        "pct_sus": 0.7029
+      },
+      "meropenem": {
+        "n_tested": 2807,
+        "pct_sus": 0.8646
+      },
+      "ciprofloxacin": {
+        "n_tested": 2655,
+        "pct_sus": 0.7766
+      },
+      "cefepime": {
+        "n_tested": 2174,
+        "pct_sus": 0.8068
+      },
+      "doripenem": {
+        "n_tested": 1123,
+        "pct_sus": 0.8513
+      },
+      "levofloxacin": {
+        "n_tested": 716,
+        "pct_sus": 0.5922
+      },
+      "gentamicin": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      }
+    },
+    "mycobacterium abscessus": {
+      "clarithromycin": {
+        "n_tested": 149,
+        "pct_sus": 0.6309
+      },
+      "amikacin": {
+        "n_tested": 148,
+        "pct_sus": 0.7905
+      },
+      "linezolid": {
+        "n_tested": 134,
+        "pct_sus": 0.3731
+      },
+      "ciprofloxacin": {
+        "n_tested": 76,
+        "pct_sus": 0.1842
+      },
+      "doxycycline": {
+        "n_tested": 76,
+        "pct_sus": 0.1053
+      },
+      "cefoxitin": {
+        "n_tested": 74,
+        "pct_sus": 0.3108
+      }
+    },
+    "mycobacterium abscessus group": {
+      "clarithromycin": {
+        "n_tested": 65,
+        "pct_sus": 0.3077
+      },
+      "amikacin": {
+        "n_tested": 62,
+        "pct_sus": 0.9516
+      },
+      "moxifloxacin": {
+        "n_tested": 60,
+        "pct_sus": 0.1667
+      },
+      "ciprofloxacin": {
+        "n_tested": 59,
+        "pct_sus": 0.2373
+      },
+      "doxycycline": {
+        "n_tested": 57,
+        "pct_sus": 0.0877
+      },
+      "tobramycin": {
+        "n_tested": 57,
+        "pct_sus": 0.0877
+      },
+      "linezolid": {
+        "n_tested": 50,
+        "pct_sus": 0.64
+      }
+    },
+    "mycobacterium avium complex": {
+      "clarithromycin": {
+        "n_tested": 790,
+        "pct_sus": 0.9519
+      },
+      "moxifloxacin": {
+        "n_tested": 197,
+        "pct_sus": 0.2284
+      },
+      "linezolid": {
+        "n_tested": 193,
+        "pct_sus": 0.1451
+      },
+      "amikacin": {
+        "n_tested": 166,
+        "pct_sus": 0.6807
+      }
+    },
+    "mycobacterium chelonae": {
+      "tobramycin": {
+        "n_tested": 99,
+        "pct_sus": 0.9091
+      },
+      "clarithromycin": {
+        "n_tested": 94,
+        "pct_sus": 0.9574
+      },
+      "linezolid": {
+        "n_tested": 81,
+        "pct_sus": 0.8148
+      },
+      "ciprofloxacin": {
+        "n_tested": 60,
+        "pct_sus": 0.1667
+      },
+      "doxycycline": {
+        "n_tested": 60,
+        "pct_sus": 0.1
+      },
+      "cefoxitin": {
+        "n_tested": 59,
+        "pct_sus": 0.0678
+      }
+    },
+    "mycobacterium fortuitum species group": {
+      "amikacin": {
+        "n_tested": 32,
+        "pct_sus": 1.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 31,
+        "pct_sus": 0.9677
+      },
+      "doxycycline": {
+        "n_tested": 31,
+        "pct_sus": 0.2258
+      }
+    },
+    "non fermenting gram negative rods": {
+      "gentamicin": {
+        "n_tested": 60,
+        "pct_sus": 0.6333
+      },
+      "cefepime": {
+        "n_tested": 59,
+        "pct_sus": 0.7458
+      },
+      "ciprofloxacin": {
+        "n_tested": 57,
+        "pct_sus": 0.8596
+      },
+      "tobramycin": {
+        "n_tested": 55,
+        "pct_sus": 0.6182
+      },
+      "aztreonam": {
+        "n_tested": 51,
+        "pct_sus": 0.3529
+      },
+      "amikacin": {
+        "n_tested": 43,
+        "pct_sus": 0.6744
+      },
+      "meropenem": {
+        "n_tested": 38,
+        "pct_sus": 0.7632
+      },
+      "ceftazidime": {
+        "n_tested": 36,
+        "pct_sus": 0.5278
+      }
+    },
+    "nonfermenting gram negative rods - unidentified": {
+      "ciprofloxacin": {
+        "n_tested": 36,
+        "pct_sus": 0.8056
+      },
+      "cefepime": {
+        "n_tested": 35,
+        "pct_sus": 0.6286
+      },
+      "gentamicin": {
+        "n_tested": 35,
+        "pct_sus": 0.6571
+      },
+      "tobramycin": {
+        "n_tested": 35,
+        "pct_sus": 0.6
+      }
+    },
+    "pantoea agglomerans": {
+      "ciprofloxacin": {
+        "n_tested": 36,
+        "pct_sus": 0.9722
+      },
+      "gentamicin": {
+        "n_tested": 36,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 34,
+        "pct_sus": 1.0
+      }
+    },
+    "proteus mirabilis": {
+      "ampicillin": {
+        "n_tested": 4711,
+        "pct_sus": 0.799
+      },
+      "ciprofloxacin": {
+        "n_tested": 4671,
+        "pct_sus": 0.8675
+      },
+      "gentamicin": {
+        "n_tested": 4641,
+        "pct_sus": 0.9166
+      },
+      "cefazolin": {
+        "n_tested": 4493,
+        "pct_sus": 0.9079
+      },
+      "nitrofurantoin": {
+        "n_tested": 4384,
+        "pct_sus": 0.0005
+      },
+      "ceftriaxone": {
+        "n_tested": 3796,
+        "pct_sus": 0.9531
+      },
+      "levofloxacin": {
+        "n_tested": 3685,
+        "pct_sus": 0.898
+      },
+      "meropenem": {
+        "n_tested": 3376,
+        "pct_sus": 1.0
+      },
+      "amikacin": {
+        "n_tested": 3352,
+        "pct_sus": 0.9955
+      },
+      "ceftazidime": {
+        "n_tested": 3287,
+        "pct_sus": 0.9887
+      },
+      "tetracycline": {
+        "n_tested": 2988,
+        "pct_sus": 0.0
+      },
+      "ertapenem": {
+        "n_tested": 2847,
+        "pct_sus": 1.0
+      },
+      "cefoxitin": {
+        "n_tested": 2308,
+        "pct_sus": 0.9818
+      },
+      "tobramycin": {
+        "n_tested": 2230,
+        "pct_sus": 0.9327
+      },
+      "cefepime": {
+        "n_tested": 1512,
+        "pct_sus": 0.9894
+      },
+      "aztreonam": {
+        "n_tested": 1118,
+        "pct_sus": 0.9911
+      },
+      "cefuroxime": {
+        "n_tested": 187,
+        "pct_sus": 0.9519
+      },
+      "moxifloxacin": {
+        "n_tested": 92,
+        "pct_sus": 0.8152
+      }
+    },
+    "proteus vulgaris group": {
+      "amikacin": {
+        "n_tested": 137,
+        "pct_sus": 1.0
+      },
+      "ampicillin": {
+        "n_tested": 137,
+        "pct_sus": 0.0
+      },
+      "ceftriaxone": {
+        "n_tested": 137,
+        "pct_sus": 0.8321
+      },
+      "gentamicin": {
+        "n_tested": 137,
+        "pct_sus": 0.9854
+      },
+      "ceftazidime": {
+        "n_tested": 136,
+        "pct_sus": 0.9926
+      },
+      "ciprofloxacin": {
+        "n_tested": 136,
+        "pct_sus": 0.9926
+      },
+      "cefazolin": {
+        "n_tested": 134,
+        "pct_sus": 0.0
+      },
+      "ertapenem": {
+        "n_tested": 130,
+        "pct_sus": 1.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 130,
+        "pct_sus": 0.0
+      },
+      "meropenem": {
+        "n_tested": 128,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 110,
+        "pct_sus": 0.0091
+      },
+      "tobramycin": {
+        "n_tested": 110,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 108,
+        "pct_sus": 0.9907
+      },
+      "cefoxitin": {
+        "n_tested": 101,
+        "pct_sus": 0.9802
+      },
+      "aztreonam": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "cefepime": {
+        "n_tested": 31,
+        "pct_sus": 1.0
+      }
+    },
+    "providencia rettgeri": {
+      "ampicillin": {
+        "n_tested": 109,
+        "pct_sus": 0.0
+      },
+      "gentamicin": {
+        "n_tested": 109,
+        "pct_sus": 0.8899
+      },
+      "ciprofloxacin": {
+        "n_tested": 107,
+        "pct_sus": 0.9626
+      },
+      "cefazolin": {
+        "n_tested": 105,
+        "pct_sus": 0.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 104,
+        "pct_sus": 0.0096
+      },
+      "ceftriaxone": {
+        "n_tested": 93,
+        "pct_sus": 0.9892
+      },
+      "levofloxacin": {
+        "n_tested": 91,
+        "pct_sus": 0.9231
+      },
+      "amikacin": {
+        "n_tested": 90,
+        "pct_sus": 1.0
+      },
+      "ceftazidime": {
+        "n_tested": 82,
+        "pct_sus": 0.9268
+      },
+      "meropenem": {
+        "n_tested": 82,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 76,
+        "pct_sus": 0.0
+      },
+      "tobramycin": {
+        "n_tested": 74,
+        "pct_sus": 0.8378
+      },
+      "ertapenem": {
+        "n_tested": 72,
+        "pct_sus": 1.0
+      },
+      "cefoxitin": {
+        "n_tested": 64,
+        "pct_sus": 0.9688
+      },
+      "cefepime": {
+        "n_tested": 33,
+        "pct_sus": 0.9394
+      }
+    },
+    "providencia stuartii": {
+      "ampicillin": {
+        "n_tested": 73,
+        "pct_sus": 0.0137
+      },
+      "gentamicin": {
+        "n_tested": 70,
+        "pct_sus": 0.0857
+      },
+      "ceftriaxone": {
+        "n_tested": 67,
+        "pct_sus": 0.9851
+      },
+      "amikacin": {
+        "n_tested": 66,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 65,
+        "pct_sus": 0.0154
+      },
+      "ciprofloxacin": {
+        "n_tested": 64,
+        "pct_sus": 0.5781
+      },
+      "nitrofurantoin": {
+        "n_tested": 59,
+        "pct_sus": 0.0
+      },
+      "ceftazidime": {
+        "n_tested": 58,
+        "pct_sus": 1.0
+      },
+      "ertapenem": {
+        "n_tested": 56,
+        "pct_sus": 0.9821
+      },
+      "meropenem": {
+        "n_tested": 54,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 37,
+        "pct_sus": 0.5676
+      },
+      "tobramycin": {
+        "n_tested": 35,
+        "pct_sus": 0.0
+      },
+      "cefepime": {
+        "n_tested": 34,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 33,
+        "pct_sus": 0.0
+      },
+      "aztreonam": {
+        "n_tested": 31,
+        "pct_sus": 1.0
+      }
+    },
+    "pseudomonas aeruginosa": {
+      "ciprofloxacin": {
+        "n_tested": 5414,
+        "pct_sus": 0.8404
+      },
+      "tobramycin": {
+        "n_tested": 5141,
+        "pct_sus": 0.9263
+      },
+      "cefepime": {
+        "n_tested": 4916,
+        "pct_sus": 0.9288
+      },
+      "gentamicin": {
+        "n_tested": 4558,
+        "pct_sus": 0.9449
+      },
+      "amikacin": {
+        "n_tested": 3954,
+        "pct_sus": 0.8483
+      },
+      "ceftazidime": {
+        "n_tested": 3818,
+        "pct_sus": 0.9047
+      },
+      "meropenem": {
+        "n_tested": 3730,
+        "pct_sus": 0.889
+      },
+      "levofloxacin": {
+        "n_tested": 2617,
+        "pct_sus": 0.7562
+      },
+      "aztreonam": {
+        "n_tested": 2026,
+        "pct_sus": 0.7759
+      },
+      "doripenem": {
+        "n_tested": 51,
+        "pct_sus": 0.5882
+      }
+    },
+    "pseudomonas aeruginosa (non-mucoid cf)": {
+      "ceftazidime": {
+        "n_tested": 1446,
+        "pct_sus": 0.7483
+      },
+      "meropenem": {
+        "n_tested": 1409,
+        "pct_sus": 0.7516
+      },
+      "tobramycin": {
+        "n_tested": 1380,
+        "pct_sus": 0.7442
+      },
+      "aztreonam": {
+        "n_tested": 1356,
+        "pct_sus": 0.733
+      },
+      "amikacin": {
+        "n_tested": 1329,
+        "pct_sus": 0.5071
+      },
+      "cefepime": {
+        "n_tested": 1275,
+        "pct_sus": 0.7192
+      },
+      "ciprofloxacin": {
+        "n_tested": 1235,
+        "pct_sus": 0.6381
+      },
+      "doripenem": {
+        "n_tested": 823,
+        "pct_sus": 0.6938
+      },
+      "levofloxacin": {
+        "n_tested": 459,
+        "pct_sus": 0.4967
+      }
+    },
+    "pseudomonas putida group": {
+      "gentamicin": {
+        "n_tested": 61,
+        "pct_sus": 1.0
+      },
+      "ciprofloxacin": {
+        "n_tested": 60,
+        "pct_sus": 0.9667
+      },
+      "tobramycin": {
+        "n_tested": 55,
+        "pct_sus": 1.0
+      },
+      "cefepime": {
+        "n_tested": 54,
+        "pct_sus": 1.0
+      },
+      "amikacin": {
+        "n_tested": 49,
+        "pct_sus": 1.0
+      },
+      "ceftazidime": {
+        "n_tested": 46,
+        "pct_sus": 0.9783
+      },
+      "meropenem": {
+        "n_tested": 41,
+        "pct_sus": 0.9512
+      },
+      "levofloxacin": {
+        "n_tested": 40,
+        "pct_sus": 0.975
+      },
+      "aztreonam": {
+        "n_tested": 36,
+        "pct_sus": 0.4444
+      }
+    },
+    "pseudomonas species - fluorescens/putida group": {
+      "tobramycin": {
+        "n_tested": 52,
+        "pct_sus": 0.9808
+      },
+      "gentamicin": {
+        "n_tested": 51,
+        "pct_sus": 0.9804
+      },
+      "cefepime": {
+        "n_tested": 49,
+        "pct_sus": 0.9388
+      },
+      "ciprofloxacin": {
+        "n_tested": 49,
+        "pct_sus": 0.9388
+      }
+    },
+    "pseudomonas species - not p.aeruginosa": {
+      "gentamicin": {
+        "n_tested": 83,
+        "pct_sus": 0.9759
+      },
+      "ciprofloxacin": {
+        "n_tested": 81,
+        "pct_sus": 0.9753
+      },
+      "cefepime": {
+        "n_tested": 77,
+        "pct_sus": 1.0
+      },
+      "tobramycin": {
+        "n_tested": 73,
+        "pct_sus": 1.0
+      },
+      "aztreonam": {
+        "n_tested": 54,
+        "pct_sus": 0.4074
+      },
+      "amikacin": {
+        "n_tested": 53,
+        "pct_sus": 0.9811
+      },
+      "ceftazidime": {
+        "n_tested": 53,
+        "pct_sus": 0.9811
+      },
+      "meropenem": {
+        "n_tested": 50,
+        "pct_sus": 0.94
+      },
+      "levofloxacin": {
+        "n_tested": 45,
+        "pct_sus": 0.9778
+      }
+    },
+    "raoultella ornithinolytica": {
+      "gentamicin": {
+        "n_tested": 53,
+        "pct_sus": 0.9623
+      },
+      "ciprofloxacin": {
+        "n_tested": 52,
+        "pct_sus": 0.9615
+      },
+      "ampicillin": {
+        "n_tested": 51,
+        "pct_sus": 0.0
+      },
+      "levofloxacin": {
+        "n_tested": 50,
+        "pct_sus": 0.96
+      },
+      "cefazolin": {
+        "n_tested": 49,
+        "pct_sus": 0.8163
+      },
+      "ceftriaxone": {
+        "n_tested": 35,
+        "pct_sus": 0.9429
+      },
+      "cefepime": {
+        "n_tested": 33,
+        "pct_sus": 1.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 30,
+        "pct_sus": 1.0
+      }
+    },
+    "salmonella enterica": {
+      "ceftriaxone": {
+        "n_tested": 59,
+        "pct_sus": 0.8814
+      },
+      "ampicillin": {
+        "n_tested": 58,
+        "pct_sus": 0.8276
+      },
+      "ciprofloxacin": {
+        "n_tested": 42,
+        "pct_sus": 0.8095
+      }
+    },
+    "serratia liquefaciens": {
+      "ciprofloxacin": {
+        "n_tested": 47,
+        "pct_sus": 1.0
+      },
+      "gentamicin": {
+        "n_tested": 47,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 46,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 44,
+        "pct_sus": 0.0
+      },
+      "ceftriaxone": {
+        "n_tested": 35,
+        "pct_sus": 0.9143
+      },
+      "ceftazidime": {
+        "n_tested": 33,
+        "pct_sus": 0.9394
+      },
+      "meropenem": {
+        "n_tested": 30,
+        "pct_sus": 1.0
+      }
+    },
+    "serratia marcescens": {
+      "gentamicin": {
+        "n_tested": 944,
+        "pct_sus": 0.9968
+      },
+      "ciprofloxacin": {
+        "n_tested": 913,
+        "pct_sus": 0.9419
+      },
+      "ceftriaxone": {
+        "n_tested": 859,
+        "pct_sus": 0.9558
+      },
+      "ceftazidime": {
+        "n_tested": 858,
+        "pct_sus": 0.9732
+      },
+      "levofloxacin": {
+        "n_tested": 836,
+        "pct_sus": 0.9701
+      },
+      "cefazolin": {
+        "n_tested": 829,
+        "pct_sus": 0.0
+      },
+      "cefoxitin": {
+        "n_tested": 709,
+        "pct_sus": 0.0056
+      },
+      "meropenem": {
+        "n_tested": 679,
+        "pct_sus": 0.9941
+      },
+      "ertapenem": {
+        "n_tested": 609,
+        "pct_sus": 0.9934
+      },
+      "amikacin": {
+        "n_tested": 584,
+        "pct_sus": 0.9949
+      },
+      "cefepime": {
+        "n_tested": 545,
+        "pct_sus": 0.9982
+      },
+      "cefuroxime": {
+        "n_tested": 492,
+        "pct_sus": 0.0
+      },
+      "ampicillin": {
+        "n_tested": 479,
+        "pct_sus": 0.0
+      },
+      "tetracycline": {
+        "n_tested": 474,
+        "pct_sus": 0.2384
+      },
+      "tobramycin": {
+        "n_tested": 474,
+        "pct_sus": 0.9684
+      },
+      "aztreonam": {
+        "n_tested": 399,
+        "pct_sus": 0.9674
+      },
+      "nitrofurantoin": {
+        "n_tested": 387,
+        "pct_sus": 0.0
+      },
+      "tigecycline": {
+        "n_tested": 240,
+        "pct_sus": 0.9667
+      },
+      "moxifloxacin": {
+        "n_tested": 230,
+        "pct_sus": 0.9609
+      },
+      "cefotaxime": {
+        "n_tested": 37,
+        "pct_sus": 0.9189
+      }
+    },
+    "staph aureus {mrsa}": {
+      "linezolid": {
+        "n_tested": 1442,
+        "pct_sus": 0.9965
+      },
+      "vancomycin": {
+        "n_tested": 1442,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 1433,
+        "pct_sus": 0.9191
+      },
+      "clindamycin": {
+        "n_tested": 1390,
+        "pct_sus": 0.405
+      },
+      "erythromycin": {
+        "n_tested": 1374,
+        "pct_sus": 0.1266
+      },
+      "moxifloxacin": {
+        "n_tested": 1369,
+        "pct_sus": 0.2038
+      },
+      "levofloxacin": {
+        "n_tested": 1293,
+        "pct_sus": 0.2011
+      },
+      "gentamicin": {
+        "n_tested": 1290,
+        "pct_sus": 0.9372
+      },
+      "cefazolin": {
+        "n_tested": 151,
+        "pct_sus": 0.0
+      },
+      "doxycycline": {
+        "n_tested": 149,
+        "pct_sus": 0.9664
+      },
+      "tigecycline": {
+        "n_tested": 146,
+        "pct_sus": 1.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 76,
+        "pct_sus": 1.0
+      }
+    },
+    "staph aureus(colony variant - small colony or other morphotype)": {
+      "vancomycin": {
+        "n_tested": 258,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 255,
+        "pct_sus": 0.1725
+      },
+      "clindamycin": {
+        "n_tested": 253,
+        "pct_sus": 0.2806
+      },
+      "ciprofloxacin": {
+        "n_tested": 245,
+        "pct_sus": 0.3551
+      },
+      "moxifloxacin": {
+        "n_tested": 238,
+        "pct_sus": 0.3992
+      }
+    },
+    "staphylococcus aureus": {
+      "vancomycin": {
+        "n_tested": 8414,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 8082,
+        "pct_sus": 0.6542
+      },
+      "erythromycin": {
+        "n_tested": 8011,
+        "pct_sus": 0.5561
+      },
+      "gentamicin": {
+        "n_tested": 7977,
+        "pct_sus": 0.9635
+      },
+      "moxifloxacin": {
+        "n_tested": 5626,
+        "pct_sus": 0.6937
+      },
+      "levofloxacin": {
+        "n_tested": 5379,
+        "pct_sus": 0.6806
+      },
+      "tetracycline": {
+        "n_tested": 5304,
+        "pct_sus": 0.9202
+      },
+      "linezolid": {
+        "n_tested": 4998,
+        "pct_sus": 0.9988
+      },
+      "ciprofloxacin": {
+        "n_tested": 891,
+        "pct_sus": 0.4444
+      },
+      "cefazolin": {
+        "n_tested": 346,
+        "pct_sus": 0.9884
+      },
+      "tigecycline": {
+        "n_tested": 340,
+        "pct_sus": 1.0
+      },
+      "doxycycline": {
+        "n_tested": 337,
+        "pct_sus": 0.997
+      },
+      "nitrofurantoin": {
+        "n_tested": 179,
+        "pct_sus": 1.0
+      }
+    },
+    "staphylococcus lugdunensis": {
+      "vancomycin": {
+        "n_tested": 130,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 117,
+        "pct_sus": 0.8376
+      },
+      "erythromycin": {
+        "n_tested": 114,
+        "pct_sus": 0.8246
+      },
+      "gentamicin": {
+        "n_tested": 110,
+        "pct_sus": 0.9545
+      },
+      "tetracycline": {
+        "n_tested": 75,
+        "pct_sus": 0.8133
+      },
+      "linezolid": {
+        "n_tested": 65,
+        "pct_sus": 1.0
+      },
+      "moxifloxacin": {
+        "n_tested": 61,
+        "pct_sus": 0.9508
+      },
+      "levofloxacin": {
+        "n_tested": 50,
+        "pct_sus": 0.96
+      }
+    },
+    "staphylococcus species - coag negative, not staph saprophyticus": {
+      "vancomycin": {
+        "n_tested": 65,
+        "pct_sus": 1.0
+      },
+      "nitrofurantoin": {
+        "n_tested": 63,
+        "pct_sus": 0.9841
+      },
+      "tetracycline": {
+        "n_tested": 56,
+        "pct_sus": 0.8393
+      },
+      "gentamicin": {
+        "n_tested": 55,
+        "pct_sus": 0.8727
+      },
+      "levofloxacin": {
+        "n_tested": 51,
+        "pct_sus": 0.451
+      },
+      "moxifloxacin": {
+        "n_tested": 49,
+        "pct_sus": 0.551
+      },
+      "linezolid": {
+        "n_tested": 48,
+        "pct_sus": 1.0
+      }
+    },
+    "staphylococcus species -not staph. aureus": {
+      "clindamycin": {
+        "n_tested": 51,
+        "pct_sus": 0.6078
+      },
+      "erythromycin": {
+        "n_tested": 51,
+        "pct_sus": 0.6078
+      },
+      "vancomycin": {
+        "n_tested": 50,
+        "pct_sus": 1.0
+      },
+      "gentamicin": {
+        "n_tested": 46,
+        "pct_sus": 0.8043
+      },
+      "tetracycline": {
+        "n_tested": 40,
+        "pct_sus": 0.55
+      },
+      "levofloxacin": {
+        "n_tested": 38,
+        "pct_sus": 0.8421
+      },
+      "moxifloxacin": {
+        "n_tested": 38,
+        "pct_sus": 0.8421
+      },
+      "linezolid": {
+        "n_tested": 37,
+        "pct_sus": 1.0
+      }
+    },
+    "stenotrophomonas maltophilia": {
+      "levofloxacin": {
+        "n_tested": 1026,
+        "pct_sus": 0.9006
+      },
+      "ceftazidime": {
+        "n_tested": 54,
+        "pct_sus": 0.3889
+      }
+    },
+    "streptococcus agalactiae (group b)": {
+      "clindamycin": {
+        "n_tested": 2685,
+        "pct_sus": 0.587
+      },
+      "levofloxacin": {
+        "n_tested": 2594,
+        "pct_sus": 0.9699
+      },
+      "erythromycin": {
+        "n_tested": 2269,
+        "pct_sus": 0.4989
+      },
+      "vancomycin": {
+        "n_tested": 2205,
+        "pct_sus": 1.0
+      },
+      "ceftriaxone": {
+        "n_tested": 45,
+        "pct_sus": 1.0
+      },
+      "linezolid": {
+        "n_tested": 40,
+        "pct_sus": 1.0
+      }
+    },
+    "streptococcus agalactiae {group b}": {
+      "clindamycin": {
+        "n_tested": 1522,
+        "pct_sus": 0.6406
+      },
+      "erythromycin": {
+        "n_tested": 1498,
+        "pct_sus": 0.5975
+      },
+      "levofloxacin": {
+        "n_tested": 1448,
+        "pct_sus": 0.9841
+      },
+      "vancomycin": {
+        "n_tested": 88,
+        "pct_sus": 1.0
+      }
+    },
+    "streptococcus anginosus group": {
+      "ceftriaxone": {
+        "n_tested": 313,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 307,
+        "pct_sus": 0.6971
+      },
+      "erythromycin": {
+        "n_tested": 300,
+        "pct_sus": 0.6267
+      },
+      "vancomycin": {
+        "n_tested": 209,
+        "pct_sus": 1.0
+      },
+      "levofloxacin": {
+        "n_tested": 91,
+        "pct_sus": 0.989
+      }
+    },
+    "streptococcus bovis gp.": {
+      "ceftriaxone": {
+        "n_tested": 43,
+        "pct_sus": 1.0
+      },
+      "vancomycin": {
+        "n_tested": 43,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 42,
+        "pct_sus": 0.7381
+      },
+      "clindamycin": {
+        "n_tested": 40,
+        "pct_sus": 0.925
+      }
+    },
+    "streptococcus dysgalactiae": {
+      "vancomycin": {
+        "n_tested": 85,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 83,
+        "pct_sus": 0.6747
+      },
+      "erythromycin": {
+        "n_tested": 82,
+        "pct_sus": 0.6585
+      }
+    },
+    "streptococcus gallolyticus": {
+      "ceftriaxone": {
+        "n_tested": 41,
+        "pct_sus": 1.0
+      },
+      "vancomycin": {
+        "n_tested": 41,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 40,
+        "pct_sus": 0.6
+      },
+      "clindamycin": {
+        "n_tested": 36,
+        "pct_sus": 0.7222
+      }
+    },
+    "streptococcus mitis group": {
+      "ceftriaxone": {
+        "n_tested": 268,
+        "pct_sus": 0.9851
+      },
+      "vancomycin": {
+        "n_tested": 266,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 263,
+        "pct_sus": 0.8403
+      },
+      "erythromycin": {
+        "n_tested": 212,
+        "pct_sus": 0.3632
+      },
+      "levofloxacin": {
+        "n_tested": 131,
+        "pct_sus": 0.6718
+      },
+      "linezolid": {
+        "n_tested": 40,
+        "pct_sus": 1.0
+      }
+    },
+    "streptococcus mitis/streptococcus oralis": {
+      "vancomycin": {
+        "n_tested": 59,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 58,
+        "pct_sus": 0.9138
+      },
+      "ceftriaxone": {
+        "n_tested": 57,
+        "pct_sus": 0.9825
+      },
+      "erythromycin": {
+        "n_tested": 52,
+        "pct_sus": 0.4423
+      }
+    },
+    "streptococcus pneumoniae": {
+      "vancomycin": {
+        "n_tested": 887,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 794,
+        "pct_sus": 0.7053
+      },
+      "moxifloxacin": {
+        "n_tested": 751,
+        "pct_sus": 0.9933
+      },
+      "ceftriaxone": {
+        "n_tested": 427,
+        "pct_sus": 0.9789
+      },
+      "clindamycin": {
+        "n_tested": 403,
+        "pct_sus": 0.7643
+      },
+      "doxycycline": {
+        "n_tested": 289,
+        "pct_sus": 0.7924
+      },
+      "levofloxacin": {
+        "n_tested": 270,
+        "pct_sus": 0.9852
+      },
+      "meropenem": {
+        "n_tested": 240,
+        "pct_sus": 0.9792
+      },
+      "cefuroxime": {
+        "n_tested": 186,
+        "pct_sus": 0.7796
+      },
+      "linezolid": {
+        "n_tested": 41,
+        "pct_sus": 1.0
+      }
+    },
+    "streptococcus pyogenes (group a)": {
+      "vancomycin": {
+        "n_tested": 122,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 121,
+        "pct_sus": 0.7603
+      },
+      "clindamycin": {
+        "n_tested": 118,
+        "pct_sus": 0.7542
+      },
+      "levofloxacin": {
+        "n_tested": 53,
+        "pct_sus": 1.0
+      },
+      "ceftriaxone": {
+        "n_tested": 35,
+        "pct_sus": 1.0
+      },
+      "linezolid": {
+        "n_tested": 34,
+        "pct_sus": 1.0
+      }
+    },
+    "streptococcus pyogenes {group a}": {
+      "erythromycin": {
+        "n_tested": 45,
+        "pct_sus": 0.9778
+      },
+      "vancomycin": {
+        "n_tested": 45,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 44,
+        "pct_sus": 0.9773
+      }
+    },
+    "streptococcus salivarius group": {
+      "ceftriaxone": {
+        "n_tested": 51,
+        "pct_sus": 1.0
+      },
+      "erythromycin": {
+        "n_tested": 50,
+        "pct_sus": 0.56
+      },
+      "clindamycin": {
+        "n_tested": 49,
+        "pct_sus": 0.9592
+      },
+      "vancomycin": {
+        "n_tested": 48,
+        "pct_sus": 1.0
+      }
+    },
+    "viridans group streptococci": {
+      "ceftriaxone": {
+        "n_tested": 122,
+        "pct_sus": 1.0
+      },
+      "vancomycin": {
+        "n_tested": 103,
+        "pct_sus": 1.0
+      },
+      "clindamycin": {
+        "n_tested": 92,
+        "pct_sus": 0.837
+      },
+      "erythromycin": {
+        "n_tested": 82,
+        "pct_sus": 0.5732
+      },
+      "levofloxacin": {
+        "n_tested": 50,
+        "pct_sus": 0.88
+      }
+    },
+    "zzzcitrobacter amalonaticus": {
+      "ciprofloxacin": {
+        "n_tested": 35,
+        "pct_sus": 1.0
+      },
+      "gentamicin": {
+        "n_tested": 35,
+        "pct_sus": 1.0
+      },
+      "cefazolin": {
+        "n_tested": 32,
+        "pct_sus": 0.0625
+      },
+      "levofloxacin": {
+        "n_tested": 31,
+        "pct_sus": 1.0
+      }
+    },
+    "zzzenterobacter aerogenes": {
+      "gentamicin": {
+        "n_tested": 725,
+        "pct_sus": 0.9986
+      },
+      "ciprofloxacin": {
+        "n_tested": 722,
+        "pct_sus": 0.9806
+      },
+      "levofloxacin": {
+        "n_tested": 695,
+        "pct_sus": 0.9827
+      },
+      "cefazolin": {
+        "n_tested": 653,
+        "pct_sus": 0.0031
+      },
+      "ceftriaxone": {
+        "n_tested": 594,
+        "pct_sus": 0.9057
+      },
+      "ceftazidime": {
+        "n_tested": 593,
+        "pct_sus": 0.8887
+      },
+      "cefoxitin": {
+        "n_tested": 571,
+        "pct_sus": 0.0
+      },
+      "meropenem": {
+        "n_tested": 351,
+        "pct_sus": 0.9972
+      },
+      "cefepime": {
+        "n_tested": 322,
+        "pct_sus": 1.0
+      },
+      "ertapenem": {
+        "n_tested": 281,
+        "pct_sus": 0.9858
+      },
+      "nitrofurantoin": {
+        "n_tested": 253,
+        "pct_sus": 0.2609
+      },
+      "amikacin": {
+        "n_tested": 235,
+        "pct_sus": 1.0
+      },
+      "tetracycline": {
+        "n_tested": 218,
+        "pct_sus": 0.9128
+      },
+      "tobramycin": {
+        "n_tested": 212,
+        "pct_sus": 0.9953
+      },
+      "ampicillin": {
+        "n_tested": 191,
+        "pct_sus": 0.0
+      },
+      "cefuroxime": {
+        "n_tested": 179,
+        "pct_sus": 0.0615
+      },
+      "aztreonam": {
+        "n_tested": 124,
+        "pct_sus": 0.879
+      },
+      "tigecycline": {
+        "n_tested": 57,
+        "pct_sus": 1.0
+      },
+      "moxifloxacin": {
+        "n_tested": 56,
+        "pct_sus": 1.0
+      }
+    },
+    "zzzproteus vulgaris": {
+      "ampicillin": {
+        "n_tested": 72,
+        "pct_sus": 0.0
+      },
+      "gentamicin": {
+        "n_tested": 72,
+        "pct_sus": 0.9861
+      },
+      "levofloxacin": {
+        "n_tested": 72,
+        "pct_sus": 0.9861
+      },
+      "ciprofloxacin": {
+        "n_tested": 71,
+        "pct_sus": 0.9859
+      },
+      "cefazolin": {
+        "n_tested": 69,
+        "pct_sus": 0.0145
+      },
+      "nitrofurantoin": {
+        "n_tested": 62,
+        "pct_sus": 0.0
+      },
+      "tetracycline": {
+        "n_tested": 44,
+        "pct_sus": 0.0
+      },
+      "ceftriaxone": {
+        "n_tested": 43,
+        "pct_sus": 0.7907
+      },
+      "cefepime": {
+        "n_tested": 32,
+        "pct_sus": 1.0
+      }
+    }
+  }
+}
