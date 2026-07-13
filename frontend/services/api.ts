@@ -6,6 +6,7 @@ import {
   ARMDFormData,
   ARMDRecommendationResponse,
   ARMDOrganismCatalog,
+  LocalesResponse,
 } from '@/types'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -111,9 +112,57 @@ export interface ARMDFeatureImportance {
 export interface ARMDDosageModelInfo {
   model_type: string
   available: boolean
+  validated?: boolean
+  disclaimer?: string
   lookup_entries: number
   fallback_antibiotics: number
   artifacts: Record<string, string>
+}
+
+export interface ARMDEvaluation {
+  seed?: number
+  n_test_rows?: number
+  n_test_patients?: number
+  pooled?: {
+    rf_roc_auc: number
+    antibiogram_baseline_auc: number
+    prevalence_baseline_auc: number
+    rf_lift_over_antibiogram_auc: number
+  }
+  within_cell?: {
+    n_cells: number
+    median_rf_cell_auc: number
+    frac_cells_auc_gt_0_55: number
+    frac_cells_auc_gt_0_60: number
+  }
+  calibration?: {
+    brier_uncalibrated: number
+    brier_isotonic: number
+    served_method: string
+  }
+  top_k?: {
+    top1_informative: number
+    top3_informative: number
+    n_informative_contexts: number
+  }
+  coverage_note?: string
+  figures?: { file: string; title: string; caption: string }[]
+}
+
+export interface ContrastRow {
+  organism: string
+  drug: string
+  us_percent_susceptible: number | null
+  pk_percent_susceptible: number | null
+  pk_gated: boolean
+  delta: number | null
+}
+
+export interface USvsPKContrast {
+  rows: ContrastRow[]
+  us_source?: string
+  pk_source?: string
+  note?: string
 }
 
 export interface ARMDModelInfoResponse {
@@ -137,6 +186,8 @@ export interface ARMDModelInfoResponse {
     recommendation: unknown
     dosage: ARMDDosageModelInfo
   }
+  evaluation?: ARMDEvaluation
+  us_vs_pk_contrast?: USvsPKContrast
 }
 
 export async function getARMDRecommendation(
@@ -152,8 +203,14 @@ export async function getARMDRecommendation(
     lactate: data.lactate ?? undefined,
     procalcitonin: data.procalcitonin ?? undefined,
     ward: data.ward,
+    locale: data.locale ?? 'us_armd',
   }
   const response = await api.post('/api/v2/recommend', payload)
+  return response.data
+}
+
+export async function getARMDLocales(): Promise<LocalesResponse> {
+  const response = await api.get('/api/v2/locales')
   return response.data
 }
 

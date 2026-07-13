@@ -6,7 +6,10 @@ v2: ARMD RandomForest-based (/api/v2/*)  — ACTIVE
 
 from fastapi import APIRouter, HTTPException, status, Response, Query
 from fastapi.responses import JSONResponse
+import json
 import logging
+import os
+from pathlib import Path
 from uuid import uuid4
 from typing import Dict
 
@@ -23,8 +26,9 @@ from app.schemas.request import (
 # from app.services.predictor import PredictionService
 # from app.services.rules import DosingRuleEngine
 from app.services.armd_predictor import ARMDPredictorService
-from app.services.dosage_service import DosageService
+from app.services.dosage_service import DosageService, DOSE_DISCLAIMER
 from app.services.clinical_catalog import ClinicalCatalogService
+from app.services.antibiogram_service import LocaleAntibiogramService
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +41,143 @@ logger = logging.getLogger(__name__)
 armd_service = ARMDPredictorService()
 dosage_service = DosageService()
 clinical_catalog_service = ClinicalCatalogService()
+antibiogram_service = LocaleAntibiogramService()  # pluggable per-locale antibiograms (M4)
+
+# ── Evaluation artifacts (M1) surfaced on /model-info (M6) ──
+# reports/ lives at the repo root: backend/app/api/routes.py -> ../../../reports
+_REPORTS_DIR = Path(os.getenv("REPORTS_DIR", Path(__file__).resolve().parents[3] / "reports"))
+
+
+def _load_evaluation_summary() -> Dict:
+    """Read reports/metrics.json (M1) into a compact block for the dashboard.
+
+    Returns {} if the file is absent (e.g. metrics not yet generated) so the
+    endpoint never 500s on a fresh checkout.
+    """
+    path = _REPORTS_DIR / "metrics.json"
+    if not path.exists():
+        return {}
+    try:
+        m = json.load(open(path, encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning(f"Could not read {path}: {exc}")
+        return {}
+
+    overall = m.get("overall", {})
+    rf = overall.get("rf", {})
+    cell = m.get("per_cell_summary", {})
+    topk = m.get("top_k", {})
+    calib = m.get("calibration", {})
+    return {
+        "seed": (m.get("meta") or {}).get("seed"),
+        "n_test_rows": (m.get("meta") or {}).get("n_test_rows"),
+        "n_test_patients": (m.get("meta") or {}).get("n_test_patients"),
+        "pooled": {
+            "rf_roc_auc": rf.get("roc_auc"),
+            "antibiogram_baseline_auc": overall.get("antibiogram_baseline_auc"),
+            "prevalence_baseline_auc": overall.get("prevalence_baseline_auc"),
+            "rf_lift_over_antibiogram_auc": overall.get("rf_lift_over_antibiogram_auc"),
+        },
+        "within_cell": {
+            "n_cells": cell.get("n_cells_evaluated"),
+            "median_rf_cell_auc": cell.get("median_rf_cell_auc"),
+            "frac_cells_auc_gt_0_55": cell.get("frac_cells_auc_gt_0_55"),
+            "frac_cells_auc_gt_0_60": cell.get("frac_cells_auc_gt_0_60"),
+        },
+        "calibration": {
+            "brier_uncalibrated": calib.get("brier_uncalibrated"),
+            "brier_isotonic": calib.get("brier_isotonic"),
+            "served_method": calib.get("served_method"),
+        },
+        "top_k": {
+            "top1_informative": topk.get("top1_hit_rate_informative"),
+            "top3_informative": topk.get("top3_hit_rate_informative"),
+            "n_informative_contexts": topk.get("n_informative_contexts"),
+        },
+        "coverage_note": (m.get("meta") or {}).get("coverage_rate_vs_clinician"),
+        "figures": [
+            {"file": "per_organism_auc.png",
+             "title": "Per-organism ROC AUC",
+             "caption": "Discrimination varies by organism; pooled AUC hides this."},
+            {"file": "organism_drug_auc_heatmap.png",
+             "title": "Within-(organism × drug) AUC",
+             "caption": "Where the antibiogram is constant (AUC 0.5), cell AUC > 0.5 is the RF's patient-specific lift."},
+            {"file": "calibration_reliability.png",
+             "title": "Calibration / reliability",
+             "caption": "Isotonic calibration cut Brier 0.168 → 0.099; the calibrated model is served."},
+            {"file": "decision_curve.png",
+             "title": "Decision-curve analysis",
+             "caption": "Net benefit vs treat-all / treat-none across thresholds."},
+        ],
+    }
+
+
+# Curated organism/drug pairs for the US-vs-Pakistan contrast chart (M6, T6.3).
+# The list is a hint; only pairs where BOTH locales have a usable value (or PK
+# explicitly gates the drug) are emitted, so nothing is fabricated.
+_CONTRAST_PAIRS = [
+    ("escherichia coli", "ceftriaxone"),
+    ("escherichia coli", "cefotaxime"),
+    ("escherichia coli", "ampicillin"),
+    ("escherichia coli", "trimethoprim sulfamethoxazole"),
+    ("escherichia coli", "ciprofloxacin"),
+    ("escherichia coli", "meropenem"),
+    ("escherichia coli", "nitrofurantoin"),
+    ("klebsiella pneumoniae", "ciprofloxacin"),
+    ("klebsiella pneumoniae", "gentamicin"),
+    ("klebsiella pneumoniae", "aztreonam"),
+    ("salmonella typhi", "ceftriaxone"),
+    ("salmonella typhi", "ciprofloxacin"),
+    ("salmonella typhi", "azithromycin"),
+]
+
+# US cohort keys some Pakistani organisms map to (naming differs across sources).
+_US_ORG_ALIAS = {"salmonella typhi": "salmonella enterica"}
+
+
+def _cell_pct(locale: str, organism: str, drug: str):
+    """(percent_susceptible, status) for a cell, or (None, None) if absent."""
+    cell = antibiogram_service.get_cell(locale, organism, drug)
+    if not cell:
+        return None, None
+    return cell.get("percent_susceptible"), cell.get("status")
+
+
+def _build_us_vs_pk_contrast() -> Dict:
+    """Data-driven US-vs-Pakistan %-susceptible contrast (M6 keystone chart).
+
+    Emits a row only when Pakistan has a usable value OR gates the drug
+    (do_not_use), pairing it with the US value where available. Nothing is
+    invented; rows are sorted by absolute divergence (gated rows first).
+    """
+    rows = []
+    for organism, drug in _CONTRAST_PAIRS:
+        pk_pct, pk_status = _cell_pct("pakistan", organism, drug)
+        gated = pk_status == "do_not_use"
+        if pk_pct is None and not gated:
+            continue  # no honest Pakistani datapoint
+        us_org = _US_ORG_ALIAS.get(organism, organism)
+        us_pct, _ = _cell_pct("us_armd", us_org, drug)
+        pk_value = 0.0 if gated else float(pk_pct)
+        delta = (float(us_pct) - pk_value) if us_pct is not None else None
+        rows.append({
+            "organism": organism,
+            "drug": drug,
+            "us_percent_susceptible": None if us_pct is None else round(float(us_pct), 1),
+            "pk_percent_susceptible": None if (pk_pct is None and not gated) else round(pk_value, 1),
+            "pk_gated": gated,
+            "delta": None if delta is None else round(delta, 1),
+        })
+    rows.sort(key=lambda r: (not r["pk_gated"], -(abs(r["delta"]) if r["delta"] is not None else 0)))
+    pk_meta = (antibiogram_service.locales.get("pakistan", {}) or {}).get("meta", {})
+    us_meta = (antibiogram_service.locales.get("us_armd", {}) or {}).get("meta", {})
+    return {
+        "rows": rows,
+        "us_source": us_meta.get("display_name"),
+        "pk_source": pk_meta.get("display_name"),
+        "note": ("US = ARMD (Stanford) proof-of-method antibiogram; Pakistan = provisional "
+                 "single-centre seed. Contrast is illustrative, not a validated national comparison."),
+    }
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -381,9 +522,71 @@ async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Re
     try:
         logger.info(
             f"[request_id={request_id}] V2 recommend: organism={request.organism!r} "
-            f"culture={request.culture_description!r} age={request.age} ward={request.ward}"
+            f"culture={request.culture_description!r} age={request.age} ward={request.ward} "
+            f"locale={request.locale!r}"
         )
 
+        locale = (request.locale or "us_armd").strip().lower()
+
+        # ── Non-US locale (e.g. Pakistan): aggregate ANTIBIOGRAM path (Route A) ──
+        # Recommendations are driven by the local antibiogram's %-susceptible, NOT the
+        # US-trained RandomForest (Pakistani AMR data is aggregate-only). Gating rules
+        # (do_not_use / unknown / below-threshold) come from ANTIBIOGRAM_README §3.
+        if locale != "us_armd":
+            if not antibiogram_service.has_locale(locale):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=(f"Unknown locale '{locale}'. Available: "
+                            f"{['us_armd'] + antibiogram_service.available_locales()}."),
+                    headers={"X-Request-ID": request_id},
+                )
+            if not antibiogram_service.is_valid_organism(locale, request.organism):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=(f"No local antibiogram for organism '{request.organism}' in locale "
+                            f"'{locale}'. Available: {antibiogram_service.organisms(locale)}."),
+                    headers={"X-Request-ID": request_id},
+                )
+            rec = antibiogram_service.recommend(locale, request.organism, top_k=3)
+            recommendations = []
+            for item in rec["recommendations"]:
+                dosage = dosage_service.get_dosage(
+                    antibiotic=item["antibiotic"],
+                    disease=request.culture_description,
+                    age=request.age,
+                )
+                recommendations.append({
+                    "antibiotic": item["antibiotic"],
+                    "probability": item["probability"],
+                    "dose_range": dosage["dose_range"],
+                    "route": dosage["route"],
+                    "dose_source": dosage["source"],
+                    "basis": "antibiogram",
+                    "percent_susceptible": item["percent_susceptible"],
+                    "source_id": item.get("source_id"),
+                    "confidence": item.get("confidence"),
+                })
+            patient_factors = {
+                "culture_description": request.culture_description,
+                "organism": request.organism,
+                "age": request.age,
+                "gender": request.gender,
+                "ward": request.ward.value,
+                "locale": locale,
+            }
+            return ARMDRecommendationResponse(
+                recommendations=recommendations,
+                patient_factors=patient_factors,
+                culture_description=request.culture_description,
+                all_predictions=rec["all"],
+                locale=locale,
+                basis="antibiogram",
+                excluded=rec["excluded"],
+                antibiogram_meta=rec.get("meta"),
+                dose_disclaimer=DOSE_DISCLAIMER,
+            )
+
+        # ── Default US/ARMD locale: RandomForest scoring path (unchanged) ──
         if not armd_service.is_available():
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -467,6 +670,9 @@ async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Re
             patient_factors=patient_factors,
             culture_description=request.culture_description,
             all_predictions=all_scores,
+            locale="us_armd",
+            basis="model",
+            dose_disclaimer=DOSE_DISCLAIMER,
         )
 
     except HTTPException:
@@ -478,6 +684,48 @@ async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Re
             detail=f"Failed to generate v2 recommendation: {exc}",
             headers={"X-Request-ID": request_id},
         )
+
+
+@v2_router.get(
+    "/locales",
+    summary="Get available recommendation locales",
+    description=(
+        "List the locales the recommender supports for the UI toggle. 'us_armd' is "
+        "RandomForest-scored (organisms come from the culture catalog). Non-US locales "
+        "(e.g. 'pakistan') are antibiogram-driven (Route A) and carry their own organism "
+        "list with a per-organism `has_data` flag."
+    ),
+)
+async def get_v2_locales():
+    locales = [{
+        "id": "us_armd",
+        "display_name": "United States · ARMD (RandomForest)",
+        "basis": "model",
+        "organism_source": "culture_catalog",
+        "meta": None,
+        "organisms": [],
+    }]
+    for loc in antibiogram_service.available_locales():
+        if loc == "us_armd":
+            continue
+        organisms = []
+        for entry in antibiogram_service.organism_entries(loc):
+            rec = antibiogram_service.recommend(loc, entry["name"], top_k=3)
+            organisms.append({
+                "name": entry["name"],
+                "display_name": entry["display_name"],
+                "has_data": bool(rec.get("recommendations")),
+            })
+        data = antibiogram_service.locales.get(loc, {})
+        locales.append({
+            "id": loc,
+            "display_name": (data.get("meta") or {}).get("display_name") or loc,
+            "basis": "antibiogram",
+            "organism_source": "antibiogram",
+            "meta": (data.get("meta") or {}).get("unknown_policy"),
+            "organisms": organisms,
+        })
+    return {"default": "us_armd", "locales": locales}
 
 
 @v2_router.get(
@@ -496,4 +744,6 @@ async def get_v2_model_info():
             'dosage': dosage_model,
         },
         'dosage_model': dosage_model,
+        'evaluation': _load_evaluation_summary(),          # M1 rigour → dashboard (M6)
+        'us_vs_pk_contrast': _build_us_vs_pk_contrast(),    # keystone contrast chart (M6)
     }

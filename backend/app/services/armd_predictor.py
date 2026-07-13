@@ -38,6 +38,7 @@ class ARMDPredictorService:
 
     def __init__(self):
         self.model = None
+        self.model_is_calibrated: bool = False
         self.feature_cols: list[str] = []
         self.selected_antibiotics: list[str] = SELECTED_ANTIBIOTICS
         self.best_threshold: float = 0.5
@@ -62,7 +63,20 @@ class ARMDPredictorService:
         logger.info(f"Looking for ARMD artifacts in: {artifacts_dir}")
 
         try:
-            self.model = joblib.load(artifacts_dir / 'rf_top3_recommender_optimized.joblib')
+            # Prefer the calibrated model (M1/T1.3): isotonic calibration is
+            # monotonic, so rankings/Top-3 are identical to the base RF, but the
+            # returned probabilities are decision-grade (Brier 0.168 -> 0.099).
+            # Fall back to the raw RF if the calibrated artifact isn't present.
+            calibrated_path = artifacts_dir / 'rf_top3_recommender_calibrated.joblib'
+            base_path = artifacts_dir / 'rf_top3_recommender_optimized.joblib'
+            if calibrated_path.exists():
+                self.model = joblib.load(calibrated_path)
+                self.model_is_calibrated = True
+                logger.info("Loaded CALIBRATED recommender (isotonic).")
+            else:
+                self.model = joblib.load(base_path)
+                self.model_is_calibrated = False
+                logger.info("Calibrated artifact not found; loaded raw RF recommender.")
             self.feature_cols = joblib.load(artifacts_dir / 'feature_cols.joblib')
             self.best_threshold = float(joblib.load(artifacts_dir / 'best_threshold.joblib'))
 
@@ -206,6 +220,8 @@ class ARMDPredictorService:
 
         return {
             'model_type': 'RandomForest (ARMD)',
+            'calibrated': self.model_is_calibrated,
+            'calibration_method': 'isotonic' if self.model_is_calibrated else None,
             'n_antibiotics': len(self.selected_antibiotics),
             'n_features': len(self.feature_cols),
             'best_threshold': self.best_threshold,

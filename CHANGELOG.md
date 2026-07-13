@@ -56,6 +56,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Antibiogram clinical filter** (`armd_model/build_antibiogram.py` → `organism_antibiotic_panel.json`) — restricts candidate antibiotics to those a lab actually tests for the organism (CLSI M39 ≥30 isolates; 85 organisms). Applied as Layer 2 of the recommendation engine so clinically nonsensical drugs can never top the ranking.
+
+### Changed
+- **V1 (CatBoost) disabled on `version/v2_release`** — routes, services, and schemas commented out (not deleted); only `/api/v2/*` is mounted. V1 remains the live product on `main`.
+- Backend now deploys from `backend/Dockerfile` (Render) and the frontend via Vercel **Root Directory = `frontend`**; root `vercel.json` and `render.yaml` removed to fix deploy/404 conflicts.
+- Documentation (`README.md` + all `docs/*.md`) rewritten to be V2-primary with verified numbers; V1 kept as a legacy note.
+
+### Fixed
+- Pinned **`scikit-learn==1.3.2`** — newer versions fail to unpickle the shipped artifacts (`SimpleImputer has no attribute _fill_dtype`), which 500'd `/api/v2/recommend`.
+- Lab values now merge correctly (`median_wbc`→`wbc_median` rename; `'Null'` parsed as NaN).
+- Dosage resolution maps culture site → disease (urine→UTI, blood→Bacteremia, respiratory→Pneumonia) and never surfaces "unknown".
+
 ### Planned
 
 - Capture prior antibiotic class exposure and prior organism history in the V2 UI form.
@@ -73,11 +86,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 **Backend — V2 ARMD RandomForest pipeline**
-- `POST /api/v2/recommend` — ARMD RandomForest susceptibility prediction (32 antibiotics) with hybrid dosage (exact lookup → RF fallback → rule engine).
+- `POST /api/v2/recommend` — ARMD RandomForest susceptibility prediction (32 antibiotics) with hybrid dosage (exact lookup → RF fallback → static fallback table).
 - `GET /api/v2/organisms` — Culture sites and valid organism list for the V2 form.
 - `GET /api/v2/model-info` — RF model inventory, held-out test results, global feature importances, and dosage model status.
-- `ARMDPredictorService` — loads RF pipeline + metadata; injects antibiotic as a feature; scores all 32 candidates per request; applies tuned threshold (0.23).
-- `DosageService` — three-tier fallback chain: exact lookup table (45 k rows) → RF dose/route models → V1 rule engine.
+- `ARMDPredictorService` — loads RF pipeline + metadata; injects antibiotic as a feature; scores all 32 candidates per request; tuned threshold (0.50, balanced policy).
+- `DosageService` — three-tier fallback chain: exact lookup table (840 rows) → RF dose/route models → static fallback dosing table (never returns "unknown").
 - `ClinicalCatalogService` — organism / culture-site mappings for the V2 form dropdowns.
 - Ward-to-binary-flag mapping (`general/icu/er` → `ward__ip/icu/er`).
 - HTTP 503 with actionable instructions when V2 artifacts are absent.
@@ -90,8 +103,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - HTTP 503 error message with inline training command shown to the user.
 
 **Training pipeline — V2 ARMD**
-- `armd_model/train_armd.py` — merges 6 ARMD CSV files, engineers 42 features, trains `RandomForestClassifier` (300 trees, max_depth=18, balanced_subsample), tunes decision threshold on validation split (recall-first, min precision 0.85), evaluates on held-out test split (ROC AUC 84.5 %, F1 91.8 %, recall 99.5 %).
-- `armd_model/train_dosage.py` — builds exact lookup table from `d_dose.csv` and trains RF fallback models for unseen antibiotic/organism combinations.
+- `armd_model/train_armd.py` — merges 6 ARMD CSV files (joined on `anon_id`), engineers 46 features, patient-grouped split (`GroupShuffleSplit`), trains `RandomForestClassifier` (150 trees, max_depth=16, min_samples_leaf=4, balanced_subsample), tunes decision threshold on validation split (balanced policy → 0.50), evaluates on held-out test split (ROC AUC 0.851, F1 0.862, recall 0.794, precision 0.942, accuracy 0.788).
+- `armd_model/train_dosage.py` — builds exact lookup table from `d_dose.csv` and trains RF fallback models (500 trees) for unseen `(generic, disease, age_group)` combinations.
 - `armd_model/requirements.txt` — isolated training dependencies.
 
 **Documentation**
@@ -104,6 +117,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - GitHub issue templates and PR template added.
 
 **Infrastructure**
-- `render.yaml` — Render free-tier backend blueprint.
-- `vercel.json` — Vercel frontend deployment configuration.
+- `render.yaml` — Render free-tier backend blueprint. *(Later removed — see [Unreleased]; backend now deploys from `backend/Dockerfile`.)*
+- `vercel.json` — Vercel frontend deployment configuration. *(Root config later removed — see [Unreleased]; frontend now uses Root Directory = `frontend`.)*
 - `.gitignore` updated — datasets, model artifacts, and training outputs excluded; Google Drive link embedded for dataset access.

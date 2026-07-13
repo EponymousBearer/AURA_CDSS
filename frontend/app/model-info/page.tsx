@@ -2,7 +2,62 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { getARMDModelInfo, ARMDModelInfoResponse, ARMDTestSummaryRow } from '@/services/api'
+import { getARMDModelInfo, ARMDModelInfoResponse, ARMDTestSummaryRow, ContrastRow } from '@/services/api'
+import DisclaimerBanner from '@/components/DisclaimerBanner'
+
+function pct1(v: number | null | undefined) {
+  return v === null || v === undefined ? '—' : `${v.toFixed(1)}%`
+}
+
+function auc3(v: number | null | undefined) {
+  return v === null || v === undefined ? '—' : v.toFixed(3)
+}
+
+function titleCase(value: string) {
+  return value
+    .split(' ')
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(' ')
+}
+
+// Grouped US-vs-PK %-susceptible bars for one organism/drug pair.
+function ContrastBars({ row }: { row: ContrastRow }) {
+  const bar = (value: number | null, gated: boolean, color: string) => (
+    <div className="flex items-center gap-2">
+      <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${Math.max(value ?? 0, value === null ? 0 : 2)}%` }}
+        />
+      </div>
+      <span className="w-16 shrink-0 text-right text-xs font-semibold text-slate-600">
+        {value === null ? 'n/a' : `${value.toFixed(0)}%`}
+        {gated ? ' ⛔' : ''}
+      </span>
+    </div>
+  )
+  return (
+    <div className="rounded-lg border border-slate-200 p-4">
+      <div className="mb-2 flex items-baseline justify-between">
+        <span className="text-sm font-semibold capitalize text-slate-800">{row.drug}</span>
+        <span className="text-xs italic text-slate-400">{titleCase(row.organism)}</span>
+      </div>
+      <div className="space-y-2">
+        <div>
+          <span className="text-[11px] font-medium uppercase tracking-wide text-blue-500">🇺🇸 US</span>
+          {bar(row.us_percent_susceptible, false, 'bg-blue-500')}
+        </div>
+        <div>
+          <span className="text-[11px] font-medium uppercase tracking-wide text-rose-500">🇵🇰 Pakistan</span>
+          {bar(row.pk_percent_susceptible, row.pk_gated, row.pk_gated ? 'bg-rose-600' : 'bg-rose-400')}
+        </div>
+      </div>
+      {row.pk_gated && (
+        <p className="mt-2 text-[11px] text-rose-600">Gated off locally — do not use for empiric therapy.</p>
+      )}
+    </div>
+  )
+}
 
 function Spinner() {
   return (
@@ -80,6 +135,10 @@ export default function ModelInfoPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
+      <DisclaimerBanner
+        type="warning"
+        message={<span>For Academic &amp; Research Use Only — Not for Clinical Practice</span>}
+      />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <Link
@@ -143,6 +202,101 @@ export default function ModelInfoPage() {
               ))}
             </section>
 
+            {/* ── Evaluation rigour (M1) ── */}
+            {data.evaluation?.pooled && (
+              <section className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="text-lg font-semibold text-slate-900">Evaluation Rigour</h2>
+                  <span className="text-xs text-slate-400">
+                    Patient-grouped split · seed {data.evaluation.seed} ·{' '}
+                    {data.evaluation.n_test_patients?.toLocaleString()} test patients
+                  </span>
+                </div>
+                <p className="mb-5 max-w-4xl text-sm text-slate-600">
+                  Pooled AUC rewards ranking <em>between</em> drugs — something a global antibiogram does for
+                  free. The model&apos;s real value is <em>within</em> each organism×drug cell, where the
+                  antibiogram is constant (AUC 0.5) and any lift is patient-specific.
+                </p>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-medium text-slate-500">Pooled RF ROC AUC</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-900">{auc3(data.evaluation.pooled.rf_roc_auc)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      antibiogram baseline {auc3(data.evaluation.pooled.antibiogram_baseline_auc)} · lift{' '}
+                      {auc3(data.evaluation.pooled.rf_lift_over_antibiogram_auc)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-teal-200 bg-teal-50 p-4">
+                    <p className="text-sm font-medium text-teal-700">Within-cell median AUC</p>
+                    <p className="mt-1 text-2xl font-semibold text-teal-900">{auc3(data.evaluation.within_cell?.median_rf_cell_auc)}</p>
+                    <p className="mt-1 text-xs text-teal-700">
+                      patient-specific lift over the antibiogram ({data.evaluation.within_cell?.n_cells} cells)
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-medium text-slate-500">Calibration (Brier)</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-900">{auc3(data.evaluation.calibration?.brier_isotonic)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      from {auc3(data.evaluation.calibration?.brier_uncalibrated)} · {data.evaluation.calibration?.served_method} (served)
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-medium text-slate-500">Top-3 hit-rate</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-900">{pct1((data.evaluation.top_k?.top3_informative ?? 0) * 100)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      informative contexts (n={data.evaluation.top_k?.n_informative_contexts?.toLocaleString()})
+                    </p>
+                  </div>
+                </div>
+
+                {data.evaluation.figures && data.evaluation.figures.length > 0 && (
+                  <div className="mt-6 grid gap-6 sm:grid-cols-2">
+                    {data.evaluation.figures.map((fig) => (
+                      <figure key={fig.file} className="rounded-lg border border-slate-200 bg-white p-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/figures/${fig.file}`}
+                          alt={fig.title}
+                          className="h-auto w-full rounded"
+                          loading="lazy"
+                        />
+                        <figcaption className="mt-2">
+                          <span className="text-sm font-semibold text-slate-800">{fig.title}</span>
+                          <span className="mt-0.5 block text-xs text-slate-500">{fig.caption}</span>
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                )}
+
+                {data.evaluation.coverage_note && (
+                  <p className="mt-5 rounded-lg bg-slate-50 px-4 py-3 text-xs text-slate-500">
+                    <span className="font-semibold text-slate-600">Coverage-rate note: </span>
+                    {data.evaluation.coverage_note}
+                  </p>
+                )}
+              </section>
+            )}
+
+            {/* ── US vs Pakistan resistance contrast (localisation keystone) ── */}
+            {data.us_vs_pk_contrast && data.us_vs_pk_contrast.rows.length > 0 && (
+              <section className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-900">US vs Pakistan — Resistance Contrast</h2>
+                <p className="mb-5 mt-1 max-w-4xl text-sm text-slate-600">
+                  The same organism×drug pair can be first-line in one country and useless in another. This is
+                  why AURA localises Layer&nbsp;2: recommendations for Pakistan are driven by the local
+                  antibiogram, not the US-trained model.
+                </p>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {data.us_vs_pk_contrast.rows.map((row) => (
+                    <ContrastBars key={`${row.organism}-${row.drug}`} row={row} />
+                  ))}
+                </div>
+                <p className="mt-5 text-xs text-slate-400">{data.us_vs_pk_contrast.note}</p>
+              </section>
+            )}
+
             <section className="mb-6 grid gap-6 lg:grid-cols-2">
               <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-200 px-5 py-4">
@@ -184,7 +338,9 @@ export default function ModelInfoPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-slate-500">Status</p>
-                    <p className="mt-1 font-semibold text-slate-900">{data.dosage_model.available ? 'ML fallback loaded' : 'Static fallback only'}</p>
+                    <p className="mt-1 font-semibold text-slate-900">
+                      {data.dosage_model.validated === false ? 'Guideline reference (not validated)' : 'Available'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-slate-500">Lookup entries</p>

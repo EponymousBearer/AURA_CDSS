@@ -74,6 +74,9 @@ export interface ApiError {
 
 export type WardType = 'general' | 'icu' | 'er'
 
+// 'us_armd' = RandomForest (US/ARMD); any other id = antibiogram-driven locale (Route A).
+export type LocaleId = 'us_armd' | 'pakistan' | string
+
 export interface ARMDFormData {
   culture_description: string
   organism: string
@@ -84,6 +87,7 @@ export interface ARMDFormData {
   lactate: number | null
   procalcitonin: number | null
   ward: WardType
+  locale: LocaleId
 }
 
 export interface ARMDRecommendation {
@@ -92,6 +96,11 @@ export interface ARMDRecommendation {
   dose_range: string
   route: string
   dose_source: 'lookup' | 'model' | 'fallback'
+  // --- provenance (populated on the antibiogram / Pakistan path) ---
+  basis?: 'model' | 'antibiogram'
+  percent_susceptible?: number | null
+  source_id?: string | null
+  confidence?: string | null
 }
 
 export interface ARMDRecommendationResponse {
@@ -99,6 +108,38 @@ export interface ARMDRecommendationResponse {
   patient_factors: Record<string, unknown>
   culture_description: string
   all_predictions: { antibiotic: string; probability: number }[]
+  // --- locale metadata (additive; US default preserves the original contract) ---
+  locale: LocaleId
+  basis: 'model' | 'antibiogram'
+  excluded?: Record<string, string> | null
+  antibiogram_meta?: {
+    display_name?: string
+    version?: string
+    breakpoint_standard?: string
+    unknown_policy?: string
+    min_isolates_for_filter?: number
+  } | null
+  dose_disclaimer?: string | null
+}
+
+export interface LocaleOrganismOption {
+  name: string
+  display_name: string
+  has_data: boolean
+}
+
+export interface LocaleInfo {
+  id: LocaleId
+  display_name: string
+  basis: 'model' | 'antibiogram'
+  organism_source: 'culture_catalog' | 'antibiogram'
+  meta: string | null
+  organisms: LocaleOrganismOption[]
+}
+
+export interface LocalesResponse {
+  default: LocaleId
+  locales: LocaleInfo[]
 }
 
 export interface ARMDFormProps {
@@ -106,6 +147,8 @@ export interface ARMDFormProps {
   loading: boolean
   hasSubmitted?: boolean
   onReset?: () => void
+  locale: LocaleId
+  localeOrganisms?: LocaleOrganismOption[]
 }
 
 export interface ARMDOrganismCatalog {

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { ARMDFormProps, ARMDFormData, WardType } from '@/types'
 import { getARMDOrganismCatalog } from '@/services/api'
 
+type OrganismChoice = { value: string; label: string; disabled: boolean }
+
 const FALLBACK_ORGANISMS_BY_CULTURE: Record<string, string[]> = {
   blood: ['escherichia coli', 'klebsiella pneumoniae', 'staphylococcus aureus', 'enterococcus faecalis', 'other'],
   urine: ['escherichia coli', 'klebsiella pneumoniae', 'proteus mirabilis', 'pseudomonas aeruginosa', 'other'],
@@ -79,7 +81,15 @@ function LabField({
   )
 }
 
-export default function PatientForm({ onSubmit, loading, hasSubmitted = false, onReset }: ARMDFormProps) {
+export default function PatientForm({
+  onSubmit,
+  loading,
+  hasSubmitted = false,
+  onReset,
+  locale,
+  localeOrganisms = [],
+}: ARMDFormProps) {
+  const isAntibiogram = locale !== 'us_armd'
   const [organismsByCulture, setOrganismsByCulture] = useState<Record<string, string[]>>(
     FALLBACK_ORGANISMS_BY_CULTURE
   )
@@ -95,6 +105,12 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
     ward: 'general',
   })
   const [errors, setErrors] = useState<FormErrors>({})
+
+  // Switching locale changes the organism vocabulary — clear the stale selection.
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, organism: '' }))
+    setErrors((prev) => ({ ...prev, organism: '' }))
+  }, [locale])
 
   useEffect(() => {
     let mounted = true
@@ -124,17 +140,33 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
     [organismsByCulture]
   )
 
-  const organismOptions = useMemo(
-    () => organismsByCulture[form.culture_description] ?? [],
-    [form.culture_description, organismsByCulture]
-  )
+  // US locale: organisms are culture-specific (from the catalog).
+  // Antibiogram locale (e.g. Pakistan): organisms come from the local antibiogram
+  // and are NOT culture-filtered; those without data are shown but disabled.
+  const organismChoices = useMemo<OrganismChoice[]>(() => {
+    if (isAntibiogram) {
+      return localeOrganisms.map((o) => ({
+        value: o.name,
+        label: o.has_data ? o.display_name : `${o.display_name} — data pending`,
+        disabled: !o.has_data,
+      }))
+    }
+    return (organismsByCulture[form.culture_description] ?? []).map((o) => ({
+      value: o,
+      label: displayName(o),
+      disabled: false,
+    }))
+  }, [isAntibiogram, localeOrganisms, organismsByCulture, form.culture_description])
+
+  const organismSelectable = isAntibiogram || Boolean(form.culture_description)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === 'culture_description' ? { organism: '' } : {}),
+      // US path scopes organisms by culture; reset the pick when culture changes.
+      ...(name === 'culture_description' && !isAntibiogram ? { organism: '' } : {}),
     }))
     if (name in errors) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
@@ -151,10 +183,13 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
   const validate = (): boolean => {
     const next: FormErrors = {}
     if (!form.culture_description) next.culture_description = 'Select a culture site'
+    const enabled = organismChoices.filter((c) => !c.disabled).map((c) => c.value)
     if (!form.organism.trim()) {
       next.organism = 'Select an organism'
-    } else if (!organismOptions.includes(form.organism)) {
-      next.organism = 'Select an organism from the list or choose Other'
+    } else if (!enabled.includes(form.organism)) {
+      next.organism = isAntibiogram
+        ? 'Select an organism with local antibiogram data'
+        : 'Select an organism from the list or choose Other'
     }
     const ageErr = validateAge(form.age)
     if (ageErr) next.age = ageErr
@@ -175,6 +210,7 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
       lactate: form.lactate.trim() ? Number(form.lactate) : null,
       procalcitonin: form.procalcitonin.trim() ? Number(form.procalcitonin) : null,
       ward: form.ward,
+      locale,
     }
     onSubmit(data)
   }
@@ -254,15 +290,17 @@ export default function PatientForm({ onSubmit, loading, hasSubmitted = false, o
                 name="organism"
                 value={form.organism}
                 onChange={handleChange}
-                disabled={!form.culture_description}
+                disabled={!organismSelectable}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
               >
                 <option value="">
-                  {form.culture_description ? 'Select organism…' : 'Select culture site first'}
+                  {organismSelectable
+                    ? 'Select organism…'
+                    : 'Select culture site first'}
                 </option>
-                {organismOptions.map((o) => (
-                  <option key={o} value={o}>
-                    {displayName(o)}
+                {organismChoices.map((o) => (
+                  <option key={o.value} value={o.value} disabled={o.disabled}>
+                    {o.label}
                   </option>
                 ))}
               </select>

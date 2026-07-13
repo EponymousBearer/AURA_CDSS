@@ -1,0 +1,152 @@
+{
+  "meta": {
+    "locale": "pakistan",
+    "display_name": "Pakistan (provisional, single-centre seed — REPLACE with national PARN/NIH/GLASS data)",
+    "version": "0.1.0-seed",
+    "generated": "2026-06-24",
+    "breakpoint_standard": "CLSI",
+    "min_isolates_for_filter": 30,
+    "unknown_policy": "no_us_fallback",
+    "sources": [
+      {
+        "id": "lahore_ecoli_10yr",
+        "citation": "Longitudinal trends in antibiotic resistance of E. coli: 10-year retrospective, tertiary care hospital, Lahore (2013-2022). PMC12697045.",
+        "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12697045/",
+        "granularity": "single_center",
+        "years": "2013-2022"
+      },
+      {
+        "id": "pk_kp_resistance",
+        "citation": "AMR & virulence in K. pneumoniae clinical isolates from Pakistan; significant carbapenem & colistin resistance. PMC7846821.",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7846821/",
+        "granularity": "single_center",
+        "years": "n/a"
+      },
+      {
+        "id": "pk_carbapenem_burden",
+        "citation": "Carbapenem resistance burden, tertiary care hospital Pakistan; 42.1% carbapenem-resistant (2019-2022). Antibiotics 2023, MDPI 12/3/525.",
+        "url": "https://www.mdpi.com/2079-6382/12/3/525",
+        "granularity": "single_center",
+        "years": "2019-2022"
+      },
+      {
+        "id": "pk_xdr_typhi_outbreak",
+        "citation": "Continued ceftriaxone-resistant (XDR) S. Typhi outbreak across Pakistan; XDR ~51% of typhoid cases by 2019. PMC8045622.",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8045622/",
+        "granularity": "multicenter",
+        "years": "2017-2019"
+      },
+      {
+        "id": "pk_xdr_typhi_peds",
+        "citation": "Clinical characteristics & resistance of XDR S. Typhi, paediatric Pakistan; meropenem 100%, azithromycin 96.9% susceptible. PMC12811554.",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12811554/",
+        "granularity": "single_center",
+        "years": "recent"
+      },
+      {
+        "id": "pk_cazavi_peds",
+        "citation": "High CAZ-AVI resistance among carbapenem-resistant gram-negatives, paediatric Lahore; 70.5% of CR-GNOs also CAZ-AVI resistant. PMC11911753.",
+        "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11911753/",
+        "granularity": "single_center",
+        "years": "2023"
+      },
+      {
+        "id": "TODO_PARN_national",
+        "citation": "PLACEHOLDER — Pakistan AMR Surveillance (NIH Pakistan) annual report / PARN national antibiogram / WHO GLASS-Pakistan / SOAR 2018-21. FILL THESE IN to upgrade cells from single_center to national_surveillance.",
+        "url": "",
+        "granularity": "placeholder",
+        "years": ""
+      }
+    ],
+    "notes": "SEED FILE — most cells are single-centre, provisional anchors, not a validated national antibiogram. Values are stored as %-SUSCEPTIBLE (converted from reported %-resistance where noted). Organism and drug keys are lowercase snake_case placeholders and MUST be remapped to the model's actual cohort organism strings and `antibiotic` feature names before serving (see ANTIBIOGRAM_README.md). Priority next step: replace single_center cells with national_surveillance figures and fill all status:'unknown' / source_id:'TODO' cells."
+  },
+
+  "organisms": {
+    "escherichia_coli": {
+      "display_name": "Escherichia coli",
+      "notes": "Source values are %R from the Lahore 10-yr series; stored here as %S = 100 - %R (latest available year where a trend was reported).",
+      "drugs": {
+        "ampicillin":                 { "percent_susceptible": 2,  "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "98% resistant." },
+        "amoxicillin_clavulanate":    { "percent_susceptible": 7,  "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "93% resistant." },
+        "cefuroxime":                 { "percent_susceptible": 13, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "87% resistant; rose 80%->95% over decade." },
+        "cefotaxime":                 { "percent_susceptible": 18, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "82% resistant (3rd-gen ceph)." },
+        "ceftriaxone":                { "percent_susceptible": 18, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "Reported with cefotaxime at 82% resistant. KEY US-vs-PK divergence cell." },
+        "imipenem":                   { "percent_susceptible": 94, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "6% resistant but rising (1%->15%)." },
+        "meropenem":                  { "percent_susceptible": 93, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "7% resistant; rising trend." },
+        "gentamicin":                 { "percent_susceptible": 66, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2022",      "confidence": "single_center", "note": "Resistance fell 62%->34%; %S shown for 2022." },
+        "amikacin":                   { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true,  "source_id": "TODO_PARN_national", "year": null,        "confidence": "placeholder",   "note": "Study reported 'no significant change' but no clean %; FILL IN." },
+        "nitrofurantoin":             { "percent_susceptible": 92, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "8% resistant; good UTI option locally." },
+        "trimethoprim_sulfamethoxazole": { "percent_susceptible": 20, "n_isolates": null, "status": "ok",  "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "80% resistant." },
+        "colistin":                   { "percent_susceptible": 99, "n_isolates": null, "status": "ok",      "tested": true,  "source_id": "lahore_ecoli_10yr", "year": "2013-2022", "confidence": "single_center", "note": "1% resistant; last-resort, steward carefully." },
+        "ciprofloxacin":              { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true,  "source_id": "TODO_PARN_national", "year": null,        "confidence": "placeholder",   "note": "High FQ resistance expected in PK; no clean % in source. FILL IN." },
+        "piperacillin_tazobactam":    { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true,  "source_id": "TODO_PARN_national", "year": null,        "confidence": "placeholder",   "note": "FILL IN." }
+      }
+    },
+
+    "klebsiella_pneumoniae": {
+      "display_name": "Klebsiella pneumoniae",
+      "notes": "Single-centre Pakistani isolates; carbapenem & colistin resistance significant. Cross-check against pk_carbapenem_burden (42.1% CR overall).",
+      "drugs": {
+        "imipenem":      { "percent_susceptible": 62, "n_isolates": null, "status": "ok",      "tested": true, "source_id": "pk_kp_resistance",     "year": null, "confidence": "single_center", "note": "38% resistant (CRKP)." },
+        "meropenem":     { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true, "source_id": "TODO_PARN_national",  "year": null, "confidence": "placeholder",   "note": "Carbapenem resistance ~38-42% locally; FILL IN exact %." },
+        "aztreonam":     { "percent_susceptible": 41, "n_isolates": null, "status": "ok",      "tested": true, "source_id": "pk_kp_resistance",     "year": null, "confidence": "single_center", "note": "59% resistant." },
+        "gentamicin":    { "percent_susceptible": 45, "n_isolates": null, "status": "ok",      "tested": true, "source_id": "pk_kp_resistance",     "year": null, "confidence": "single_center", "note": "55% resistant." },
+        "ciprofloxacin": { "percent_susceptible": 47, "n_isolates": null, "status": "ok",      "tested": true, "source_id": "pk_kp_resistance",     "year": null, "confidence": "single_center", "note": "53% resistant." },
+        "ceftriaxone":   { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true, "source_id": "TODO_PARN_national",  "year": null, "confidence": "placeholder",   "note": "Source flags ceftriaxone as the highest-resistance agent; >50% R expected. FILL IN exact %." },
+        "colistin":      { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true, "source_id": "TODO_PARN_national",  "year": null, "confidence": "placeholder",   "note": "Colistin resistance emerging (source notes significant). FILL IN." },
+        "amikacin":      { "percent_susceptible": null,"n_isolates": null,"status": "unknown", "tested": true, "source_id": "TODO_PARN_national",  "year": null, "confidence": "placeholder",   "note": "FILL IN." }
+      }
+    },
+
+    "salmonella_typhi": {
+      "display_name": "Salmonella enterica serovar Typhi",
+      "notes": "XDR outbreak strain dominates (resistant to first-line agents, fluoroquinolones, AND 3rd-gen cephalosporins). For empiric use during the ongoing outbreak, treat ceftriaxone/ciprofloxacin as UNRELIABLE regardless of pooled %. Azithromycin and carbapenems remain the reliable options. This organism is the flagship US-vs-PK divergence case.",
+      "drugs": {
+        "ceftriaxone":                   { "percent_susceptible": 0,  "n_isolates": null, "status": "do_not_use", "tested": true, "source_id": "pk_xdr_typhi_outbreak", "year": "2017-2019", "confidence": "multicenter",   "note": "XDR Typhi is ceftriaxone-resistant; do NOT surface for empiric typhoid in PK. (Standard first-line in US -> this is the headline localisation example.)" },
+        "ciprofloxacin":                 { "percent_susceptible": 0,  "n_isolates": null, "status": "do_not_use", "tested": true, "source_id": "pk_xdr_typhi_peds",    "year": null,        "confidence": "single_center", "note": ">90% fluoroquinolone resistance." },
+        "ampicillin":                    { "percent_susceptible": 0,  "n_isolates": null, "status": "do_not_use", "tested": true, "source_id": "pk_xdr_typhi_peds",    "year": null,        "confidence": "single_center", "note": "First-line agent, resistant in XDR." },
+        "chloramphenicol":               { "percent_susceptible": 0,  "n_isolates": null, "status": "do_not_use", "tested": true, "source_id": "pk_xdr_typhi_peds",    "year": null,        "confidence": "single_center", "note": "First-line agent, resistant in XDR." },
+        "trimethoprim_sulfamethoxazole": { "percent_susceptible": 0,  "n_isolates": null, "status": "do_not_use", "tested": true, "source_id": "pk_xdr_typhi_peds",    "year": null,        "confidence": "single_center", "note": "First-line agent, resistant in XDR." },
+        "azithromycin":                  { "percent_susceptible": 97, "n_isolates": null, "status": "ok",         "tested": true, "source_id": "pk_xdr_typhi_peds",    "year": null,        "confidence": "single_center", "note": "96.9% susceptible; last reliable ORAL option — steward heavily." },
+        "meropenem":                     { "percent_susceptible": 100,"n_isolates": null, "status": "ok",         "tested": true, "source_id": "pk_xdr_typhi_peds",    "year": null,        "confidence": "single_center", "note": "100% susceptible; reliable IV option." },
+        "imipenem":                      { "percent_susceptible": 100,"n_isolates": null, "status": "ok",         "tested": true, "source_id": "pk_xdr_typhi_outbreak","year": "2017-2019", "confidence": "multicenter",   "note": "No resistance observed in XDR isolates." }
+      }
+    },
+
+    "acinetobacter_baumannii": {
+      "display_name": "Acinetobacter baumannii",
+      "notes": "Project dossier (Part 13) cites >50% carbapenem/aminoglycoside resistance among hospitalised patients in PK. No clean per-drug % retrieved yet — FILL IN from national surveillance.",
+      "drugs": {
+        "meropenem":  { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": ">50% carbapenem resistance reported; FILL IN." },
+        "imipenem":   { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "amikacin":   { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": ">50% aminoglycoside resistance reported; FILL IN." },
+        "colistin":   { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "Often last-resort for CRAB; FILL IN." }
+      }
+    },
+
+    "pseudomonas_aeruginosa": {
+      "display_name": "Pseudomonas aeruginosa",
+      "notes": "Among carbapenem-resistant gram-negatives in a paediatric Lahore series, 70.5% were also resistant to ceftazidime-avibactam (pk_cazavi_peds) — relevant caution for CAZ-AVI. Per-drug national % needed.",
+      "drugs": {
+        "piperacillin_tazobactam": { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "ceftazidime":             { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "cefepime":                { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "meropenem":               { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "ciprofloxacin":           { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "amikacin":                { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "ceftazidime_avibactam":   { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "pk_cazavi_peds",     "year": "2023", "confidence": "placeholder", "note": "Caution: 70.5% of CR-GNOs also CAZ-AVI resistant in source. FILL IN P. aeruginosa-specific %." }
+      }
+    },
+
+    "staphylococcus_aureus": {
+      "display_name": "Staphylococcus aureus",
+      "notes": "Gram-positive — placeholder. MRSA prevalence in PK is high; FILL IN national figures.",
+      "drugs": {
+        "oxacillin":   { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "Proxy for MSSA/MRSA split; FILL IN." },
+        "vancomycin":  { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "linezolid":   { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." },
+        "clindamycin": { "percent_susceptible": null, "n_isolates": null, "status": "unknown", "tested": true, "source_id": "TODO_PARN_national", "year": null, "confidence": "placeholder", "note": "FILL IN." }
+      }
+    }
+  }
+}

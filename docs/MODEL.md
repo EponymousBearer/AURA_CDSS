@@ -1,191 +1,255 @@
 # Model Documentation
 
-This document describes the machine learning pipelines for both AURA model versions: the V1 CatBoost per-antibiotic classifiers and the V2 ARMD RandomForest pipeline.
+This document describes the machine-learning pipelines for AURA. The **active** system on this branch (`version/v2_release`) is the **V2 ARMD RandomForest** recommender plus the hybrid dosage model. The **V1 CatBoost** pipeline is the separate product line that lives on `main`; it is summarized here as a [legacy note](#v1-legacy--catboost-on-main) and is commented out on this branch.
+
+All numbers below are verified against the shipped artifacts in `armd_model/artifacts/`.
 
 ---
 
 ## Contents
 
-**V1 — CatBoost**
-- [Dataset](#dataset)
-- [Preprocessing](#preprocessing)
-- [Feature Schema](#feature-schema)
-- [Model Design](#model-design)
-- [Training Pipeline](#training-pipeline)
-- [Evaluation](#evaluation)
-- [Performance Summary](#performance-summary)
-- [Deployment Filtering](#deployment-filtering)
-- [Prediction at Inference](#prediction-at-inference)
-- [Explainability](#explainability)
-- [V1 Limitations](#v1-limitations)
-
-**V2 — ARMD RandomForest**
+**V2 — ARMD RandomForest (active)**
 - [V2 Dataset](#v2-dataset)
+- [V2 Data Pipeline & Feature Engineering](#v2-data-pipeline--feature-engineering)
 - [V2 Feature Schema](#v2-feature-schema)
 - [V2 Model Design](#v2-model-design)
-- [V2 Training Pipeline](#v2-training-pipeline)
 - [V2 Threshold Tuning](#v2-threshold-tuning)
 - [V2 Evaluation](#v2-evaluation)
+- [The Antibiogram Filter](#the-antibiogram-filter)
+- [V2 Inference — the 3-layer engine](#v2-inference--the-3-layer-engine)
 - [Dosage Model](#dosage-model)
-- [V2 Inference Pipeline](#v2-inference-pipeline)
 - [V2 Limitations](#v2-limitations)
 
+**V1 — CatBoost (legacy, `main`)**
+- [V1 legacy note](#v1-legacy--catboost-on-main)
+
 ---
 
-## Dataset
+# V2 — ARMD RandomForest Pipeline
 
-**Source:** Dryad Digital Repository — microbiology culture data.
+`armd_model/train_armd.py` · `armd_model/build_antibiogram.py` · `armd_model/train_dosage.py` · `backend/app/services/armd_predictor.py` · `backend/app/services/dosage_service.py`
 
-**Files:**
+---
 
-| File | Description |
+## V2 Dataset
+
+**Source:** ARMD (Antimicrobial Resistance Microbiology Dataset) — six linked clinical CSV files derived from hospital microbiology records, plus one dosage reference file.
+
+Download from: [Google Drive](https://drive.google.com/drive/folders/1agc1hXlVinXAPM-7E8RFfAFopKVrIota?usp=sharing) → place in `datasets/`.
+
+| File | Role |
 |---|---|
-| `training/microbiology_cultures_demographics.csv` | Patient demographic records tied to culture events |
-| `training/microbiology_cultures_microbial_resistance.csv` | Culture results with per-antibiotic sensitivity outcomes |
+| `microbiology_cultures_cohort.csv` | **Core.** One row per (culture × antibiotic): `organism`, `culture_description`, `antibiotic`, `susceptibility`, `was_positive`. Source of the label, the antibiogram, and the runtime organism dropdown. |
+| `microbiology_cultures_demographics.csv` | `age` (banded), `gender`. |
+| `microbiology_cultures_labs.csv` | Per-period medians: `median_wbc`, `median_cr`, `median_lactate`, `median_procalcitonin`. |
+| `microbiology_cultures_antibiotic_class_exposure.csv` | Prior antibiotic-**class** exposure → `prior_abxclass__*`. |
+| `microbiology_culture_prior_infecting_organism.csv` | Prior infecting organisms → `prior_org__*`. |
+| `microbiology_cultures_ward_info.csv` | Ward flags → `ward__icu` / `ward__er` / `ward__ip`. |
+| `d_dose.csv` | Dosing reference (dose ranges, routes, age bands, disease) → the dosage model. |
 
-**Linkage:** The two files are joined on a shared culture identifier during preprocessing.
+All tables are joined on the patient key **`anon_id`** (not a per-culture id).
 
-**Scale:** After cleaning and filtering, the working dataset contains **22,946 samples** covering **26 antibiotics** across **13 named organisms** plus an "Other" catch-all.
-
----
-
-## Preprocessing
-
-Implemented in `training/preprocess.py` — `DataPreprocessor` class.
-
-### Steps
-
-1. **Load:** Read both Dryad CSV files.
-2. **Merge:** Join demographics onto resistance results.
-3. **Organism normalisation:** Map uppercase Dryad labels to canonical display names.
-   - `"ESCHERICHIA COLI"` → `"E. coli"`
-   - `"KLEBSIELLA PNEUMONIAE"` → `"K. pneumoniae"`
-   - `"PSEUDOMONAS AERUGINOSA"` → `"P. aeruginosa"`
-   - *(full mapping in `preprocess.py`)*
-4. **Age parsing:** Convert bucket strings to midpoint numerics.
-   - `"25-34 years"` → `29.5`
-5. **Synthetic feature assignment:** The source dataset does not provide kidney function or severity. These are assigned using a controlled synthetic scheme for modeling and demonstration purposes.
-6. **Label encoding:** Sensitivity outcomes are binarised (susceptible = 1, resistant = 0). Intermediate categories (e.g. "intermediate") are excluded or treated as resistant.
-7. **Split:** Stratified random split into:
-   - `train.csv` — 70%
-   - `val.csv` — 15%
-   - `test.csv` — 15%
-8. **Report:** Dataset statistics (organism distribution, label rates per antibiotic) are logged.
-
-### Output files
-
-```
-training/data/train.csv
-training/data/val.csv
-training/data/test.csv
-```
+**Label:** `susceptibility` → binary target — **`Susceptible → 1`**, **`Resistant → 0`** (anything else dropped). Only positive cultures (`was_positive ∈ {1,true,t,yes,y,positive}`) and the 32 selected antibiotics are kept.
 
 ---
 
-## Feature Schema
+## V2 Data Pipeline & Feature Engineering
 
-Five input features per sample:
+Implemented in `armd_model/train_armd.py` as an 8-step pipeline.
 
-| Feature | Type | Values | Source |
-|---|---|---|---|
-| `organism` | categorical | 13 + "Other" = 14 classes | Dryad (normalised) |
-| `age` | numeric | 0–100+ (years) | Dryad (parsed from buckets) |
-| `gender` | categorical | M / F | Dryad |
-| `kidney_function` | categorical | normal / mild / low / severe | Synthetic |
-| `severity` | categorical | low / medium / high / critical | Synthetic |
+1. **Load & filter core cohort** — positive cultures only; normalize antibiotic names (lowercase, strip, `_`/`-`→space); keep the 32 selected antibiotics; map label; drop rows missing `anon_id`/`organism`/`culture_description`/`antibiotic`/`target`.
+2. **Demographics** — `age` is stored as **bands** and mapped to a representative midpoint by `convert_age_to_numeric()` (e.g. `65-74 years → 69.5`, `85+ years → 90`, `less than 1 year → 0.5`, `unknown → NaN`).
+3. **Labs** — the file stores medians as `median_wbc`/`median_cr`/`median_lactate`/`median_procalcitonin` and uses the literal string `'Null'` for missing values. These are read with `na_values=['Null']`, **renamed** to the model's `*_median` names (a real bug fixed: without the rename the labs never merged), and collapsed to one row per patient by averaging available medians.
+4. **Prior antibiotic-class exposure (chunked)** — read in 150 k-row chunks; aggregate each patient's set of prior antibiotic classes → `prior_abxclass__*` binary flags.
+5. **Prior infecting organisms (chunked, width-limited)** — same chunked approach; keep the top-50 organisms by frequency → `prior_org__*` flags.
+6. **Ward flags** — `hosp_ward_ICU/ER/IP` → `ward__icu` / `ward__er` / `ward__ip`.
+7. **Merge** — left-join demographics, labs, prior-abx, prior-org, ward onto the core cohort on `anon_id`.
+8. **Sparsity reduction + training** — collapse rare categories (top-40 organisms, top-25 culture sites → `other`; binary columns capped at 120 by frequency), build the pipeline, split, train, tune, evaluate, save.
+
+**Patient-grouped split (leakage prevention):** the data is split with `GroupShuffleSplit` **grouped by `anon_id`** so the same patient never straddles splits — row-level splitting would leak patient signal and inflate metrics. Sizes: **test 20 %**, **validation 15 % of the remaining 80 %** (≈12 % of total), **train ≈ 68 %**. The script asserts zero patient overlap across all three splits.
 
 ---
 
-## Model Design
+## V2 Feature Schema
 
-### Strategy: per-antibiotic binary classification
+**46 model columns** across three groups:
 
-One `CatBoostClassifier` is trained per antibiotic to predict the binary outcome:
+| Group | Count | Columns |
+|---|---:|---|
+| Categorical | 4 | `culture_description`, `organism`, `antibiotic`, `gender` |
+| Numeric | 5 | `age`, `wbc_median`, `cr_median`, `lactate_median`, `procalcitonin_median` |
+| Binary | 37 | 18 × `prior_abxclass__*`, 16 × `prior_org__*`, 3 × `ward__*` |
 
-```
-P(susceptible | organism, age, gender, kidney_function, severity)
-```
+The defining choice: **`antibiotic` is a feature**, not a separate model per drug. One RandomForest scores any antibiotic for any organism and can learn organism × antibiotic interactions.
 
-This approach was chosen over multi-class / multi-label alternatives because:
+**Preprocessing (`ColumnTransformer`):**
+- Categorical → `SimpleImputer(most_frequent)` → `OneHotEncoder(handle_unknown='ignore', sparse_output=False)`. One-hot (not ordinal) is deliberate — it lets the forest split on a *specific* organism/antibiotic/culture value rather than collapsing them to arbitrary integers (and to a global per-antibiotic prior).
+- Numeric + binary → `SimpleImputer(median)`.
 
-- Resistance mechanisms vary independently per antibiotic; a joint model conflates them.
-- Binary classification allows independent quality filtering — poor-performing antibiotics are excluded individually.
-- Each model has its own SHAP attribution space, enabling per-antibiotic explainability.
+**Inference note:** `prior_abxclass__*` and `prior_org__*` are **0 at inference** because the UI does not capture patient history. This reduces accuracy for complex-history patients but does not affect the core organism/antibiotic/lab signal.
 
-### CatBoost configuration
+---
+
+## V2 Model Design
+
+A single scikit-learn `RandomForestClassifier` wrapped in a `Pipeline` with the preprocessor above.
 
 | Hyperparameter | Value | Rationale |
 |---|---|---|
-| Iterations | 300 | Sufficient for 5 features; overfitting unlikely |
-| Learning rate | 0.1 (default) | Standard starting point |
-| Depth | 6 (default) | Balanced capacity |
-| Loss function | `Logloss` | Binary classification |
-| Class weights | Computed | Balances imbalanced susceptibility rates |
-| Categorical features | `['organism', 'gender', 'kidney_function', 'severity']` | CatBoost native handling |
-| Verbose | 0 | Suppressed during training |
+| `n_estimators` | **150** | Sized to fit the Render free tier (512 MB RAM) and stay under GitHub's 100 MB file limit after `compress=3`. |
+| `max_depth` | **16** | Same RAM/size budget. |
+| `min_samples_leaf` | **4** | Regularization against overfitting on rare organism×drug combos. |
+| `max_features` | `'sqrt'` | Standard RF decorrelation. |
+| `class_weight` | `'balanced_subsample'` | Target is imbalanced toward *susceptible*. |
+| `random_state` | `42` | Reproducibility. |
 
-CatBoost encodes categorical features using ordered target statistics (CatBoost's default), which prevents target leakage and handles high-cardinality categoricals without one-hot expansion.
-
----
-
-## Training Pipeline
-
-Implemented in `training/train.py` — `AntibioticPredictorTrainer` class.
-
-### Flow
-
-```
-1. Load train.csv
-2. For each antibiotic column:
-   a. Check class distribution — skip if single class
-   b. Compute class weights (inverse frequency)
-   c. 5-fold cross-validation on training set
-      → record CV AUC
-   d. Train final model on full training set
-   e. Evaluate on val.csv → AUC, F1, accuracy
-   f. Flag as "included" if AUC ≥ 0.65 on validation set
-3. Save all models (including excluded) to pickle:
-   {
-     "models": { antibiotic: CatBoostClassifier },
-     "antibiotic_list": [...included only...],
-     "categorical_features": [...],
-     "positive_rates": { antibiotic: float }
-   }
-4. Save model_metadata.json with per-antibiotic metrics and status
-```
-
-### Artifacts produced
-
-```
-training/output/antibiotic_model.pkl    → copy to backend/model/
-training/output/model_metadata.json     → copy to backend/model/
-training/output/metrics.json            → raw training metrics
-training/output/model_quality_report.json
-training/output/evaluation_report.json
-```
+**32 antibiotics scored:** amikacin, ampicillin, aztreonam, cefazolin, cefepime, cefotaxime, cefoxitin, cefpodoxime, ceftazidime, ceftriaxone, cefuroxime, chloramphenicol, ciprofloxacin, clarithromycin, clindamycin, doripenem, doxycycline, ertapenem, erythromycin, fosfomycin, gentamicin, levofloxacin, linezolid, meropenem, metronidazole, moxifloxacin, nitrofurantoin, streptomycin, tetracycline, tigecycline, tobramycin, vancomycin.
 
 ---
 
-## Evaluation
+## V2 Threshold Tuning
 
-Implemented in `training/evaluate.py`.
+The operating threshold is tuned on the **validation** split by sweeping 0.20–0.80. Three policies are configurable in `train_armd.py`:
 
-The evaluation script loads the trained models and the held-out `test.csv` split and computes:
+- `balanced` — max balanced accuracy (tie-break F1). **Used for the shipped artifact.**
+- `recall_first` — max recall subject to precision ≥ 0.85.
+- `f1` — best F1.
 
-- **AUC-ROC** — primary ranking metric; threshold-independent.
-- **F1 Score** — harmonic mean of precision and recall at the default 0.5 threshold.
-- **Accuracy** — fraction correctly classified.
-- **Confusion matrix** — per antibiotic, for error analysis.
-
-Results are written to `training/output/evaluation_report.json`.
+With the `balanced` policy the selected threshold is **0.50**. Note the threshold is used for binary metrics and an optional candidate cut-off; **the API ranks by absolute probability and always returns the top 3** regardless of threshold.
 
 ---
 
-## Performance Summary
+## V2 Evaluation
 
-Results from `training/output/metrics.json` on the validation set.
+Held-out **test** split (20 %, patient-grouped, never seen in training or tuning), reported for the *susceptible = 1* class at threshold 0.50 — from `split_test_summary.joblib`:
 
-### Included antibiotics (AUC ≥ 0.65)
+| Metric | Value |
+|---|---:|
+| ROC AUC | **0.851** |
+| Accuracy | **0.788** |
+| Balanced accuracy | **0.774** |
+| Precision (S) | **0.942** |
+| Recall (S) | **0.794** |
+| F1 (S) | **0.862** |
+
+**Interpretation:** high precision + moderate recall means when AURA says *susceptible*, it is usually right, at the cost of occasionally missing a susceptible drug. Combined with the antibiogram filter, the shortlist is biased toward drugs that will actually work.
+
+**Top-3 quality:** `train_armd.py` also computes a **Top-3 hit rate** (does ≥1 truly-susceptible drug appear in the top 3?) and **Mean Reciprocal Rank** over sampled positive test contexts. These are printed during training but **not persisted** in the artifacts — re-run training to reproduce them on your split.
+
+### Most important features
+
+Importance is dominated by antibiotic identity, then organism, then labs/demographics (from `feature_importances.joblib`; top 10 served live at `GET /api/v2/model-info`):
+
+| Rank | Feature | Importance |
+|---:|---|---:|
+| 1 | `antibiotic = ampicillin` | 0.195 |
+| 2 | `antibiotic = tetracycline` | 0.090 |
+| 3 | `antibiotic = meropenem` | 0.071 |
+| 4 | `antibiotic = ertapenem` | 0.070 |
+| 5 | `antibiotic = amikacin` | 0.060 |
+| 6 | `organism = escherichia coli` | 0.026 |
+| 7 | `antibiotic = nitrofurantoin` | 0.026 |
+| 8 | `organism = klebsiella pneumoniae` | 0.022 |
+| 9 | `cr_median` (creatinine) | 0.017 |
+| 10 | `age` | 0.012 |
+
+---
+
+## The Antibiogram Filter
+
+Built by `armd_model/build_antibiogram.py` → `organism_antibiotic_panel.json`.
+
+An antibiotic is "allowed" for an organism only if the (organism, antibiotic) pair was tested **≥ 30 times** in the cohort — the **CLSI M39** minimum for antibiogram reporting. This is the clinical candidate filter applied at inference: drugs a lab never tests for an organism (e.g. *metronidazole* vs *E. coli*, *ertapenem* vs *Pseudomonas*) are excluded so they can never dominate the ranking.
+
+- Panel covers **85 organisms**; panel size per organism: **min 1, median 7, max 22** drugs.
+- Unknown organisms fall back to the full 32-drug panel rather than returning nothing.
+
+---
+
+## V2 Inference — the 3-layer engine
+
+`backend/app/services/armd_predictor.py → predict()`:
+
+```
+Layer 1 — Probability scoring
+  For each candidate antibiotic, build a feature row from the patient context
+  with antibiotic set to that drug (prior-history features default to 0),
+  run the RF pipeline → P(susceptible = 1).
+
+Layer 2 — Antibiogram clinical filter
+  Restrict candidates to the organism's allowed panel (≥30 isolates, CLSI M39).
+  Unknown organism → fall back to all 32 antibiotics.
+
+Layer 3 — Ranking
+  Sort allowed candidates by absolute P(susceptible) descending.
+  Top 3 → recommendations; full sorted list → all_predictions (drives the chart).
+```
+
+Each top-3 antibiotic is then enriched with dosage info (below). The ML model proposes, the antibiogram disposes, the ranking presents.
+
+---
+
+## Dosage Model
+
+Implemented in `armd_model/train_dosage.py` and `backend/app/services/dosage_service.py`.
+
+**Keying:** the dose table is keyed by `(generic, disease, age_group)`. Age is bucketed: `child` (<12), `adult` (12–64), `elderly` (≥65). Because the recommender works in culture **sites** but `d_dose` is keyed by **disease**, a site→disease map bridges them:
+
+| Culture site | Mapped disease |
+|---|---|
+| `urine` | Urinary Tract Infection |
+| `blood` | Bacteremia |
+| `respiratory` | Pneumonia |
+
+**Hybrid resolution (priority order):**
+
+```
+Tier 1 — Exact lookup
+  dose_route_lookup.csv (840 rows: most-frequent dose/route per key, built from d_dose.csv).
+  Used only when it carries a real (non-'unknown') value.
+
+Tier 2 — RF fallback (for unseen keys, or when the lookup value is 'unknown')
+  dose_model_hybrid.pkl   → dose range   (RandomForest, 500 trees, OneHotEncoder)
+  route_model_hybrid.pkl  → route        (RandomForest, 500 trees)
+  Features: generic, disease, age_group.
+
+Tier 3 — Static fallback
+  Built-in clinical dosing table covering all 32 antibiotics,
+  so the API NEVER surfaces 'unknown'.
+```
+
+Dose and route are resolved **independently**. The `dose_source` field in the API response reports the tier used (`lookup` / `model` / `fallback`). Routes are `IV`, `PO`, or `IM`.
+
+**Artifacts produced:** `dose_route_lookup.csv`, `dose_model_hybrid.pkl`, `route_model_hybrid.pkl`. (The script can optionally batch-evaluate against `datasets/manual_test_cases_unambiguous.csv` if present.)
+
+---
+
+## V2 Limitations
+
+1. **Prior history defaults to zero** at inference (`prior_abxclass__*`, `prior_org__*` not captured in the UI).
+2. **Uncalibrated probabilities** — RF `predict_proba` is rankable but not calibrated; treat as relative scores.
+3. **No per-prediction explainability** — only global feature importance is exposed (TreeSHAP per request is planned).
+4. **Coarse dosage keying** — depends on `(drug, mapped-disease, age band)`; not weight, renal function, or full indication.
+5. **Single-institution, static snapshot** — local, time-bound resistance patterns; no external validation; periodic retraining required.
+6. **32-antibiotic scope** — drugs outside the selected set cannot be scored.
+
+---
+---
+
+# V1 legacy — CatBoost (on `main`)
+
+> V1 is the original product line. It is **deployed and maintained from the `main` branch** and is **commented out (not deleted)** on this branch — the backend here mounts only `/api/v2/*`. The summary below is for reference; to work on V1, switch to `main`.
+
+- **Source dataset:** Dryad microbiology cultures (`microbiology_cultures_demographics.csv` + `microbiology_cultures_microbial_resistance.csv`), joined during preprocessing. ~**22,946** cleaned samples covering **26 antibiotics** across 13 named organisms + "Other".
+- **Strategy:** one `CatBoostClassifier` **per antibiotic** — `P(susceptible | organism, age, gender, kidney_function, severity)`. Independent quality filtering and SHAP per antibiotic.
+- **CatBoost config:** 300 iterations, lr 0.1, depth 6, `Logloss`, computed class weights, native categorical handling.
+- **Features (5):** `organism` (14 classes), `age` (bucket midpoint), `gender`, `kidney_function` *(synthetic)*, `severity` *(synthetic)*.
+- **Deployment filter:** antibiotics with validation AUC < 0.65 (or degenerate class distribution) are excluded — **23 included, 3 excluded** (Cefpodoxime, Colistin AUC 0.50; Ethambutol degenerate).
+- **Ranking:** raw `predict_proba` − training positive rate (baseline correction) + organism-compatibility weighting.
+- **Dosing:** explicit `DosingRuleEngine` (≈20 antibiotics, 4-tier renal adjustment, severity-based duration).
+- **Explainability:** CatBoost native SHAP per prediction (`/api/v1/explain`).
+
+### V1 validation performance (included antibiotics, AUC ≥ 0.65)
 
 | Antibiotic | AUC | F1 | Accuracy |
 |---|---:|---:|---:|
@@ -213,331 +277,6 @@ Results from `training/output/metrics.json` on the validation set.
 | Gentamicin | 0.6703 | 0.3614 | 0.6226 |
 | Ceftazidime | 0.6685 | 0.2501 | 0.5427 |
 
-**Average AUC (included):** ~0.76
+**Average AUC (included): ~0.76.** High-AUC/low-F1 rows (e.g. Rifampin) reflect class imbalance — AUC measures rank discrimination regardless of threshold.
 
-### Excluded antibiotics
-
-| Antibiotic | AUC | Reason |
-|---|---:|---|
-| Cefpodoxime | 0.500 | No discriminative signal (AUC = chance) |
-| Colistin | 0.500 | No discriminative signal (AUC = chance) |
-| Ethambutol | 0.000 | Degenerate — single class in training data |
-
-### Interpretation notes
-
-- **High AUC, low F1** (e.g. Rifampin AUC 0.82, F1 0.05): the antibiotic is rarely susceptible in the dataset (class imbalance). AUC is still informative because it measures rank discrimination regardless of threshold.
-- **Moderate AUC** (0.65–0.75): predictions carry meaningful signal but with wider uncertainty. The UI surfaces probabilities rather than binary decisions so clinicians can apply their own threshold.
-
----
-
-## Deployment Filtering
-
-At startup, `PredictionService` loads the pickle and exposes only the models whose antibiotic name appears in `antibiotic_list`. This list is populated during training by excluding any antibiotic that fails the AUC ≥ 0.65 threshold or has a degenerate class distribution.
-
-The excluded models are still stored in the pickle (for reference) but are never called at inference time.
-
----
-
-## Prediction at Inference
-
-### Step 1 — Feature DataFrame
-
-```python
-df = pd.DataFrame([{
-    "organism":         normalise(organism),
-    "age":              age,
-    "gender":           gender,
-    "kidney_function":  kidney_function,
-    "severity":         severity
-}])
-```
-
-### Step 2 — Raw probability
-
-For each antibiotic in `antibiotic_list`:
-
-```python
-raw_prob = model.predict_proba(df)[0][1]   # P(susceptible)
-```
-
-### Step 3 — Baseline correction
-
-```python
-adjusted = raw_prob - positive_rates[antibiotic]
-```
-
-`positive_rates[antibiotic]` is the mean susceptibility rate in the training set. Subtracting it produces an *excess susceptibility* score that highlights antibiotics that perform *better than their baseline* for this specific patient.
-
-### Step 4 — Organism compatibility weighting
-
-A clinical compatibility map assigns a multiplier per (organism, antibiotic) pair. For example:
-
-- Vancomycin against Gram-negative organisms receives a penalty (low compatibility).
-- Aztreonam against Gram-positive organisms receives a penalty.
-
-This prevents the ranker from recommending antibiotics that are intrinsically inactive against the target organism regardless of the model's raw score.
-
-### Step 5 — Ranking
-
-The top-k (default 3) antibiotics by adjusted + weighted score are returned.
-
----
-
-## Explainability
-
-AURA uses CatBoost's native SHAP implementation to produce per-prediction feature importances.
-
-```python
-shap_values = model.get_feature_importance(
-    Pool(df, cat_features=categorical_features),
-    type="ShapValues"
-)
-feature_importance = dict(zip(feature_names, shap_values[0][:-1]))
-```
-
-The returned dictionary maps each feature name to its SHAP value:
-
-- **Positive value:** the feature pushed the prediction toward susceptible.
-- **Negative value:** the feature pushed the prediction toward resistant.
-- **Magnitude:** the strength of the contribution relative to the model's base rate.
-
-The frontend renders these values in an expandable modal on each `ResultCard`, sorted by absolute importance.
-
----
-
-## V1 Limitations
-
-1. **Synthetic features:** `kidney_function` and `severity` are not from real clinical records. They demonstrate the system's architecture but reduce clinical validity.
-2. **Training corpus scope:** The Dryad dataset covers a specific time period, geography, and hospital type. Local resistance patterns vary.
-3. **No time dimension:** Resistance rates change over time. The model is a static snapshot and will require retraining as patterns shift.
-4. **Calibration:** `predict_proba` outputs from CatBoost are not calibrated. The displayed percentages are discriminative scores, not clinical probabilities in the strict sense.
-5. **No infection-site modelling:** The same organism may have different susceptibility profiles in a UTI vs. bloodstream infection; this model does not distinguish.
-6. **Label quality:** Some sensitivity outcomes in the Dryad source use intermediate categories that are handled conservatively (treated as resistant), which may underestimate true susceptibility rates.
-
----
-
----
-
-# V2 — ARMD RandomForest Pipeline
-
-`armd_model/train_armd.py` · `armd_model/train_dosage.py` · `backend/app/services/armd_predictor.py`
-
----
-
-## V2 Dataset
-
-**Source:** ARMD (Antimicrobial Resistance Management Dataset) — six linked clinical CSV files derived from hospital microbiology records, plus one dosage reference file.
-
-Download from: [Google Drive](https://drive.google.com/drive/folders/1agc1hXlVinXAPM-7E8RFfAFopKVrIota?usp=sharing) → place in `datasets/`.
-
-| File | Description |
-|---|---|
-| `microbiology_cultures_cohort.csv` | Core culture events: culture ID, organism, antibiotic, susceptibility outcome |
-| `microbiology_cultures_demographics.csv` | Patient demographics: age, gender per culture event |
-| `microbiology_cultures_labs.csv` | Lab values at time of culture: WBC, creatinine, lactate, procalcitonin |
-| `microbiology_cultures_antibiotic_class_exposure.csv` | Prior antibiotic class exposure history per patient |
-| `microbiology_culture_prior_infecting_organism.csv` | Prior infecting organism history per patient |
-| `microbiology_cultures_ward_info.csv` | Ward / unit at time of culture (ICU, ER, inpatient) |
-| `d_dose.csv` | Clinical dosage reference: antibiotic × organism → dose range, route |
-
-All files are joined on a shared culture identifier during preprocessing.
-
----
-
-## V2 Feature Schema
-
-42 model features across six groups:
-
-| Group | Features | Type |
-|---|---|---|
-| Core | `culture_description`, `organism`, `antibiotic` | categorical |
-| Demographics | `age`, `gender` | numeric / categorical |
-| Labs | `wbc_median`, `cr_median`, `lactate_median`, `procalcitonin_median` | numeric |
-| Ward | `ward__icu`, `ward__er`, `ward__ip` | binary |
-| Prior ABX class | `prior_abxclass__<class>` (one per class) | binary |
-| Prior organism | `prior_org__<organism>` (one per organism) | binary |
-
-**Inference note:** Prior ABX class and prior organism features default to `0` at inference time because the V2 UI does not yet capture patient history. This reduces recall for patients with complex prior exposures but does not affect the core susceptibility signal from organism and labs.
-
----
-
-## V2 Model Design
-
-**Strategy: single pipeline with antibiotic as a feature**
-
-One `RandomForestClassifier` is trained on all `(culture, organism, antibiotic)` triplets simultaneously. Antibiotic identity is injected as a categorical feature rather than training a separate model per antibiotic.
-
-```
-Input row:  culture_description | organism | antibiotic | age | gender | wbc | cr | ... | prior_org__*
-Label:      susceptible (1) / resistant (0)
-```
-
-This design is preferred over per-antibiotic classifiers for V2 because:
-- Shared representations — the model learns cross-antibiotic resistance patterns (e.g. beta-lactam class effects).
-- Scalability — adding new antibiotics requires only retraining, not a new model object.
-- Dosage integration — the same feature space is reused for the dosage fallback models.
-
-**RandomForest configuration:**
-
-| Hyperparameter | Value | Rationale |
-|---|---|---|
-| `n_estimators` | 300 | Stable variance reduction across 42 features |
-| `max_depth` | 18 | Captures complex lab × organism × antibiotic interactions |
-| `class_weight` | `balanced_subsample` | Handles susceptibility imbalance independently per tree |
-| `min_samples_leaf` | 5 | Prevents overfitting on rare organism/antibiotic combinations |
-| `random_state` | 42 | Reproducibility |
-
----
-
-## V2 Training Pipeline
-
-Implemented in `armd_model/train_armd.py`.
-
-```
-1.  Load all 6 ARMD CSV files from datasets/
-2.  Merge on culture_id
-3.  Feature engineering
-      a. Aggregate lab values → median per culture event
-      b. One-hot encode prior antibiotic classes   → prior_abxclass__* binary columns
-      c. One-hot encode prior organisms            → prior_org__* binary columns
-      d. Map ward string → binary flags            → ward__icu / ward__er / ward__ip
-4.  Label: susceptibility (1 = susceptible, 0 = resistant / intermediate)
-5.  Stratified split: 70 % train / 15 % val / 15 % test
-6.  Train RandomForestClassifier on train split
-7.  Tune decision threshold on val split (see below)
-8.  Evaluate final model on held-out test split
-9.  Save all artifacts to armd_model/artifacts/
-```
-
-**Artifacts produced:**
-
-| Artifact | Description |
-|---|---|
-| `rf_top3_recommender_optimized.joblib` | Trained RF pipeline (preprocessor + classifier) |
-| `feature_cols.joblib` | Ordered feature column list |
-| `selected_antibiotics.joblib` | 32 antibiotic names |
-| `best_threshold.joblib` | Tuned decision threshold |
-| `feature_importances.joblib` | Per-feature importance scores |
-| `split_test_summary.joblib` | Held-out test metrics dict |
-| `metadata_optimized.json` | Training metadata (date, hyperparameters, metrics) |
-
----
-
-## V2 Threshold Tuning
-
-The model uses a **recall-first** threshold policy:
-
-1. Score all validation samples with `predict_proba`.
-2. Sweep candidate thresholds from 0.01 to 0.99 (step 0.01).
-3. For each threshold compute recall and precision on the validation set.
-4. Select the lowest threshold where **precision ≥ 0.85**, maximising recall.
-
-**Result:** tuned threshold = **0.23**
-
-This prioritises sensitivity (not missing a susceptible antibiotic) over specificity, which is appropriate for a recommendation system where a false negative (missing an effective drug) is more harmful than a false positive (suggesting a drug that is checked further by the clinician).
-
----
-
-## V2 Evaluation
-
-Evaluated on the held-out test split (15 % of data, never seen during training or threshold tuning) at threshold 0.23:
-
-| Metric | Score |
-|---|---:|
-| ROC AUC | 84.5 % |
-| F1 Score | 91.8 % |
-| Recall | 99.5 % |
-| Precision | 85.2 % |
-| Accuracy | 85.2 % |
-
-**Interpretation:**
-- **High recall (99.5 %):** the model rarely misses a susceptible antibiotic, consistent with the recall-first tuning objective.
-- **ROC AUC 84.5 %:** strong rank discrimination across 32 antibiotics and multiple organisms.
-- **Precision 85.2 %:** ~15 % of recommended antibiotics may not be susceptible in vitro; clinicians are expected to confirm with culture results.
-
----
-
-## Dosage Model
-
-Implemented in `armd_model/train_dosage.py` and `backend/app/services/dosage_service.py`.
-
-Uses a **three-tier fallback chain** for every recommended antibiotic:
-
-```
-Tier 1 — Exact lookup
-  Query dose_route_lookup.csv for (antibiotic, organism) pair.
-  If found → return exact dose range and route.
-  Source: 45 k-row lookup table built from d_dose.csv.
-
-Tier 2 — RF fallback
-  If (antibiotic, organism) not in lookup:
-  → dose_model_hybrid.pkl   predicts dose range
-  → route_model_hybrid.pkl  predicts IV / PO route
-  Features: antibiotic and organism (label-encoded).
-
-Tier 3 — Rule engine
-  If RF artifacts unavailable:
-  → V1 DosingRuleEngine (20+ antibiotic entries, 4-tier renal adjustment).
-```
-
-**Artifacts produced by `train_dosage.py`:**
-
-| Artifact | Description |
-|---|---|
-| `dose_route_lookup.csv` | Exact (antibiotic, organism) → dose range + route lookup |
-| `dose_model_hybrid.pkl` | RF fallback for dose range |
-| `route_model_hybrid.pkl` | RF fallback for IV/PO route |
-
-The `dose_source` field in the API response reports which tier was used (`lookup`, `model`, or `rules`), enabling downstream audit of recommendation provenance.
-
----
-
-## V2 Inference Pipeline
-
-At inference time, for a single patient request:
-
-```python
-# 1. Build one feature row per antibiotic (32 total)
-rows = []
-for ab in selected_antibiotics:
-    row = {
-        "culture_description": request.culture_description,
-        "organism":            request.organism,
-        "antibiotic":          ab,
-        "age":                 request.age,
-        "gender":              request.gender,
-        "wbc_median":          request.wbc,
-        "cr_median":           request.cr,
-        "lactate_median":      request.lactate,
-        "procalcitonin_median":request.procalcitonin,
-        "ward__icu":           1 if request.ward == "icu" else 0,
-        "ward__er":            1 if request.ward == "er"  else 0,
-        "ward__ip":            1 if request.ward == "general" else 0,
-        # prior history features default to 0
-    }
-    rows.append(row)
-
-# 2. Score all 32 rows through the RF pipeline
-df = pd.DataFrame(rows)[feature_cols]
-probs = pipeline.predict_proba(df)[:, 1]
-
-# 3. Rank by probability, return top 3
-ranked = sorted(zip(selected_antibiotics, probs), key=lambda x: -x[1])
-top3   = ranked[:3]
-
-# 4. Attach dosage via DosageService (3-tier fallback)
-results = [dosage_service.get_dose(ab, organism) for ab, _ in top3]
-```
-
-The `all_predictions` field in the response contains the full ranked list of all 32 antibiotics, which is used by the `ResistanceChart` component in the frontend.
-
----
-
-## V2 Limitations
-
-1. **Prior history defaults to zero:** `prior_abxclass__*` and `prior_org__*` features are set to 0 at inference because the UI does not capture patient history. Patients with relevant prior exposure may receive suboptimal rankings.
-2. **Uncalibrated probabilities:** `predict_proba` from RandomForest tends to be over-confident near 0 and 1. Outputs are discriminative scores, not calibrated clinical probabilities.
-3. **No per-prediction explainability:** Only global feature importances are available. Per-prediction TreeSHAP is planned but not yet implemented.
-4. **Single-institution data:** The ARMD dataset reflects the resistance patterns of a specific hospital population. Generalisability to other institutions requires external validation.
-5. **Static snapshot:** The model does not incorporate temporal trends. Resistance patterns evolve and the model will require periodic retraining.
-6. **32-antibiotic scope:** Antibiotics not present in the ARMD training data cannot be scored; the dosage fallback chain handles unseen combinations but prediction confidence is lower.
+**V1 limitations:** synthetic `kidney_function`/`severity`; time/geography-bound corpus; no infection-site modelling; uncalibrated probabilities; conservative handling of intermediate labels.

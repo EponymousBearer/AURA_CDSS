@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aura-cdss/antibiogram.schema.json",
+  "title": "AURA Localised Antibiogram",
+  "description": "Pluggable locale antibiogram for AURA Layer-2 (filter + local %-susceptible priors). One file per locale (e.g. us_armd.json, pakistan.json). See ANTIBIOGRAM_README.md.",
+  "type": "object",
+  "required": ["meta", "organisms"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["locale", "version", "breakpoint_standard", "unknown_policy", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "locale": { "type": "string", "description": "Machine key passed as the `locale` param to /recommend, e.g. 'pakistan'." },
+        "display_name": { "type": "string" },
+        "version": { "type": "string", "description": "Semver of THIS antibiogram file." },
+        "generated": { "type": "string", "description": "ISO date this file was assembled/edited." },
+        "breakpoint_standard": { "type": "string", "enum": ["CLSI", "EUCAST", "MIXED", "UNKNOWN"] },
+        "min_isolates_for_filter": { "type": "integer", "minimum": 1, "description": "Cells with n_isolates below this are treated as not-reportable (CLSI M39 guidance ~30)." },
+        "unknown_policy": {
+          "type": "string",
+          "const": "no_us_fallback",
+          "description": "Cells with status 'unknown' or tested=false MUST NOT fall back to another locale's rates. They are surfaced as 'insufficient local data'."
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "citation"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "description": "Short key referenced by each cell's source_id." },
+              "citation": { "type": "string" },
+              "url": { "type": "string" },
+              "granularity": { "type": "string", "enum": ["national_surveillance", "multicenter", "single_center", "review_pooled", "expert_flag", "placeholder"] },
+              "years": { "type": "string" }
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "organisms": {
+      "type": "object",
+      "description": "Keys MUST match the organism strings used by the model/cohort (normalise via the name map; see README).",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["drugs"],
+        "additionalProperties": false,
+        "properties": {
+          "display_name": { "type": "string" },
+          "notes": { "type": "string" },
+          "drugs": {
+            "type": "object",
+            "description": "Keys MUST match the model's `antibiotic` feature names (see README name map).",
+            "additionalProperties": { "$ref": "#/$defs/cell" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "cell": {
+      "type": "object",
+      "required": ["percent_susceptible", "status", "tested", "source_id", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "percent_susceptible": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Local %-susceptible. NULL only when status is 'unknown'. NOTE: store SUSCEPTIBLE, not resistance — convert (100 - %R)."
+        },
+        "n_isolates": { "type": ["integer", "null"], "minimum": 0 },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "unknown", "do_not_use"],
+          "description": "'ok' = usable number. 'unknown' = no local data, do not recommend, do not fall back. 'do_not_use' = clinically flagged off regardless of number (e.g. ceftriaxone for XDR Typhi)."
+        },
+        "tested": {
+          "type": "boolean",
+          "description": "Is this bug-drug pair locally tested/reportable at all? false => dropped by the filter layer."
+        },
+        "source_id": { "type": "string", "description": "Must match a meta.sources[].id, or 'TODO' for placeholders." },
+        "year": { "type": ["string", "null"] },
+        "confidence": {
+          "type": "string",
+          "enum": ["national_surveillance", "multicenter", "single_center", "review_pooled", "expert_flag", "placeholder"]
+        },
+        "note": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "unknown" } } },
+          "then": { "properties": { "percent_susceptible": { "const": null } } }
+        },
+        {
+          "if": { "properties": { "status": { "const": "ok" } } },
+          "then": { "properties": { "percent_susceptible": { "type": "number" } } }
+        }
+      ]
+    }
+  }
+}

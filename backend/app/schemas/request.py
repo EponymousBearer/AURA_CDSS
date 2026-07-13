@@ -238,6 +238,16 @@ class ARMDRecommendationRequest(BaseModel):
     lactate: Optional[float] = Field(None, description="Lactate (mmol/L)", ge=0)
     procalcitonin: Optional[float] = Field(None, description="Procalcitonin (ng/mL)", ge=0)
     ward: WardEnum = Field(WardEnum.GENERAL, description="Patient ward location")
+    locale: str = Field(
+        "us_armd",
+        description=(
+            "Recommendation locale. 'us_armd' (default) = RandomForest scoring on US/ARMD "
+            "data. 'pakistan' = recommendations driven by the Pakistani antibiogram (Route A, "
+            "aggregate data — the US-trained model is NOT used). Additive/back-compatible."
+        ),
+        min_length=1,
+        max_length=64,
+    )
 
     class Config:
         json_schema_extra = {
@@ -262,6 +272,11 @@ class ARMDResult(BaseModel):
     dose_range: str = Field(..., description="Recommended dose range")
     route: str = Field(..., description="Route of administration (IV/PO/IM)")
     dose_source: str = Field(..., description="Source of dosage: lookup | model | fallback")
+    # --- optional provenance (populated for locale='pakistan' antibiogram path) ---
+    basis: Optional[str] = Field(None, description="'model' (RF) or 'antibiogram' (local %-susceptible)")
+    percent_susceptible: Optional[float] = Field(None, description="Local %-susceptible (antibiogram path)")
+    source_id: Optional[str] = Field(None, description="Antibiogram source id (provenance)")
+    confidence: Optional[str] = Field(None, description="Antibiogram source confidence tier")
 
 
 class ARMDRecommendationResponse(BaseModel):
@@ -271,4 +286,16 @@ class ARMDRecommendationResponse(BaseModel):
     culture_description: str = Field(..., description="Culture site used for dosage lookup")
     all_predictions: List[Dict[str, Any]] = Field(
         ..., description="All antibiotics sorted by susceptibility probability"
+    )
+    # --- locale metadata (additive; default preserves the original US contract) ---
+    locale: str = Field("us_armd", description="Recommendation locale used")
+    basis: str = Field("model", description="'model' (RF, US) or 'antibiogram' (local rates, e.g. Pakistan)")
+    excluded: Optional[Dict[str, str]] = Field(
+        None, description="Drugs excluded by the locale antibiogram and why (antibiogram path)"
+    )
+    antibiogram_meta: Optional[Dict[str, Any]] = Field(
+        None, description="Provenance of the locale antibiogram (source, version, breakpoint standard)"
+    )
+    dose_disclaimer: Optional[str] = Field(
+        None, description="Guideline-reference dosing disclaimer (not validated dosing)"
     )

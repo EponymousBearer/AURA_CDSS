@@ -1,0 +1,938 @@
+{
+  "meta": {
+    "seed": 42,
+    "n_test_rows": 177406,
+    "n_test_patients": 13400,
+    "antibiogram_min_isolates": 30,
+    "coverage_rate_vs_clinician": "NOT COMPUTABLE from ARMD: the cohort records the TESTED antibiotic + susceptibility result, not the drug the clinician actually administered (no prescribed-drug field). Per roadmap T1.4, Top-k susceptibility hit-rate is reported as the substitute."
+  },
+  "overall": {
+    "rf": {
+      "roc_auc": 0.8510434181138239,
+      "accuracy": 0.7876114674813705,
+      "balanced_accuracy": 0.7742492167076425,
+      "precision_susceptible": 0.9419714787292884,
+      "recall_susceptible": 0.7942548158161541,
+      "f1_susceptible": 0.8618293429752217,
+      "brier": 0.16769926061391185,
+      "n": 177406
+    },
+    "antibiogram_baseline_auc": 0.8596028503985024,
+    "prevalence_baseline_auc": 0.7665656879764899,
+    "rf_lift_over_antibiogram_auc": -0.008559432284678481
+  },
+  "per_organism": [
+    {
+      "organism": "escherichia coli",
+      "n": 95531,
+      "pos_rate": 0.8593650228721567,
+      "rf_auc": 0.8142093325326756,
+      "antibiogram_auc": 0.791069661054543,
+      "prevalence_auc": 0.7643502148256072
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "n": 17185,
+      "pos_rate": 0.8411405295315683,
+      "rf_auc": 0.9186186256957616,
+      "antibiogram_auc": 0.9044652407433452,
+      "prevalence_auc": 0.8499981881372404
+    },
+    {
+      "organism": "proteus mirabilis",
+      "n": 9354,
+      "pos_rate": 0.8068206115031002,
+      "rf_auc": 0.9088316426798629,
+      "antibiogram_auc": 0.928632295720843,
+      "prevalence_auc": 0.7246042490853665
+    },
+    {
+      "organism": "enterococcus species",
+      "n": 8707,
+      "pos_rate": 0.7843114735270472,
+      "rf_auc": 0.8893008751283249,
+      "antibiogram_auc": 0.8667150570509063,
+      "prevalence_auc": 0.693285198702333
+    },
+    {
+      "organism": "staphylococcus aureus",
+      "n": 6711,
+      "pos_rate": 0.8402622559976158,
+      "rf_auc": 0.8062340033296896,
+      "antibiogram_auc": 0.7844376715465058,
+      "prevalence_auc": 0.7202373429447901
+    },
+    {
+      "organism": "pseudomonas aeruginosa",
+      "n": 4913,
+      "pos_rate": 0.9033177284754732,
+      "rf_auc": 0.7731403429709922,
+      "antibiogram_auc": 0.6601000925025498,
+      "prevalence_auc": 0.5986893100258533
+    },
+    {
+      "organism": "other",
+      "n": 4128,
+      "pos_rate": 0.7652616279069767,
+      "rf_auc": 0.7450937923360811,
+      "antibiogram_auc": 0.7426665373001803,
+      "prevalence_auc": 0.6849867252344032
+    },
+    {
+      "organism": "klebsiella oxytoca",
+      "n": 3193,
+      "pos_rate": 0.8728468524898215,
+      "rf_auc": 0.959991498176792,
+      "antibiogram_auc": 0.9592279248658002,
+      "prevalence_auc": 0.9343269507795695
+    },
+    {
+      "organism": "enterobacter cloacae complex",
+      "n": 3050,
+      "pos_rate": 0.7655737704918033,
+      "rf_auc": 0.929442506102035,
+      "antibiogram_auc": 0.9477800572018988,
+      "prevalence_auc": 0.8049283478833801
+    },
+    {
+      "organism": "citrobacter koseri",
+      "n": 2147,
+      "pos_rate": 0.9874243129948765,
+      "rf_auc": 0.904874213836478,
+      "antibiogram_auc": 0.9233577917540181,
+      "prevalence_auc": 0.8762753319357093
+    },
+    {
+      "organism": "coag negative staphylococcus",
+      "n": 2142,
+      "pos_rate": 0.6694677871148459,
+      "rf_auc": 0.7719315611973935,
+      "antibiogram_auc": 0.8024017209181381,
+      "prevalence_auc": 0.7209624612911614
+    },
+    {
+      "organism": "citrobacter freundii complex",
+      "n": 1957,
+      "pos_rate": 0.7807869187531936,
+      "rf_auc": 0.9041581237261864,
+      "antibiogram_auc": 0.9512716777114683,
+      "prevalence_auc": 0.8140674770255921
+    },
+    {
+      "organism": "serratia marcescens",
+      "n": 1900,
+      "pos_rate": 0.7057894736842105,
+      "rf_auc": 0.9569301205012146,
+      "antibiogram_auc": 0.9711740230703865,
+      "prevalence_auc": 0.8747303630244163
+    },
+    {
+      "organism": "streptococcus agalactiae (group b)",
+      "n": 1884,
+      "pos_rate": 0.7691082802547771,
+      "rf_auc": 0.8142024225982246,
+      "antibiogram_auc": 0.8201510355933144,
+      "prevalence_auc": 0.820005076826666
+    },
+    {
+      "organism": "klebsiella aerogenes",
+      "n": 1619,
+      "pos_rate": 0.7992588017294626,
+      "rf_auc": 0.94491261443348,
+      "antibiogram_auc": 0.9725775769825229,
+      "prevalence_auc": 0.8147247651884437
+    },
+    {
+      "organism": "morganella morganii",
+      "n": 1458,
+      "pos_rate": 0.6598079561042524,
+      "rf_auc": 0.9366134900409094,
+      "antibiogram_auc": 0.9578069462142041,
+      "prevalence_auc": 0.8694828901482128
+    },
+    {
+      "organism": "staph aureus {mrsa}",
+      "n": 1338,
+      "pos_rate": 0.6195814648729447,
+      "rf_auc": 0.8911368586196355,
+      "antibiogram_auc": 0.9050623161856192,
+      "prevalence_auc": 0.7534321892307583
+    },
+    {
+      "organism": "zzzenterobacter aerogenes",
+      "n": 1279,
+      "pos_rate": 0.7372947615324472,
+      "rf_auc": 0.9527581048326011,
+      "antibiogram_auc": 0.9837556178356816,
+      "prevalence_auc": 0.817407716002626
+    },
+    {
+      "organism": "enterococcus faecalis",
+      "n": 1275,
+      "pos_rate": 0.8690196078431373,
+      "rf_auc": 0.9511068116474634,
+      "antibiogram_auc": 0.953900862534858,
+      "prevalence_auc": 0.7056734905639984
+    },
+    {
+      "organism": "mucoid pseudomonas aeruginosa",
+      "n": 1200,
+      "pos_rate": 0.8308333333333333,
+      "rf_auc": 0.7325399844854762,
+      "antibiogram_auc": 0.5599853748437431,
+      "prevalence_auc": 0.49472061504711173
+    },
+    {
+      "organism": "streptococcus agalactiae {group b}",
+      "n": 872,
+      "pos_rate": 0.7064220183486238,
+      "rf_auc": 0.7391024502840909,
+      "antibiogram_auc": 0.7426440746753247,
+      "prevalence_auc": 0.7426630986201299
+    },
+    {
+      "organism": "streptococcus pneumoniae",
+      "n": 801,
+      "pos_rate": 0.8664169787765293,
+      "rf_auc": 0.8324422957795793,
+      "antibiogram_auc": 0.8424614182983652,
+      "prevalence_auc": 0.8104244660507958
+    },
+    {
+      "organism": "pseudomonas aeruginosa (non-mucoid cf)",
+      "n": 574,
+      "pos_rate": 0.6881533101045296,
+      "rf_auc": 0.6175447280956086,
+      "antibiogram_auc": 0.5502368997949225,
+      "prevalence_auc": 0.48256134643943144
+    },
+    {
+      "organism": "enterobacter cloacae",
+      "n": 504,
+      "pos_rate": 0.6805555555555556,
+      "rf_auc": 0.8819060898538652,
+      "antibiogram_auc": 0.925311917135976,
+      "prevalence_auc": 0.8050902703583652
+    },
+    {
+      "organism": "enterococcus faecium",
+      "n": 428,
+      "pos_rate": 0.5630841121495327,
+      "rf_auc": 0.764217720283134,
+      "antibiogram_auc": 0.8305633834069275,
+      "prevalence_auc": 0.7721836376949875
+    },
+    {
+      "organism": "proteus vulgaris group",
+      "n": 336,
+      "pos_rate": 0.6934523809523809,
+      "rf_auc": 0.962456769032043,
+      "antibiogram_auc": 0.9961456727363641,
+      "prevalence_auc": 0.9103504312679694
+    },
+    {
+      "organism": "citrobacter koseri (carbapenem resistant)",
+      "n": 290,
+      "pos_rate": 0.9620689655172414,
+      "rf_auc": 0.9683936135549038,
+      "antibiogram_auc": 0.9902248289345064,
+      "prevalence_auc": 0.8862821766047573
+    },
+    {
+      "organism": "citrobacter freundii",
+      "n": 277,
+      "pos_rate": 0.7653429602888087,
+      "rf_auc": 0.9126269956458637,
+      "antibiogram_auc": 0.9791364296081277,
+      "prevalence_auc": 0.8461901306240929
+    },
+    {
+      "organism": "streptococcus mitis group",
+      "n": 267,
+      "pos_rate": 0.8239700374531835,
+      "rf_auc": 0.8793036750483558,
+      "antibiogram_auc": 0.8886847195357834,
+      "prevalence_auc": 0.8766924564796906
+    },
+    {
+      "organism": "achromobacter xylosoxidans",
+      "n": 248,
+      "pos_rate": 0.31451612903225806,
+      "rf_auc": 0.48763197586727,
+      "antibiogram_auc": 0.783371040723982,
+      "prevalence_auc": 0.4948340874811463
+    },
+    {
+      "organism": "providencia rettgeri",
+      "n": 229,
+      "pos_rate": 0.6855895196506551,
+      "rf_auc": 0.9577583156404812,
+      "antibiogram_auc": 0.9732837933474877,
+      "prevalence_auc": 0.9076433121019107
+    },
+    {
+      "organism": "streptococcus anginosus group",
+      "n": 226,
+      "pos_rate": 0.8849557522123894,
+      "rf_auc": 0.8626923076923076,
+      "antibiogram_auc": 0.7920192307692309,
+      "prevalence_auc": 0.8021153846153848
+    },
+    {
+      "organism": "mycobacterium avium complex",
+      "n": 222,
+      "pos_rate": 0.5990990990990991,
+      "rf_auc": 0.5283010898031596,
+      "antibiogram_auc": 0.9312748162541185,
+      "prevalence_auc": 0.45117005998141413
+    },
+    {
+      "organism": "providencia stuartii",
+      "n": 183,
+      "pos_rate": 0.5409836065573771,
+      "rf_auc": 0.8811928811928812,
+      "antibiogram_auc": 0.9437830687830688,
+      "prevalence_auc": 0.7938311688311688
+    },
+    {
+      "organism": "stenotrophomonas maltophilia",
+      "n": 180,
+      "pos_rate": 0.8944444444444445,
+      "rf_auc": 0.6897678980058842,
+      "antibiogram_auc": 0.5642366786531547,
+      "prevalence_auc": 0.2778685845047402
+    },
+    {
+      "organism": "zzzproteus vulgaris",
+      "n": 147,
+      "pos_rate": 0.5918367346938775,
+      "rf_auc": 0.9492337164750957,
+      "antibiogram_auc": 0.9486590038314175,
+      "prevalence_auc": 0.8697318007662835
+    },
+    {
+      "organism": "citrobacter freundii complex (carbapenem resistant)",
+      "n": 145,
+      "pos_rate": 0.7310344827586207,
+      "rf_auc": 0.9467827769714562,
+      "antibiogram_auc": 0.9755684567005322,
+      "prevalence_auc": 0.8229317851959361
+    },
+    {
+      "organism": "acinetobacter species",
+      "n": 135,
+      "pos_rate": 0.9629629629629629,
+      "rf_auc": 0.6538461538461539,
+      "antibiogram_auc": 0.7184615384615385,
+      "prevalence_auc": 0.7184615384615383
+    },
+    {
+      "organism": "staphylococcus lugdunensis",
+      "n": 130,
+      "pos_rate": 0.9076923076923077,
+      "rf_auc": 0.7002118644067795,
+      "antibiogram_auc": 0.659957627118644,
+      "prevalence_auc": 0.6684322033898304
+    },
+    {
+      "organism": "staph aureus(colony variant - small colony or other morphotype)",
+      "n": 125,
+      "pos_rate": 0.424,
+      "rf_auc": 0.8968815513626833,
+      "antibiogram_auc": 0.7821016771488469,
+      "prevalence_auc": 0.7802672955974843
+    },
+    {
+      "organism": "acinetobacter baumannii complex",
+      "n": 116,
+      "pos_rate": 0.9051724137931034,
+      "rf_auc": 0.5393939393939394,
+      "antibiogram_auc": 0.5177489177489178,
+      "prevalence_auc": 0.48051948051948057
+    }
+  ],
+  "per_drug": [
+    {
+      "antibiotic": "ciprofloxacin",
+      "n": 15362,
+      "pos_rate": 0.8319229267022523,
+      "rf_auc": 0.6896840289520927,
+      "antibiogram_auc": 0.6239807248690525,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "levofloxacin",
+      "n": 14764,
+      "pos_rate": 0.8307369276618802,
+      "rf_auc": 0.7025916603902058,
+      "antibiogram_auc": 0.68688520658977,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "gentamicin",
+      "n": 14650,
+      "pos_rate": 0.9166552901023891,
+      "rf_auc": 0.6991821396468056,
+      "antibiogram_auc": 0.6407983407015352,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "ampicillin",
+      "n": 13825,
+      "pos_rate": 0.5231826401446654,
+      "rf_auc": 0.7810631289437973,
+      "antibiogram_auc": 0.7599858040916834,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "cefazolin",
+      "n": 11882,
+      "pos_rate": 0.7833698030634574,
+      "rf_auc": 0.7974512446203466,
+      "antibiogram_auc": 0.763334040380667,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "nitrofurantoin",
+      "n": 11559,
+      "pos_rate": 0.8608876200363353,
+      "rf_auc": 0.9494380361782686,
+      "antibiogram_auc": 0.9425343386574314,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "ceftriaxone",
+      "n": 10527,
+      "pos_rate": 0.8907571007884487,
+      "rf_auc": 0.6560838035711802,
+      "antibiogram_auc": 0.5877960411923717,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "tetracycline",
+      "n": 9923,
+      "pos_rate": 0.5852060868688904,
+      "rf_auc": 0.7682140434712104,
+      "antibiogram_auc": 0.7677030946699327,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "meropenem",
+      "n": 9744,
+      "pos_rate": 0.985940065681445,
+      "rf_auc": 0.9505591649641115,
+      "antibiogram_auc": 0.947713004279878,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "ceftazidime",
+      "n": 9498,
+      "pos_rate": 0.9112444725205306,
+      "rf_auc": 0.7020181149960287,
+      "antibiogram_auc": 0.6189838086172669,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "amikacin",
+      "n": 9296,
+      "pos_rate": 0.9782702237521514,
+      "rf_auc": 0.9425665818176275,
+      "antibiogram_auc": 0.9146164808915465,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "ertapenem",
+      "n": 8270,
+      "pos_rate": 0.9960096735187425,
+      "rf_auc": 0.9105992546565569,
+      "antibiogram_auc": 0.8811626033308685,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "tobramycin",
+      "n": 7307,
+      "pos_rate": 0.9239085808129192,
+      "rf_auc": 0.7418753043780352,
+      "antibiogram_auc": 0.6360873528994905,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "cefoxitin",
+      "n": 6647,
+      "pos_rate": 0.8322551527004663,
+      "rf_auc": 0.8837710637497609,
+      "antibiogram_auc": 0.8738133452655403,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "cefepime",
+      "n": 5467,
+      "pos_rate": 0.9396378269617707,
+      "rf_auc": 0.7606795028344572,
+      "antibiogram_auc": 0.6654328962193474,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "vancomycin",
+      "n": 3631,
+      "pos_rate": 0.9650234095290554,
+      "rf_auc": 0.9369449537985833,
+      "antibiogram_auc": 0.8868672023873728,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "aztreonam",
+      "n": 3287,
+      "pos_rate": 0.8737450562823244,
+      "rf_auc": 0.712521814276605,
+      "antibiogram_auc": 0.6943756921837769,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "clindamycin",
+      "n": 2764,
+      "pos_rate": 0.6613603473227206,
+      "rf_auc": 0.6118121598496326,
+      "antibiogram_auc": 0.6104404538143597,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "erythromycin",
+      "n": 2724,
+      "pos_rate": 0.5447870778267254,
+      "rf_auc": 0.6481670072167638,
+      "antibiogram_auc": 0.6363642291974612,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "linezolid",
+      "n": 2183,
+      "pos_rate": 0.9748053137883647,
+      "rf_auc": 0.979383116883117,
+      "antibiogram_auc": 0.9805322966507176,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "moxifloxacin",
+      "n": 1655,
+      "pos_rate": 0.6622356495468278,
+      "rf_auc": 0.7654505569121084,
+      "antibiogram_auc": 0.7787955551493151,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "cefuroxime",
+      "n": 1018,
+      "pos_rate": 0.6139489194499018,
+      "rf_auc": 0.8123236641221372,
+      "antibiogram_auc": 0.8485862595419846,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "tigecycline",
+      "n": 494,
+      "pos_rate": 0.9635627530364372,
+      "rf_auc": 0.8408029878618114,
+      "antibiogram_auc": 0.9449112978524744,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "doxycycline",
+      "n": 258,
+      "pos_rate": 0.6356589147286822,
+      "rf_auc": 0.6767319667877529,
+      "antibiogram_auc": 0.777147119875454,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "doripenem",
+      "n": 167,
+      "pos_rate": 0.8323353293413174,
+      "rf_auc": 0.6860226104830421,
+      "antibiogram_auc": 0.6012332990750257,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "clarithromycin",
+      "n": 164,
+      "pos_rate": 0.8780487804878049,
+      "rf_auc": 0.6413194444444444,
+      "antibiogram_auc": 0.7645833333333333,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "cefotaxime",
+      "n": 147,
+      "pos_rate": 0.9591836734693877,
+      "rf_auc": 0.7677304964539007,
+      "antibiogram_auc": 0.529550827423168,
+      "prevalence_auc": 0.5
+    },
+    {
+      "antibiotic": "fosfomycin",
+      "n": 123,
+      "pos_rate": 0.967479674796748,
+      "rf_auc": 0.8876050420168067,
+      "antibiogram_auc": 0.5703781512605042,
+      "prevalence_auc": 0.5
+    }
+  ],
+  "per_cell_summary": {
+    "n_cells_evaluated": 219,
+    "min_cell_support": 50,
+    "median_rf_cell_auc": 0.6501009717451716,
+    "mean_rf_cell_auc": 0.6462086242359907,
+    "frac_cells_auc_gt_0_55": 0.8036529680365296,
+    "frac_cells_auc_gt_0_60": 0.6712328767123288,
+    "interpretation": "Within a cell the antibiogram is constant (AUC=0.5); cell AUC>0.5 is the RF patient-specific lift. Median near 0.5 => little lift over the antibiogram."
+  },
+  "per_cell_top": [
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "ampicillin",
+      "n": 8791,
+      "pos_rate": 0.548856785348652,
+      "rf_auc": 0.5553385643252622,
+      "lift_over_antibiogram": 0.055338564325262185
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "ciprofloxacin",
+      "n": 8468,
+      "pos_rate": 0.7970004723665565,
+      "rf_auc": 0.6805542302994321,
+      "lift_over_antibiogram": 0.18055423029943207
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "gentamicin",
+      "n": 8343,
+      "pos_rate": 0.8977586000239722,
+      "rf_auc": 0.6207766666614494,
+      "lift_over_antibiogram": 0.12077666666144937
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "cefazolin",
+      "n": 7976,
+      "pos_rate": 0.856444332998997,
+      "rf_auc": 0.6501009717451716,
+      "lift_over_antibiogram": 0.15010097174517156
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "nitrofurantoin",
+      "n": 7376,
+      "pos_rate": 0.9808839479392625,
+      "rf_auc": 0.7106123209183098,
+      "lift_over_antibiogram": 0.21061232091830984
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "levofloxacin",
+      "n": 7057,
+      "pos_rate": 0.7959472863823154,
+      "rf_auc": 0.6848168011789607,
+      "lift_over_antibiogram": 0.1848168011789607
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "ceftriaxone",
+      "n": 6665,
+      "pos_rate": 0.8745686421605401,
+      "rf_auc": 0.6572806442954343,
+      "lift_over_antibiogram": 0.1572806442954343
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "meropenem",
+      "n": 5753,
+      "pos_rate": 0.9996523552928906,
+      "rf_auc": 0.5684228829768736,
+      "lift_over_antibiogram": 0.0684228829768736
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "ceftazidime",
+      "n": 5565,
+      "pos_rate": 0.9115902964959569,
+      "rf_auc": 0.6861304627239058,
+      "lift_over_antibiogram": 0.18613046272390577
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "amikacin",
+      "n": 5516,
+      "pos_rate": 0.9974619289340102,
+      "rf_auc": 0.7243080438282183,
+      "lift_over_antibiogram": 0.22430804382821834
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "ertapenem",
+      "n": 5482,
+      "pos_rate": 0.9990879241152864,
+      "rf_auc": 0.7587365345992332,
+      "lift_over_antibiogram": 0.2587365345992332
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "tetracycline",
+      "n": 4760,
+      "pos_rate": 0.6342436974789916,
+      "rf_auc": 0.5539188052538784,
+      "lift_over_antibiogram": 0.05391880525387838
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "cefoxitin",
+      "n": 4183,
+      "pos_rate": 0.9371264642601004,
+      "rf_auc": 0.6784637619306277,
+      "lift_over_antibiogram": 0.17846376193062774
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "tobramycin",
+      "n": 4034,
+      "pos_rate": 0.922409519087754,
+      "rf_auc": 0.700975724516667,
+      "lift_over_antibiogram": 0.200975724516667
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "cefepime",
+      "n": 2915,
+      "pos_rate": 0.9430531732418524,
+      "rf_auc": 0.7059292097454933,
+      "lift_over_antibiogram": 0.20592920974549334
+    },
+    {
+      "organism": "escherichia coli",
+      "antibiotic": "aztreonam",
+      "n": 1683,
+      "pos_rate": 0.9001782531194296,
+      "rf_auc": 0.6810132798994186,
+      "lift_over_antibiogram": 0.18101327989941862
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "gentamicin",
+      "n": 1531,
+      "pos_rate": 0.9647289353363815,
+      "rf_auc": 0.7171443616941247,
+      "lift_over_antibiogram": 0.21714436169412465
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "ciprofloxacin",
+      "n": 1526,
+      "pos_rate": 0.9331585845347313,
+      "rf_auc": 0.7057584269662921,
+      "lift_over_antibiogram": 0.2057584269662921
+    },
+    {
+      "organism": "enterococcus species",
+      "antibiotic": "tetracycline",
+      "n": 1499,
+      "pos_rate": 0.2428285523682455,
+      "rf_auc": 0.49433363992835355,
+      "lift_over_antibiogram": -0.005666360071646448
+    },
+    {
+      "organism": "enterococcus species",
+      "antibiotic": "ampicillin",
+      "n": 1488,
+      "pos_rate": 0.9301075268817204,
+      "rf_auc": 0.816432303245887,
+      "lift_over_antibiogram": 0.316432303245887
+    },
+    {
+      "organism": "enterococcus species",
+      "antibiotic": "levofloxacin",
+      "n": 1477,
+      "pos_rate": 0.8246445497630331,
+      "rf_auc": 0.6937016185784659,
+      "lift_over_antibiogram": 0.1937016185784659
+    },
+    {
+      "organism": "enterococcus species",
+      "antibiotic": "nitrofurantoin",
+      "n": 1410,
+      "pos_rate": 0.9879432624113476,
+      "rf_auc": 0.6941852117731514,
+      "lift_over_antibiogram": 0.1941852117731514
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "cefazolin",
+      "n": 1401,
+      "pos_rate": 0.9207708779443254,
+      "rf_auc": 0.6797716320972134,
+      "lift_over_antibiogram": 0.17977163209721336
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "levofloxacin",
+      "n": 1310,
+      "pos_rate": 0.9534351145038168,
+      "rf_auc": 0.7023520455708829,
+      "lift_over_antibiogram": 0.20235204557088293
+    },
+    {
+      "organism": "enterococcus species",
+      "antibiotic": "ciprofloxacin",
+      "n": 1280,
+      "pos_rate": 0.80078125,
+      "rf_auc": 0.6859378287900525,
+      "lift_over_antibiogram": 0.1859378287900525
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "ceftriaxone",
+      "n": 1264,
+      "pos_rate": 0.9185126582278481,
+      "rf_auc": 0.6801719307928384,
+      "lift_over_antibiogram": 0.18017193079283844
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "meropenem",
+      "n": 1127,
+      "pos_rate": 0.9964507542147294,
+      "rf_auc": 0.8569679430097952,
+      "lift_over_antibiogram": 0.3569679430097952
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "ertapenem",
+      "n": 1044,
+      "pos_rate": 0.9961685823754789,
+      "rf_auc": 0.8326923076923077,
+      "lift_over_antibiogram": 0.33269230769230773
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "ceftazidime",
+      "n": 1021,
+      "pos_rate": 0.9363369245837414,
+      "rf_auc": 0.7722481493401994,
+      "lift_over_antibiogram": 0.27224814934019936
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "amikacin",
+      "n": 1019,
+      "pos_rate": 0.9941118743866536,
+      "rf_auc": 0.6918394208621257,
+      "lift_over_antibiogram": 0.1918394208621257
+    },
+    {
+      "organism": "staphylococcus aureus",
+      "antibiotic": "clindamycin",
+      "n": 955,
+      "pos_rate": 0.7476439790575916,
+      "rf_auc": 0.6141456582633054,
+      "lift_over_antibiogram": 0.11414565826330536
+    },
+    {
+      "organism": "staphylococcus aureus",
+      "antibiotic": "erythromycin",
+      "n": 955,
+      "pos_rate": 0.6513089005235602,
+      "rf_auc": 0.6052958102797331,
+      "lift_over_antibiogram": 0.10529581027973312
+    },
+    {
+      "organism": "staphylococcus aureus",
+      "antibiotic": "gentamicin",
+      "n": 939,
+      "pos_rate": 0.9648562300319489,
+      "rf_auc": 0.6637066024483242,
+      "lift_over_antibiogram": 0.16370660244832425
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "tetracycline",
+      "n": 877,
+      "pos_rate": 0.790193842645382,
+      "rf_auc": 0.5742635987201204,
+      "lift_over_antibiogram": 0.07426359872012045
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "cefoxitin",
+      "n": 847,
+      "pos_rate": 0.9586776859504132,
+      "rf_auc": 0.6701794510907811,
+      "lift_over_antibiogram": 0.17017945109078114
+    },
+    {
+      "organism": "klebsiella pneumoniae",
+      "antibiotic": "tobramycin",
+      "n": 831,
+      "pos_rate": 0.9590854392298436,
+      "rf_auc": 0.7144807734888184,
+      "lift_over_antibiogram": 0.21448077348881844
+    },
+    {
+      "organism": "proteus mirabilis",
+      "antibiotic": "ampicillin",
+      "n": 816,
+      "pos_rate": 0.803921568627451,
+      "rf_auc": 0.6188500381097561,
+      "lift_over_antibiogram": 0.11885003810975614
+    },
+    {
+      "organism": "proteus mirabilis",
+      "antibiotic": "ciprofloxacin",
+      "n": 801,
+      "pos_rate": 0.8639200998751561,
+      "rf_auc": 0.6567123614572837,
+      "lift_over_antibiogram": 0.15671236145728373
+    },
+    {
+      "organism": "proteus mirabilis",
+      "antibiotic": "gentamicin",
+      "n": 790,
+      "pos_rate": 0.9189873417721519,
+      "rf_auc": 0.6200391701101928,
+      "lift_over_antibiogram": 0.12003917011019283
+    },
+    {
+      "organism": "proteus mirabilis",
+      "antibiotic": "cefazolin",
+      "n": 772,
+      "pos_rate": 0.9119170984455959,
+      "rf_auc": 0.6491686163101604,
+      "lift_over_antibiogram": 0.14916861631016043
+    }
+  ],
+  "top_k": {
+    "n_contexts": 16389,
+    "top1_hit_rate_all": 0.9869424614070413,
+    "top3_hit_rate_all": 0.9965830740130576,
+    "n_informative_contexts": 10854,
+    "top1_hit_rate_informative": 0.9832319882071126,
+    "top3_hit_rate_informative": 0.9977888336097291,
+    "note": "Informative contexts have >=1 resistant AND >=1 susceptible tested drug \u2014 the discriminating case where ranking actually matters."
+  },
+  "calibration": {
+    "brier_uncalibrated": 0.16769926061391185,
+    "brier_isotonic": 0.09888295108179437,
+    "brier_sigmoid": 0.10072535283083922,
+    "served_method": "isotonic",
+    "note": "Isotonic is monotonic non-decreasing, so it preserves the RF score ORDER within a request -> Top-k rankings are unchanged; only the probability VALUES become decision-grade. Shipped as rf_top3_recommender_calibrated.joblib."
+  },
+  "baselines_meta": {
+    "n_cells_total": 624,
+    "n_cells_reportable": 475,
+    "min_isolates": 30
+  },
+  "figures": [
+    "reports/figures/per_organism_auc.png",
+    "reports/figures/organism_drug_auc_heatmap.png",
+    "reports/figures/calibration_reliability.png",
+    "reports/figures/decision_curve.png"
+  ]
+}

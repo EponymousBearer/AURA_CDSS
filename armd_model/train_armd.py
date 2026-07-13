@@ -46,6 +46,9 @@ pd.set_option("display.max_rows", 100)
 # =========================
 BASE_DIR = Path(__file__).parent.parent / 'datasets'
 ARTIFACT_DIR = Path(__file__).parent / 'artifacts'
+# Canonical patient-grouped split is persisted here so downstream evaluation
+# (M1 evaluate.py / baselines.py) reuses the EXACT same train/val/test partition.
+SPLITS_DIR = Path(__file__).parent / 'splits'
 
 # =========================
 # CONFIG
@@ -242,14 +245,21 @@ def recommend_top3(patient_input, model, feature_cols, candidate_antibiotics, th
 # MAIN PIPELINE
 # =========================
 
-def main():
-    ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+def build_dataset():
+    """Build the merged, feature-engineered modelling table.
 
+    Extracted from main() (M1) so that evaluation reconstructs the EXACT same
+    dataset and, combined with the persisted split (armd_model/splits/test_ids.json),
+    recovers the identical held-out test rows without retraining. Behaviour is
+    unchanged from the original inline pipeline.
+
+    Returns a dict with: df, X, y, feature_cols, categorical_cols, numeric_cols,
+    binary_cols.
+    """
     print("=" * 60)
-    print("ARMD RandomForest Top-3 Recommender - Training Pipeline")
+    print("ARMD dataset build")
     print("=" * 60)
     print(f"Datasets dir : {BASE_DIR}")
-    print(f"Artifacts dir: {ARTIFACT_DIR}")
 
     # Resolve file paths
     paths = {fname: find_file(BASE_DIR, fname) for fname in REQUIRED_FILES}
@@ -572,6 +582,34 @@ def main():
     print("  Target distribution (proportions):")
     print(y.value_counts(normalize=True).rename('proportion'))
 
+    return {
+        'df': df,
+        'X': X,
+        'y': y,
+        'feature_cols': feature_cols,
+        'categorical_cols': categorical_cols,
+        'numeric_cols': numeric_cols,
+        'binary_cols': binary_cols,
+    }
+
+
+def main():
+    ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+
+    print("=" * 60)
+    print("ARMD RandomForest Top-3 Recommender - Training Pipeline")
+    print("=" * 60)
+    print(f"Artifacts dir: {ARTIFACT_DIR}")
+
+    data = build_dataset()
+    df = data['df']
+    X = data['X']
+    y = data['y']
+    feature_cols = data['feature_cols']
+    categorical_cols = data['categorical_cols']
+    numeric_cols = data['numeric_cols']
+    binary_cols = data['binary_cols']
+
     # TRAIN / VAL / TEST SPLIT
     # Group by anon_id so the same patient never appears in more than one split
     # (row-level splitting leaks patient signal across train/test and inflates metrics).
@@ -598,6 +636,36 @@ def main():
     assert not (val_ids & test_ids), "Patient leakage: val/test overlap"
     print(f"  Patients -> train: {len(train_ids):,}  val: {len(val_ids):,}  test: {len(test_ids):,}")
     print(f"  Train: {X_train.shape}  Validation: {X_val.shape}  Test: {X_test.shape}")
+
+    # Persist the canonical patient-grouped split (M0/T0.3). Downstream evaluation
+    # reloads these anon_id sets and selects rows by membership, so M1 reuses the
+    # EXACT same partition regardless of row ordering. Grouped by anon_id => the
+    # sets are disjoint and fully determine the split under a fixed RANDOM_STATE.
+    SPLITS_DIR.mkdir(parents=True, exist_ok=True)
+    split_manifest = {
+        'random_state': RANDOM_STATE,
+        'test_size': TEST_SIZE,
+        'valid_size_from_train': VALID_SIZE_FROM_TRAIN,
+        'grouped_by': 'anon_id',
+        'splitter': 'GroupShuffleSplit',
+        'n_patients': {
+            'train': len(train_ids),
+            'val': len(val_ids),
+            'test': len(test_ids),
+        },
+        'n_rows': {
+            'train': int(X_train.shape[0]),
+            'val': int(X_val.shape[0]),
+            'test': int(X_test.shape[0]),
+        },
+        'train_anon_ids': sorted(str(i) for i in train_ids),
+        'val_anon_ids': sorted(str(i) for i in val_ids),
+        'test_anon_ids': sorted(str(i) for i in test_ids),
+    }
+    with open(SPLITS_DIR / 'test_ids.json', 'w') as f:
+        json.dump(split_manifest, f)
+    print(f"  Persisted canonical split -> {SPLITS_DIR / 'test_ids.json'} "
+          f"(seed={RANDOM_STATE}, test patients={len(test_ids):,})")
     print("  Train target distribution:")
     print(y_train.value_counts(normalize=True).rename('proportion'))
 

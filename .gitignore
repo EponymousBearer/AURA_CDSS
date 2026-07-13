@@ -1,3 +1,7 @@
+# ── Training / run logs (local byproducts, not committed) ────────────────────
+armd_model/train_run.log
+*.log
+
 # ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
@@ -13,6 +17,8 @@ build/
 *.egg-info/
 
 # ── Virtual environments ─────────────────────────────────────────────────────
+.env
+.env.*
 !.env.example
 .venv/
 venv/
@@ -65,6 +71,9 @@ armd_model/artifacts/*
 # the Render Docker image has them. The large dose/route ML models (>100MB / not
 # needed — dosage_service falls back to the lookup + static table) stay ignored.
 !armd_model/artifacts/rf_top3_recommender_optimized.joblib
+# The CALIBRATED recommender (M1/T1.3) is the SERVED default — armd_predictor
+# prefers it over the raw RF. It MUST ship (17.5 MB < 100 MB). Do not remove.
+!armd_model/artifacts/rf_top3_recommender_calibrated.joblib
 !armd_model/artifacts/feature_cols.joblib
 !armd_model/artifacts/selected_antibiotics.joblib
 !armd_model/artifacts/best_threshold.joblib

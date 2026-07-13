@@ -63,10 +63,13 @@ def test_v2_model_info_exposes_dosage_model_status():
     assert response.status_code == 200
     dosage = response.json()['dosage_model']
 
-    assert dosage['model_type'] == 'Hybrid lookup + RandomForest fallback'
+    # M5 reframe: dosage is a guideline reference, NOT validated dosing; ML tier retired.
+    assert dosage['model_type'] == 'Guideline dose reference (lookup table + static defaults)'
+    assert dosage['validated'] is False
     assert dosage['available'] is True
     assert dosage['lookup_entries'] > 0
-    assert dosage['fallback_antibiotics'] == 32
+    assert dosage['fallback_antibiotics'] >= 32  # expanded with Pakistan-locale agents
+    assert 'disclaimer' in dosage and 'not' in dosage['disclaimer'].lower()
 
 
 def test_v2_organisms_endpoint_filters_by_culture_site():
@@ -78,6 +81,64 @@ def test_v2_organisms_endpoint_filters_by_culture_site():
     assert 'urine' in body['culture_sites']
     assert 'escherichia coli' in body['organisms']
     assert 'other' in body['organisms']
+
+
+def test_v2_locales_lists_us_and_pakistan():
+    response = client.get('/api/v2/locales')
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body['default'] == 'us_armd'
+    ids = {loc['id'] for loc in body['locales']}
+    assert {'us_armd', 'pakistan'}.issubset(ids)
+
+    pakistan = next(loc for loc in body['locales'] if loc['id'] == 'pakistan')
+    assert pakistan['basis'] == 'antibiogram'
+    by_name = {o['name']: o for o in pakistan['organisms']}
+    # organisms with real cited data are usable; all-`unknown` ones are flagged pending
+    assert by_name['salmonella typhi']['has_data'] is True
+    assert by_name['escherichia coli']['has_data'] is True
+    assert by_name['acinetobacter baumannii']['has_data'] is False
+
+
+def test_v2_model_info_includes_evaluation_and_contrast():
+    body = client.get('/api/v2/model-info').json()
+
+    # M1 evaluation block surfaced for the dashboard
+    ev = body['evaluation']
+    assert ev['pooled']['rf_roc_auc'] > 0.6
+    assert ev['within_cell']['median_rf_cell_auc'] > 0.5
+    assert ev['calibration']['served_method'] == 'isotonic'
+    assert any(f['file'] == 'organism_drug_auc_heatmap.png' for f in ev['figures'])
+
+    # US-vs-PK contrast: XDR typhoid ceftriaxone must be gated for Pakistan
+    rows = body['us_vs_pk_contrast']['rows']
+    typhoid_cro = next(
+        r for r in rows if r['organism'] == 'salmonella typhi' and r['drug'] == 'ceftriaxone'
+    )
+    assert typhoid_cro['pk_gated'] is True
+
+
+def test_v2_recommend_pakistan_typhoid_gates_ceftriaxone():
+    payload = {
+        'culture_description': 'blood',
+        'organism': 'salmonella typhi',
+        'age': 25,
+        'gender': 'male',
+        'ward': 'general',
+        'locale': 'pakistan',
+    }
+    body = client.post('/api/v2/recommend', json=payload).json()
+
+    assert body['locale'] == 'pakistan'
+    assert body['basis'] == 'antibiogram'
+    picks = [r['antibiotic'] for r in body['recommendations']]
+    assert 'ceftriaxone' not in picks
+    assert 'azithromycin' in picks  # last reliable oral option locally
+    assert body['excluded'].get('ceftriaxone') == 'gated_do_not_use'
+    assert body['dose_disclaimer']
+    # antibiogram picks carry provenance
+    assert body['recommendations'][0]['basis'] == 'antibiogram'
 
 
 def test_v2_recommend_rejects_invalid_culture_organism_pair():

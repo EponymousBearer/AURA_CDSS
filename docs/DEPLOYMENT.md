@@ -1,6 +1,8 @@
 # Deployment Guide
 
-This guide covers every deployment target for AURA v1: local Docker Compose, manual development setup, Vercel (frontend + serverless backend), and Render (traditional backend).
+Deployment targets for AURA **V2** (`version/v2_release`): local Docker Compose, manual development setup, Vercel (frontend), and Render (backend). The trained V2 artifacts are **committed** to `armd_model/artifacts/`, so the app runs **without retraining**.
+
+> **Branch note:** this branch serves only `/api/v2/*`. V1 (CatBoost) deploys separately from `main`.
 
 ---
 
@@ -9,6 +11,7 @@ This guide covers every deployment target for AURA v1: local Docker Compose, man
 - [Prerequisites](#prerequisites)
 - [Local: Docker Compose](#local-docker-compose)
 - [Local: Manual Setup](#local-manual-setup)
+- [Retraining the V2 models](#retraining-the-v2-models)
 - [Production: Vercel (Frontend)](#production-vercel-frontend)
 - [Production: Render (Backend)](#production-render-backend)
 - [Production: Vercel (Serverless Backend)](#production-vercel-serverless-backend)
@@ -28,16 +31,19 @@ This guide covers every deployment target for AURA v1: local Docker Compose, man
 | Node.js | 20+ | Frontend build |
 | npm | 10+ | Frontend dependencies |
 
+> **Critical pin:** the backend requires **`scikit-learn==1.3.2`** (in `backend/requirements.txt`). The committed model artifacts were pickled with 1.3.2 and a newer sklearn fails to unpickle them (`SimpleImputer has no attribute _fill_dtype`), causing `/api/v2/recommend` to 500. Train with the same version.
+
 ---
 
 ## Local: Docker Compose
 
-This is the recommended path for local development and review.
+Recommended for local runs and review. No retraining needed — artifacts are committed.
 
 ```bash
-git clone https://github.com/<your-org>/antibiotic-ai-cdss.git
+git clone https://github.com/EponymousBearer/antibiotic-ai-cdss.git
 cd antibiotic-ai-cdss
-cp .env.example .env          # adjust if needed
+git checkout version/v2_release
+cp .env.example .env
 docker-compose up --build
 ```
 
@@ -53,33 +59,31 @@ docker-compose up --build
 ```yaml
 services:
   backend:
-    build: ./backend           # python:3.11-slim image
+    build: ./backend           # backend/Dockerfile
     port: 8000
-    healthcheck: GET /health every 30s
-    env: ENVIRONMENT, ALLOWED_ORIGINS, LOG_LEVEL
+    healthcheck: GET /health
+    env: ENVIRONMENT, ALLOWED_ORIGINS
+    # armd_model/artifacts/ ships in the build context and loads at startup
 
   frontend:
-    build: ./frontend          # node:20-alpine multi-stage
+    build: ./frontend
     port: 3000
     depends_on: backend (service_healthy)
     env:
       NEXT_PUBLIC_API_URL: http://localhost:8000   # browser-facing
-      API_URL: http://backend:8000                 # server-side / Docker internal
+      API_URL: http://backend:8000                 # internal Docker network
 ```
 
-### Stopping and cleaning up
+### Stopping
 
 ```bash
-docker-compose down           # stop containers, preserve volumes
-docker-compose down -v        # also remove volumes
-docker-compose down --rmi all # also remove built images
+docker-compose down            # stop containers
+docker-compose down --rmi all  # also remove built images
 ```
 
 ---
 
 ## Local: Manual Setup
-
-Use this when you want faster hot-reload for active development.
 
 ### 1 — Backend
 
@@ -87,17 +91,15 @@ Use this when you want faster hot-reload for active development.
 cd backend
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-# Start with auto-reload
+pip install -r requirements.txt  # installs scikit-learn==1.3.2
 uvicorn app.main:app --reload --port 8000
 ```
 
-Environment variables can be exported in the shell or via a `.env` file (loaded by Pydantic Settings if configured).
-
 ```bash
 export ALLOWED_ORIGINS="http://localhost:3000"
-export LOG_LEVEL="DEBUG"
+# optional overrides:
+export ARMD_ARTIFACTS_DIR="../armd_model/artifacts"
+export ARMD_COHORT_PATH="../datasets/microbiology_cultures_cohort.csv"
 ```
 
 ### 2 — Frontend
@@ -105,241 +107,157 @@ export LOG_LEVEL="DEBUG"
 ```bash
 cd frontend
 npm install
-
-# Create .env.local for frontend-specific overrides
 echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
-
-npm run dev     # starts on http://localhost:3000 with hot reload
+npm run dev
 ```
 
-### 3 — Run tests
+### 3 — Tests
 
 ```bash
-cd backend
-pytest tests/ -v
+cd backend && pytest tests/ -v
 ```
 
-### 4 — Retrain the model (optional)
+---
 
-Pre-built artifacts are included in `backend/model/`. To retrain from source data:
+## Retraining the V2 models
+
+Only needed if you replace the datasets or change the model config. Place the ARMD CSVs in `datasets/` (see the [Google Drive link](https://drive.google.com/drive/folders/1agc1hXlVinXAPM-7E8RFfAFopKVrIota?usp=sharing)), then run the **three** scripts in order with `scikit-learn==1.3.2`:
 
 ```bash
-cd training
-pip install -r requirements.txt
-python preprocess.py       # → training/data/{train,val,test}.csv
-python train.py            # → training/output/antibiotic_model.pkl
-python evaluate.py         # → training/output/evaluation_report.json
+cd armd_model
+pip install -r requirements.txt        # pin scikit-learn==1.3.2 to match the backend
 
-# Copy new artifacts to backend
-cp training/output/antibiotic_model.pkl  backend/model/
-cp training/output/model_metadata.json   backend/model/
+python train_armd.py          # RF recommender → rf_top3_recommender_optimized.joblib (+ metadata, threshold, summary, importances)
+python build_antibiogram.py   # antibiogram filter → organism_antibiotic_panel.json
+python train_dosage.py        # dosage → dose_route_lookup.csv + dose/route_model_hybrid.pkl
 ```
+
+Restart the backend afterward — artifacts load once at startup.
 
 ---
 
 ## Production: Vercel (Frontend)
 
-The frontend is deployed via Vercel with the config in `vercel.json` at the repo root.
+The frontend deploys to Vercel with **Root Directory = `frontend`**. There is **no root `vercel.json`** (it was removed to fix a build/404 conflict).
 
-### Initial setup
+### Setup
 
-1. Create a new Vercel project pointing to this repository.
-2. Set the root directory to `.` (repository root).
-3. Vercel reads `vercel.json` automatically.
-
-**`vercel.json` key settings:**
-
-```json
-{
-  "framework": "nextjs",
-  "installCommand": "npm install --prefix frontend",
-  "buildCommand":   "npm run build --prefix frontend",
-  "outputDirectory": "frontend/.next"
-}
-```
+1. Create a Vercel project pointing at this repo.
+2. **Settings → General → Root Directory → `frontend`.**
+3. Framework preset: Next.js (auto-detected).
 
 ### Environment variables (Vercel dashboard)
 
 | Variable | Value |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | `https://your-backend.onrender.com` (or your Render URL) |
-
-Set this in **Vercel → Project → Settings → Environment Variables** for Production (and Preview if needed).
+| `NEXT_PUBLIC_API_URL` | `https://<your-render-backend>.onrender.com` |
 
 ### Deploy
 
-Every push to `main` triggers an automatic Vercel deployment. For manual deploys:
-
-```bash
-npm install -g vercel
-vercel --prod
-```
+Pushes to the connected branch trigger automatic deploys. Manual: `vercel --prod` (run from `frontend/` or with the root directory configured).
 
 ---
 
 ## Production: Render (Backend)
 
-The backend is configured for Render's free-tier web service via `render.yaml`.
+The backend deploys to Render's free tier **from `backend/Dockerfile`**. There is **no `render.yaml`** (removed to fix a conflicting config).
 
-### Initial setup
+### Setup
 
-1. Connect your GitHub repository to Render.
-2. Render detects `render.yaml` and auto-creates the service.
-
-**`render.yaml` key settings:**
-
-```yaml
-services:
-  - type: web
-    name: aura-cdss-backend
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /health
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
-      - key: ALLOWED_ORIGINS
-        value: https://your-frontend.vercel.app
-```
+1. New → Web Service → connect this repo.
+2. Runtime: **Docker**; Dockerfile path `backend/Dockerfile`; root directory `backend` (or repo root with the Dockerfile path set).
+3. Health check path: `/health`.
 
 ### Environment variables (Render dashboard)
 
-Set in **Render → Service → Environment** or via `render.yaml` `envVars`:
-
 | Variable | Value |
 |---|---|
-| `ALLOWED_ORIGINS` | `https://your-frontend.vercel.app` |
-| `LOG_LEVEL` | `INFO` |
+| `ALLOWED_ORIGINS` | `https://<your-frontend>.vercel.app` |
 | `ENVIRONMENT` | `production` |
+| `ARMD_ARTIFACTS_DIR` | *(optional)* defaults to the in-image `armd_model/artifacts` |
+| `ANTIBIOGRAM_DIR` | *(optional)* defaults to the in-image `/app/antibiograms` |
+| `REPORTS_DIR` | *(optional)* defaults to `/app/reports` (set in the Dockerfile) |
 
 ### Model artifacts on Render
 
-Render free-tier does not have persistent disk. The model artifacts (`backend/model/`) must be committed to the repository or loaded from an external storage location at startup.
+Render's free tier has no persistent disk. The V2 artifacts are **committed to the repo** and bundled into the image — sized (150 trees / depth 16 / `compress=3`) to fit the 512 MB free-tier RAM and GitHub's 100 MB file limit. No external storage needed. The bundled set is:
 
-The current setup commits the model pickle to the repo. For large models, consider:
-- Git LFS
-- Downloading from S3/GCS at startup (add to `startCommand` or a startup script)
+- **`rf_top3_recommender_calibrated.joblib`** — the **served** recommender (isotonic-calibrated, M1); `armd_predictor` prefers it over the raw RF.
+- `organism_antibiotic_panel.json`, `dose_route_lookup.csv`, and the small `*.joblib`/`*.json` metadata.
+- **`backend/antibiograms/*.json`** (M4) — the per-locale antibiograms driving the Pakistan/Route-A path and the US-vs-PK contrast. Copied to `/app/antibiograms`.
+- **`reports/metrics.json`** (M1) — read by `/api/v2/model-info` to populate the evaluation dashboard. The figures themselves ship with the **frontend** (`frontend/public/figures/`).
 
-### Deploy
-
-Every push to `main` triggers a Render auto-deploy if the service is connected to the branch. Manual deploy via the Render dashboard or CLI:
-
-```bash
-render deploy --service-id <service-id>
-```
+The large retired dose/route ML `.pkl`s (>100 MB) are **not** shipped — M5 retired ML dosing, so the dosage service uses the lookup + static table only.
 
 ---
 
 ## Production: Vercel (Serverless Backend)
 
-An alternative backend deployment that runs FastAPI as a Vercel serverless function.
+An alternative that runs FastAPI as a Vercel function via `backend/vercel.json` → `backend/api/index.py`.
 
-**Files involved:**
-- `backend/vercel.json` — routes all requests to `api/index.py`
-- `backend/api/index.py` — imports and re-exports the FastAPI `app`
-
-### Setup
-
-1. Create a separate Vercel project pointing to the `backend/` subdirectory.
-2. Vercel reads `backend/vercel.json`.
-3. Set environment variables in the Vercel dashboard.
-
-**Limitations of serverless:**
-- Cold starts (100–500ms) on the first request.
-- Execution timeout (Vercel free tier: 10 seconds). Long model inference may time out.
-- No persistent disk — model must be bundled into the deployment package or fetched from storage.
-- The free tier has a 50 MB compressed deployment size limit. The model pickle may exceed this.
-
-**Recommendation:** Use Render for the backend; reserve serverless for lightweight APIs.
+**Limitations:** cold starts; execution timeout (free tier ~10 s); 50 MB compressed deployment limit (the RF artifact may exceed this); no persistent disk. **Recommendation:** use Render for the backend; reserve serverless for lightweight APIs.
 
 ---
 
 ## Environment Variables Reference
 
-Full list with defaults:
+| Variable | Default | Required in prod | Used by | Description |
+|---|---|---|---|---|
+| `ENVIRONMENT` | `development` | No | Backend | Startup log label |
+| `ALLOWED_ORIGINS` | `http://localhost:3000` | **Yes** | Backend | CORS allowlist (comma-separated) |
+| `ARMD_ARTIFACTS_DIR` | `<repo>/armd_model/artifacts` | No | Backend (V2) | RF + dosage lookup artifacts |
+| `ANTIBIOGRAM_DIR` | `<repo>/backend/antibiograms` | No | Backend (V2) | Per-locale antibiograms (M4) — Pakistan path + contrast |
+| `REPORTS_DIR` | `/app/reports` (Docker) | No | Backend (V2) | `metrics.json` for the `/model-info` evaluation block |
+| `ARMD_COHORT_PATH` | `<repo>/datasets/microbiology_cultures_cohort.csv` | No | Backend (V2) | Runtime organism catalog source |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | **Yes** | Frontend | Browser API base URL |
+| `API_URL` | `http://backend:8000` | No (Docker only) | Frontend | Server-side API URL |
 
-| Variable | Default | Required in prod | Description |
-|---|---|---|---|
-| `ENVIRONMENT` | `development` | No | Startup log label |
-| `ALLOWED_ORIGINS` | `http://localhost:3000` | **Yes** | CORS allowlist (comma-separated) |
-| `LOG_LEVEL` | `INFO` | No | Logging verbosity |
-| `PORT` | `8000` | No (Render injects) | Uvicorn port |
-| `MODEL_PATH` | `model/antibiotic_model.pkl` | No | Relative to working dir |
-| `MODEL_METADATA_PATH` | `model/model_metadata.json` | No | Relative to working dir |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | **Yes** | Browser API base URL |
-| `API_URL` | `http://backend:8000` | No (Docker only) | Server-side API URL |
+> `MODEL_PATH` / `MODEL_METADATA_PATH` are V1-only (CatBoost) and not used on this branch.
 
 ---
 
 ## Health Checks
 
-### Backend
-
 ```
-GET /health
-→ 200 { "status": "healthy", "service": "antibiotic-ai-cdss" }
+GET /health → 200 { "status": "healthy", "service": "antibiotic-ai-cdss" }
 ```
 
-Used by:
-- Docker Compose (`healthcheck`)
-- Render (`healthCheckPath`)
-- Load balancers / uptime monitors
-
-### Frontend
-
-Next.js does not expose a dedicated health endpoint. Monitor the root page (`/`) or use Vercel's built-in uptime monitoring.
+Used by Docker Compose, Render (`healthCheckPath`), and uptime monitors. The frontend has no dedicated health endpoint — monitor `/`.
 
 ---
 
 ## Troubleshooting
 
-### Backend starts but model is not loaded
+### `/api/v2/recommend` returns 503
 
-Symptom: `/api/v1/antibiotics` returns an empty list; `/health` still returns 200.
+The ARMD model didn't load. Verify the artifacts exist and `ARMD_ARTIFACTS_DIR` points to them:
 
-Cause: `MODEL_PATH` points to a file that does not exist. The service starts in fallback mode.
-
-Fix:
 ```bash
-ls -lh backend/model/         # verify antibiotic_model.pkl exists
-# If missing, retrain or restore from the training/output/ copies:
-cp training/output/antibiotic_model.pkl backend/model/
-cp training/output/model_metadata.json  backend/model/
+ls armd_model/artifacts/
+# Expected: rf_top3_recommender_optimized.joblib, feature_cols.joblib,
+#           organism_antibiotic_panel.json, dose_route_lookup.csv, ...
 ```
+
+If missing, retrain (see [above](#retraining-the-v2-models)).
+
+### `/api/v2/recommend` returns 500 with `_fill_dtype`
+
+scikit-learn version mismatch. The backend env must be on **`scikit-learn==1.3.2`** to unpickle the committed artifacts. Reinstall: `pip install -r backend/requirements.txt`.
+
+### `/api/v2/recommend` returns 422
+
+Unsupported culture site, or the organism isn't valid for the chosen site. Call `GET /api/v2/organisms?culture_description=<site>` for valid options (or use `other`).
 
 ### Frontend cannot reach backend
 
-Symptom: `Network Error` or `CORS error` in browser console.
-
-Checks:
 1. `NEXT_PUBLIC_API_URL` must match the backend URL exactly (scheme, host, port, no trailing slash).
-2. `ALLOWED_ORIGINS` on the backend must include the frontend's origin.
-3. In Docker Compose: the frontend container uses `API_URL=http://backend:8000` (internal) but the browser needs `NEXT_PUBLIC_API_URL=http://localhost:8000` (external).
+2. `ALLOWED_ORIGINS` on the backend must include the frontend origin.
+3. In Docker: the browser uses `NEXT_PUBLIC_API_URL=http://localhost:8000` while the frontend container uses `API_URL=http://backend:8000`.
 
-### Docker Compose: frontend exits immediately
+### Organism dropdown is sparse
 
-Cause: `depends_on: backend: condition: service_healthy` — the frontend waits for the backend healthcheck to pass. If the backend fails its healthcheck (model not loading, port conflict), the frontend will not start.
+`ClinicalCatalogService` couldn't read the cohort CSV, so it fell back to a small built-in list. Provide `datasets/microbiology_cultures_cohort.csv` or set `ARMD_COHORT_PATH`.
 
-```bash
-docker-compose logs backend   # check for startup errors
-docker-compose ps             # check service health status
-```
+### Vercel build fails / 404
 
-### Render: 502 Bad Gateway
-
-Cause: Uvicorn failed to bind or crashed at startup.
-
-```bash
-# Check Render logs in the dashboard
-# Common causes:
-# 1. PORT variable not passed to uvicorn (render.yaml uses $PORT — this is correct)
-# 2. requirements.txt install failed (check build logs)
-# 3. Model pickle missing or corrupted
-```
-
-### Vercel build fails: output directory not found
-
-Cause: `outputDirectory: frontend/.next` — the build must run inside the `frontend/` directory.
-
-Fix: Verify `buildCommand` is `npm run build --prefix frontend` and that `frontend/next.config.js` exists.
+Ensure **Root Directory = `frontend`** and that there is no stray root `vercel.json`.

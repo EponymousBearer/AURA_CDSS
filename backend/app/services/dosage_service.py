@@ -1,8 +1,15 @@
 """
-Dosage prediction service for v2.
-Uses a hybrid approach: exact lookup from the cleaned training table first,
-then ML RandomForest fallback for unseen (antibiotic, disease, age_group) combinations.
-Falls back to a static rules table if no trained artifacts are found.
+Dosage reference service for v2.
+
+SCOPE (M5 — honest reframe): this is a **guideline dose reference**, NOT a validated
+dosing engine. It resolves a standard adult/paediatric dose via:
+  1. an exact lookup in dose_route_lookup.csv (guideline table), then
+  2. a static per-drug guideline default.
+It does NOT perform pharmacokinetic, renal, weight-based, or interaction-aware dosing.
+The ML dose/route RandomForest that previously filled gaps has been **retired** from
+the resolution path: predicting free-text dose strings with a tree model produced
+implausible values (e.g. "30-40 mg" for a carbapenem) and is not defensible as dosing.
+Every dose is a reference figure to be confirmed against a local formulary.
 """
 
 import os
@@ -15,6 +22,13 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+# Shown wherever a dose is surfaced. Keeps the research-only, not-a-medical-device framing.
+DOSE_DISCLAIMER = (
+    "Doses are standard guideline reference figures (typical adult unless age-banded), "
+    "NOT validated or patient-adjusted dosing. Not for clinical use — confirm every dose, "
+    "route and interval against a local formulary and adjust for renal function and weight."
+)
+
 # The recommender works in culture SITES (urine/blood/respiratory) but the dose
 # table is keyed by clinical DISEASE. Map each site to its best-covered disease in
 # dose_route_lookup.csv so exact dose lookups actually hit (chosen by antibiotic
@@ -25,8 +39,23 @@ _CULTURE_SITE_TO_DISEASE: dict[str, str] = {
     'respiratory': 'Pneumonia',
 }
 
-# Static fallback dosing rules (used if artifacts not trained yet)
+# Static guideline default doses (typical adult empiric doses; standard references
+# such as the Sanford Guide / BNF / IDSA syndrome guidance). Used when the lookup
+# table has no usable entry. Keys are lowercase; multi-word agents use spaces to match
+# the antibiogram/display naming (e.g. 'trimethoprim sulfamethoxazole'). These are
+# REFERENCE figures only (see DOSE_DISCLAIMER) — not renal/weight-adjusted.
 _FALLBACK_DOSING: dict[str, dict] = {
+    # --- Pakistan-locale / extended agents (not in the US model's 32 but present in
+    #     pakistan.json; added so the antibiogram path never lands on 'Consult formulary') ---
+    'imipenem':                        {'dose_range': '500 mg',         'route': 'IV'},
+    'azithromycin':                    {'dose_range': '500 mg',         'route': 'PO'},
+    'colistin':                        {'dose_range': '2.5-5 mg/kg/day', 'route': 'IV'},
+    'oxacillin':                       {'dose_range': '1000-2000 mg',   'route': 'IV'},
+    'amoxicillin clavulanate':         {'dose_range': '875/125 mg',     'route': 'PO'},
+    'piperacillin tazobactam':         {'dose_range': '4.5 g',          'route': 'IV'},
+    'ceftazidime avibactam':           {'dose_range': '2.5 g',          'route': 'IV'},
+    'trimethoprim sulfamethoxazole':   {'dose_range': '160/800 mg',     'route': 'PO'},
+    # --- US model's 32 antibiotics ---
     'amikacin':       {'dose_range': '15-20 mg/kg',        'route': 'IV'},
     'ampicillin':     {'dose_range': '1000-2000 mg',        'route': 'IV'},
     'aztreonam':      {'dose_range': '1000-2000 mg',        'route': 'IV'},
@@ -106,12 +135,10 @@ class DosageService:
                 }
                 logger.info(f"Dosage lookup table loaded: {len(self.exact_dose_lookup)} entries")
 
-            dose_path = artifacts_dir / 'dose_model_hybrid.pkl'
-            route_path = artifacts_dir / 'route_model_hybrid.pkl'
-            if dose_path.exists() and route_path.exists():
-                self.dose_model = joblib.load(dose_path)
-                self.route_model = joblib.load(route_path)
-                logger.info("Dosage ML models loaded")
+            # ML dose/route models are RETIRED (M5): not loaded, not used. Predicting
+            # free-text dose strings with a tree model isn't defensible as dosing.
+            # dose_model_hybrid.pkl / route_model_hybrid.pkl remain on disk for the
+            # record but are intentionally not loaded (also saves RAM on the 512 MB host).
 
         except Exception as exc:
             logger.warning(f"Could not load dosage artifacts: {exc}. Using static rules fallback.")
@@ -139,52 +166,38 @@ class DosageService:
             # Many d_dose rows carry a route but no numeric dose -> 'unknown'.
             return v is not None and str(v).strip().lower() not in {'unknown', 'nan', '', 'none'}
 
-        static = _FALLBACK_DOSING.get(ab_norm, {'dose_range': 'Consult pharmacy', 'route': 'IV'})
+        static = _FALLBACK_DOSING.get(ab_norm, {'dose_range': 'Consult local formulary', 'route': 'IV'})
 
-        # 1. Exact lookup (preferred — but only when it carries a real dose/route)
+        # Resolution is now guideline-reference only (M5): exact lookup, else the static
+        # guideline default. The ML dose/route model is NOT consulted — see module docstring.
         look_dose = self.exact_dose_lookup.get(key)
         look_route = self.exact_route_lookup.get(key)
 
-        # 2. ML model — only run if the lookup is missing or unusable
-        ml_dose = ml_route = None
-        if (not _usable(look_dose) or not _usable(look_route)) and self.dose_model is not None:
-            try:
-                input_df = pd.DataFrame([{
-                    'generic': ab_norm,
-                    'disease': disease_mapped,
-                    'age_group': ag,
-                }])
-                ml_dose = str(self.dose_model.predict(input_df)[0])
-                ml_route = str(self.route_model.predict(input_df)[0])
-            except Exception as exc:
-                logger.warning(f"Dosage ML model failed for {antibiotic}: {exc}")
-
-        # Resolve dose and route independently, never surfacing 'unknown'.
+        # 1. Exact guideline lookup (preferred — only when it carries a real dose/route)
         if _usable(look_dose):
             dose, source = look_dose, 'lookup'
-        elif _usable(ml_dose):
-            dose, source = ml_dose, 'model'
         else:
+            # 2. Static guideline default (clearly a default, never 'unknown')
             dose, source = static['dose_range'], 'fallback'
 
-        if _usable(look_route):
-            route = look_route
-        elif _usable(ml_route):
-            route = ml_route
-        else:
-            route = static['route']
+        route = look_route if _usable(look_route) else static['route']
 
-        return {'dose_range': dose, 'route': route, 'source': source}
+        return {'dose_range': dose, 'route': route, 'source': source, 'disclaimer': DOSE_DISCLAIMER}
 
     def get_model_info(self) -> dict:
         return {
-            'model_type': 'Hybrid lookup + RandomForest fallback',
-            'available': self.dose_model is not None and self.route_model is not None,
+            'model_type': 'Guideline dose reference (lookup table + static defaults)',
+            'validated': False,
+            'disclaimer': DOSE_DISCLAIMER,
+            # The dose reference is always available (static guideline defaults cover
+            # every recommendable drug even if the lookup CSV is missing).
+            'available': True,
             'lookup_entries': len(self.exact_dose_lookup),
             'fallback_antibiotics': len(_FALLBACK_DOSING),
+            'ml_dosing': 'retired — RandomForest dose/route model is no longer used for recommendations',
             'artifacts': {
                 'lookup_table': 'dose_route_lookup.csv',
-                'dose_model': 'dose_model_hybrid.pkl',
-                'route_model': 'route_model_hybrid.pkl',
+                'dose_model': 'dose_model_hybrid.pkl (retired)',
+                'route_model': 'route_model_hybrid.pkl (retired)',
             },
         }

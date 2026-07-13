@@ -33,6 +33,10 @@ export default function ResultCardV2({ recommendation, rank }: ARMDResultCardPro
   const probLabel = getProbLabel(recommendation.probability)
   const routeStyle = ROUTE_STYLE[recommendation.route] ?? 'bg-gray-50 text-gray-700 ring-gray-200'
   const pct = (recommendation.probability * 100).toFixed(1)
+  const isAntibiogram = recommendation.basis === 'antibiogram'
+  // Model path = model-estimated probability of susceptibility;
+  // antibiogram path = observed local %-susceptible from the local antibiogram.
+  const probCaption = isAntibiogram ? 'Local %-susceptible' : 'Susceptibility'
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col">
@@ -49,12 +53,27 @@ export default function ResultCardV2({ recommendation, rank }: ARMDResultCardPro
         </span>
       </div>
 
+      {/* Basis / provenance strip (antibiogram path only) */}
+      {isAntibiogram && (
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-emerald-50/60 px-4 py-2 text-[11px] text-emerald-800">
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold uppercase tracking-wide">
+            Local antibiogram
+          </span>
+          {recommendation.confidence && (
+            <span className="text-emerald-700">confidence: {recommendation.confidence.replace(/_/g, ' ')}</span>
+          )}
+          {recommendation.source_id && (
+            <span className="text-emerald-600">· {recommendation.source_id}</span>
+          )}
+        </div>
+      )}
+
       {/* Body */}
       <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Probability */}
         <div>
           <div className="flex items-end justify-between mb-1">
-            <span className="text-sm text-gray-500 font-medium">Susceptibility</span>
+            <span className="text-sm text-gray-500 font-medium">{probCaption}</span>
             <span className="text-2xl font-bold text-gray-800">{pct}%</span>
           </div>
           <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
@@ -70,9 +89,11 @@ export default function ResultCardV2({ recommendation, rank }: ARMDResultCardPro
           </div>
         </div>
 
-        {/* Dosage block */}
+        {/* Dosage block — guideline reference only, NOT validated dosing (M5) */}
         <div className="rounded-xl bg-gray-50 p-4 space-y-3 border border-gray-100">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Dosage</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+            Dosage · guideline reference
+          </p>
 
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Dose</span>
@@ -86,13 +107,12 @@ export default function ResultCardV2({ recommendation, rank }: ARMDResultCardPro
             </span>
           </div>
 
-          {recommendation.dose_source !== 'lookup' && (
-            <p className="text-xs text-gray-400 italic">
-              {recommendation.dose_source === 'model'
-                ? 'Dosage estimated by ML model (exact match not found)'
-                : 'Dosage from standard reference (model not trained)'}
-            </p>
-          )}
+          <p className="text-xs text-gray-400">
+            {recommendation.dose_source === 'lookup'
+              ? 'Source: guideline reference table.'
+              : 'Source: standard guideline default.'}{' '}
+            <span className="italic">Reference figure only — not validated or patient-adjusted dosing.</span>
+          </p>
         </div>
       </div>
     </div>

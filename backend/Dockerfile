@@ -19,12 +19,19 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY backend/app/ ./app/
 # V2 model artifacts. The large dose/route .pkl stay out of git (rebuilt locally);
-# the committed RF recommender, dose_route_lookup.csv and antibiogram panel ship here.
-# Missing dose ML models -> dosage_service falls back to lookup + static rules.
+# the committed CALIBRATED RF recommender, dose_route_lookup.csv and antibiogram panel
+# ship here. Missing dose ML models -> dosage_service falls back to lookup + static rules.
 COPY armd_model/artifacts/ ./armd_model/artifacts/
+# Per-locale antibiograms (M4) — the Pakistan/Route-A path + US-vs-PK contrast need these.
+# LocaleAntibiogramService resolves ./antibiograms relative to /app by default.
+COPY backend/antibiograms/ ./antibiograms/
+# M1 evaluation metrics surfaced on /model-info (M6). Only metrics.json is needed by the
+# API; the figures themselves are served by the frontend (frontend/public/figures).
+COPY reports/metrics.json ./reports/metrics.json
 
-# Tell the V2 services where the model artifacts live.
+# Tell the V2 services where the model artifacts + evaluation metrics live.
 ENV ARMD_ARTIFACTS_DIR=/app/armd_model/artifacts
+ENV REPORTS_DIR=/app/reports
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
