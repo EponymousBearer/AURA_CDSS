@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "seed": 42,
+    "train_rows_used": 300000,
+    "train_is_subsample": true,
+    "n_test_rows": 177406,
+    "min_cell_support": 50,
+    "latency_batch": 22,
+    "note": "Same frozen seed-42 patient-grouped split + identical one-hot feature pipeline for every model; isotonic-calibrated on val; scored with the M1 metric functions. GBDT hyperparameters are comparable-capacity defaults, not exhaustively tuned."
+  },
+  "models": [
+    {
+      "model": "RandomForest",
+      "pooled_roc_auc": 0.85,
+      "within_cell_median_auc": 0.6432,
+      "brier_uncalibrated": 0.167,
+      "brier_isotonic": 0.099,
+      "top1_informative": 0.9811,
+      "top3_informative": 0.9978,
+      "artifact_mb_calibrated": 12.55,
+      "latency_ms_per_request": 67.13,
+      "train_seconds": 64.2
+    },
+    {
+      "model": "LightGBM",
+      "pooled_roc_auc": 0.8781,
+      "within_cell_median_auc": 0.6656,
+      "brier_uncalibrated": 0.1407,
+      "brier_isotonic": 0.0895,
+      "top1_informative": 0.9856,
+      "top3_informative": 0.9983,
+      "artifact_mb_calibrated": 0.88,
+      "latency_ms_per_request": 2.19,
+      "train_seconds": 11.1
+    },
+    {
+      "model": "CatBoost",
+      "pooled_roc_auc": 0.8758,
+      "within_cell_median_auc": 0.6793,
+      "brier_uncalibrated": 0.1446,
+      "brier_isotonic": 0.0904,
+      "top1_informative": 0.9844,
+      "top3_informative": 0.998,
+      "artifact_mb_calibrated": 0.34,
+      "latency_ms_per_request": 1.66,
+      "train_seconds": 46.6
+    }
+  ]
+}
