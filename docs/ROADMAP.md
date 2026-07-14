@@ -57,11 +57,11 @@ Lead with this in the viva; don't hide from it.
 | **M3** | Explainability + history inputs | P1 (partly stretch) | ⬜ | 0% | 3 |
 | **M5** | Dosage honest reframe | P1 (cheap, high safety value) | ✅ | 100% | 3 |
 | **M6** | Frontend & demo | P1 | ✅ | 100% | 3 |
-| **M7** | Deploy & verify live | **P0** | ⬜ | 0% | 4 |
+| **M7** | Deploy & verify live | **P0** | ✅ | 100% | 4 |
 | **M2** | Model comparison (RF vs GBDT) | 🔵 Stretch | 🔵 | — | if ahead |
-| **M8** | Thesis figures & write-up handoff | P1 | ⬜ | 0% | 4 |
+| **M8** | Thesis figures & write-up handoff | P1 | ✅ | 100% | 4 |
 
-**Overall completion: ~65%** — M0 ✅ + M1 ✅ + M4 ✅ + M5 ✅ + M6 ✅ done (M6 2026-07-14); M7 (deploy & verify live) next. Remaining: M7 (deploy), M3 (history inputs), M8 (write-up); M2 stretch.
+**Overall completion: ~95%** — all P0/P1 milestones done: M0 ✅ M1 ✅ M4 ✅ M5 ✅ M6 ✅ M7 ✅ (LIVE) M8 ✅. Live: backend https://aura-cdss-v2.onrender.com · frontend https://aura-cdss.vercel.app. Remaining: M3 (history inputs, P1) + M2 (stretch) only.
 
 > **M1 HEADLINE FINDING (the viva centerpiece):** on **pooled** AUC the RF (0.851) does **not** beat the cumulative **antibiogram baseline (0.860)** — pooled AUC just rewards between-drug ranking. But **within** each (organism×drug) cell, where the antibiogram is constant (AUC 0.5 by construction), the RF shows **median AUC 0.650** (80% of 219 cells >0.55, 67% >0.60) — i.e. **real patient-specific lift (~+0.15) that the antibiogram cannot provide.** That is the honest answer to the Review §0 objection, with evidence. Calibration cut Brier **0.168→0.099** (isotonic, −41%); the calibrated model is now the served default. Top-3 hit-rate on informative contexts = **0.998**.
 
@@ -208,28 +208,30 @@ Retrain/re-serialise artifacts with pinned versions, deploy to Render + Vercel, 
 
 ---
 
-### M7 — Deploy & verify live · Status: ⬜ · Week 4 · **P0**
+### M7 — Deploy & verify live · Status: ✅ DONE (2026-07-14) · Week 4 · **P0**
 **Goal:** everything above actually running in production, not just locally.
 
-- [ ] **T7.1** `M` — Retrain/re-serialise **all** served artifacts with the exact pinned serving versions (the **calibrated** model from M1 becomes the shipped artifact). Commit artifacts (Render runs without retraining). Confirm <100 MB/file.
-- [ ] **T7.2** `M` — Deploy backend (Render, `backend/Dockerfile`, health `/health`) + frontend (Vercel, root `frontend`). Set env vars: `ALLOWED_ORIGINS`, `ARMD_ARTIFACTS_DIR`, `ARMD_COHORT_PATH`, `NEXT_PUBLIC_API_URL`.
-- [ ] **T7.3** `S` — Smoke-test the **live** endpoints (see §7).
+> **LIVE.** Backend → Render: **https://aura-cdss-v2.onrender.com** · Frontend → Vercel: **https://aura-cdss.vercel.app** (Production branch `version/v2_release`). Deploy-blocking gaps found & fixed: (1) calibrated RF was gitignored → shipped (17.5 MB, byte-verified); (2) Dockerfile now copies `backend/antibiograms/` + `reports/metrics.json` (`REPORTS_DIR` set). Two deploy-time issues caught & fixed live: Vercel was building `main` (frozen V1) with a broken `--prefix frontend` install → repointed Production to `version/v2_release` with Root Directory `frontend` + default commands; and `NEXT_PUBLIC_API_URL` was unset → set to the Render backend and rebuilt (bundle now bakes the backend baseURL, verified).
+
+- [x] **T7.1** `M` — Served artifacts finalised & committed with pinned versions: the **calibrated** model (`rf_top3_recommender_calibrated.joblib`) is the shipped/served default; all committed files <100 MB (largest 17.5 MB); antibiograms + `reports/metrics.json` bundled into the image. Render runs without retraining.
+- [x] **T7.2** `M` — Deployed: backend on Render (`backend/Dockerfile`, health `/health`), frontend on Vercel (Root Directory `frontend`, Production branch `version/v2_release`). Env set: `ALLOWED_ORIGINS`=Vercel origin, `ENVIRONMENT=production`, `NEXT_PUBLIC_API_URL`=Render backend.
+- [x] **T7.3** `S` — Live smoke tests PASS: `/health` healthy; `/api/v2/locales` (us_armd + pakistan, 3/6 orgs with data); `/api/v2/model-info` (eval block AUC 0.851 / cell 0.650 / isotonic + 12 contrast rows + `dosage.validated=false`); US recommend (basis=model, amikacin/ertapenem/meropenem); **PK typhoid gating** (meropenem/imipenem/azithromycin, ceftriaxone + 4 others `gated_do_not_use`, dose_disclaimer); CORS ACAO = Vercel origin; frontend bundle baked with backend baseURL.
 
 **Acceptance:**
-- [ ] All §7 live checks pass against the deployed URLs; cold start works on the 512 MB free tier; `recommend` does not 500 on artifact load.
+- [x] All §7 live checks pass against the deployed URLs; cold start works on the 512 MB free tier (Render free tier ~50s cold start); `recommend` does not 500 on artifact load.
 
 ---
 
-### M8 — Thesis figures & write-up handoff · Status: ⬜ · Week 4
+### M8 — Thesis figures & write-up handoff · Status: ✅ DONE (2026-07-14) · Week 4
 **Goal:** convert the work into examiner-facing artifacts. Review §3.
 
-- [ ] **T8.1** `S` — Populate `reports/figures/` with poster/thesis-ready figures: per-organism AUC heatmap, calibration diagram, coverage-rate bar, US-vs-PK resistance contrast, architecture diagram (3-layer engine).
-- [ ] **T8.2** `S` — Update `README.md`: architecture, `locale` feature, how to regenerate metrics/figures, deploy steps.
-- [ ] **T8.3** `S` — Update `CHANGELOG.md` mapping each change back to the Review finding it addresses (viva traceability — see §8).
-- [ ] **T8.4** `M` — Draft the viva one-pager: problem statement, XDR-typhoid hook, RQ, honest contributions, "do NOT claim" list, likely questions + answers (Review §3).
+- [x] **T8.1** `S` — `reports/figures/` populated: per-organism AUC + organism×drug heatmap, calibration diagram, decision-curve, **coverage/top-k bar** (`topk_coverage.png`), **US-vs-PK contrast** (`us_vs_pk_contrast.png`), **3-layer architecture** (`architecture_3layer.png`). New figures regenerate via `armd_model/make_thesis_figures.py` (committed-artifacts only, no datasets); mirrored to `frontend/public/figures/`.
+- [x] **T8.2** `S` — `README.md` updated: locale-aware engine (§8), honest evaluation + figures (§10), regenerate-metrics/figures step (§11), `/api/v2/locales` + `locale` field (§13), `ANTIBIOGRAM_DIR`/`REPORTS_DIR` (§15), bundled-artifact deploy (§16); corrected the stale "uncalibrated" claim.
+- [x] **T8.3** `S` — `CHANGELOG.md` `[2.1.0]` entry maps each change to its Review §/Mn.n finding (viva traceability).
+- [x] **T8.4** `M` — `docs/VIVA_ONEPAGER.md` drafted: problem, XDR-typhoid hook, RQ, honest contributions, "do NOT claim" list, likely Q&A.
 
 **Acceptance:**
-- [ ] `reports/figures/` populated; README + CHANGELOG updated with traceability; viva one-pager drafted.
+- [x] `reports/figures/` populated; README + CHANGELOG updated with traceability; viva one-pager drafted.
 
 ---
 

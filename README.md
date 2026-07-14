@@ -19,10 +19,14 @@
 
 It does this in two stages:
 
-1. **Susceptibility recommendation** — a machine-learning model scores every candidate antibiotic for the probability that the cultured organism is *susceptible* to it, given the patient's demographics, lab values, ward, and (where available) prior infection history. The candidates are first filtered through a data-derived **antibiogram** (the panel of drugs the lab actually tests for that organism), then ranked. The top 3 are returned.
-2. **Dosage recommendation** — each of the top-3 antibiotics is enriched with a **dose range** and **route** (IV / PO / IM) from a hybrid lookup-plus-ML dosage engine.
+1. **Susceptibility recommendation** — a machine-learning model scores every candidate antibiotic for the probability that the cultured organism is *susceptible* to it, given the patient's demographics, lab values, ward, and (where available) prior infection history. The candidates are first filtered through a data-derived **antibiogram** (the panel of drugs the lab actually tests for that organism), then ranked. The top 3 are returned. Probabilities are **isotonic-calibrated** (Brier 0.168 → 0.099), so the numbers shown are decision-grade, not just rankable scores (§10).
+2. **Dosage recommendation** — each of the top-3 antibiotics is enriched with a **dose range** and **route** (IV / PO / IM) from a hybrid lookup-plus-ML dosage engine. *(Dosing is a reference reframe, not a validated dosing calculator — see §18.)*
 
 The result is a ranked, dosed shortlist surfaced through a clean web UI, intended to *support* (never replace) a clinician's empirical-therapy decision while culture results are pending or being interpreted.
+
+**Locale awareness (the headline V2 feature).** The same organism is not equally susceptible everywhere. AURA carries a **locale toggle** (`us_armd` ↔ `pakistan`): the US path runs the ML model + US antibiogram; the Pakistan path runs an **antibiogram-only route** driven by local resistance data, which *gates* drugs that fail locally even when they are first-line elsewhere. The flagship example: **ceftriaxone is standard first-line for typhoid in the US but is gated in Pakistan** because of the ongoing XDR *S.* Typhi outbreak. See §8 and the figure below.
+
+![US vs Pakistan susceptibility contrast](reports/figures/us_vs_pk_contrast.png)
 
 AURA is a full-stack application:
 
@@ -52,7 +56,7 @@ On this branch the entire V1 (CatBoost) stack is **commented out, not deleted** 
 5. [Datasets](#5-datasets)
 6. [Data pipeline & feature engineering](#6-data-pipeline--feature-engineering)
 7. [The recommendation model (V2)](#7-the-recommendation-model-v2)
-8. [The 3-layer recommendation engine](#8-the-3-layer-recommendation-engine)
+8. [The 3-layer, locale-aware recommendation engine](#8-the-3-layer-locale-aware-recommendation-engine)
 9. [The dosage model](#9-the-dosage-model)
 10. [Model performance](#10-model-performance)
 11. [Training the models](#11-training-the-models)
@@ -82,23 +86,29 @@ On this branch the entire V1 (CatBoost) stack is **commented out, not deleted** 
 │  FastAPI 0.104  (Python 3.11)        app version "1.0.0"                        │
 │                                                                                │
 │  GET  /api/v2/organisms   ─► ClinicalCatalogService   (culture → organism list) │
-│  POST /api/v2/recommend   ─► ARMDPredictorService     (3-layer engine)          │
-│                              └─► DosageService         (lookup → ML → fallback)  │
-│  GET  /api/v2/model-info  ─► model inventory + test metrics + importances       │
+│  GET  /api/v2/locales     ─► LocaleAntibiogramService (US / Pakistan + orgs)     │
+│  POST /api/v2/recommend   ─► locale router:                                      │
+│         locale=us_armd  ─► ARMDPredictorService (3-layer engine) + DosageService │
+│         locale=pakistan ─► Route A: LocaleAntibiogramService (antibiogram-only)  │
+│  GET  /api/v2/model-info  ─► inventory + eval metrics + US-vs-PK contrast        │
 │  GET  /health , GET /                                                           │
 └───────────────────────────────────┬────────────────────────────────────────────┘
                                     │
-                         armd_model/artifacts/   (committed, loaded at startup)
-                         ├── rf_top3_recommender_optimized.joblib   RF pipeline
-                         ├── feature_cols.joblib / selected_antibiotics.joblib
-                         ├── best_threshold.joblib / metadata_optimized.json
-                         ├── feature_importances.joblib / split_test_summary.joblib
-                         ├── organism_antibiotic_panel.json          antibiogram filter
-                         ├── dose_route_lookup.csv                   exact dose lookup
-                         └── dose_model_hybrid.pkl / route_model_hybrid.pkl
+              armd_model/artifacts/            (committed, loaded at startup)
+              ├── rf_top3_recommender_calibrated.joblib  SERVED default (isotonic)
+              ├── rf_top3_recommender_optimized.joblib   raw RF (fallback)
+              ├── feature_cols / selected_antibiotics / best_threshold.joblib
+              ├── feature_importances / split_test_summary.joblib
+              ├── organism_antibiotic_panel.json          antibiogram filter
+              ├── dose_route_lookup.csv                   exact dose lookup
+              └── dose_model_hybrid.pkl / route_model_hybrid.pkl
+              backend/antibiograms/            (per-locale resistance data)
+              ├── us_armd.json                 ARMD proof-of-method antibiogram
+              └── pakistan.json                provisional local seed (gates XDR drugs)
+              reports/metrics.json             rigorous eval, served on /model-info
 ```
 
-The three backend services are constructed once at import time (`routes.py`) and reused across requests. The RF pipeline, antibiogram panel, and dosage artifacts are loaded into memory at startup.
+The backend services are constructed once at import time (`routes.py`) and reused across requests. The **calibrated** RF pipeline (`rf_top3_recommender_calibrated.joblib`) is the served default; the per-locale antibiograms and evaluation metrics are loaded at startup.
 
 ---
 
@@ -300,11 +310,15 @@ vancomycin
 
 ---
 
-## 8. The 3-layer recommendation engine
+## 8. The 3-layer, locale-aware recommendation engine
 
-At inference (`armd_predictor.py → predict()`), a request flows through three layers:
+![AURA 3-layer locale-aware engine](reports/figures/architecture_3layer.png)
 
-**Layer 1 — Probability scoring.** For each candidate antibiotic, a feature row is built from the patient context with `antibiotic` set to that drug, and the RF pipeline produces `P(susceptible = 1)`. (Features not captured by the UI — prior history — default to 0.)
+**Layer 0 — Locale router.** Every request carries a `locale`. `locale=us_armd` runs the ML path below (Layers 1–3). Any other locale (currently `pakistan`) is routed to **Route A**, an antibiogram-only path served by `LocaleAntibiogramService`: candidates are ranked purely by the **local %-susceptible** figure and any drug that is untested, unknown, below the isolate threshold, or explicitly `do_not_use` in that locale is **excluded** — with **no US fallback**, so honest data gaps stay visible rather than being papered over with US numbers. This is what lets AURA *gate* ceftriaxone for typhoid in Pakistan (XDR outbreak) while surfacing it in the US. Each pick returns its `basis` (`model` vs `antibiogram`), `percent_susceptible`, and `source_id` provenance. Locale antibiograms live in `backend/antibiograms/*.json`; the Pakistan file is a **provisional single-centre seed**, not a validated national antibiogram.
+
+The ML path (`armd_predictor.py → predict()`) then flows through three layers:
+
+**Layer 1 — Probability scoring.** For each candidate antibiotic, a feature row is built from the patient context with `antibiotic` set to that drug, and the **calibrated** RF pipeline produces a decision-grade `P(susceptible = 1)`. (Features not captured by the UI — prior history — default to 0.)
 
 **Layer 2 — Antibiogram clinical filter.** Candidates are restricted to the antibiotics the lab **actually tests for that organism**, using a data-derived antibiogram (`organism_antibiotic_panel.json`, built by `build_antibiogram.py`). A drug is "allowed" for an organism only if the (organism, antibiotic) pair was tested **≥ 30 times** in the cohort — the **CLSI M39** minimum for antibiogram reporting. This prevents clinically nonsensical drugs (e.g. *metronidazole* vs *E. coli*, *ertapenem* vs *Pseudomonas*) from ever topping the list just because the model assigned them a high probability. The shipped panel covers **85 organisms** (panel size: min 1, median 7, max 22 drugs). Unknown organisms fall back to the full 32-drug panel rather than returning nothing.
 
@@ -352,9 +366,34 @@ These are the **actual** metrics in the shipped artifact (`split_test_summary.jo
 
 High precision with moderate recall means: when AURA says an isolate is susceptible, it is usually right — at the cost of occasionally missing a susceptible drug. Combined with the antibiogram filter, this biases the shortlist toward drugs that will actually work.
 
-### Top-3 recommendation quality
+### Rigorous evaluation (honest headline)
 
-`train_armd.py` also evaluates **Top-3 hit rate** and **Mean Reciprocal Rank** over sampled positive contexts (does at least one truly-susceptible drug appear in the top 3?). These are printed during training but not persisted in the artifacts; re-run training to reproduce them on your data split.
+`armd_model/evaluate.py` regenerates a seeded, patient-grouped evaluation into `reports/metrics.json` (also served live on `/model-info`). The headline is deliberately **honest**, not flattering:
+
+| Measure | Value | What it means |
+|---|---:|---|
+| RF pooled ROC-AUC | **0.851** | Discriminates S vs R well overall. |
+| Antibiogram baseline AUC | **0.860** | A "just use the local %-susceptible" baseline is *as good or better* pooled — so the pooled number alone doesn't justify ML. |
+| RF lift over antibiogram (pooled) | **−0.009** | Honestly negative pooled. |
+| **Within-(organism×drug) median AUC** | **0.650** | This is the real story: *inside* a cell the antibiogram is constant (AUC 0.5), so 0.650 is the RF's **patient-specific lift** — it re-ranks *this* patient beyond the population rate. 80% of cells beat 0.55; 67% beat 0.60. |
+| Calibration Brier | **0.168 → 0.099** | Isotonic calibration; the served model. |
+| Top-1 / Top-3 hit-rate (informative) | **0.983 / 0.998** | On contexts with both an S and an R drug tested, the top-ranked pick is susceptible ~98% of the time. |
+
+> **Coverage-rate-vs-clinician** is *not computable* from ARMD (it records the drug *tested*, not the drug *administered* — no prescribed-drug field), so per the roadmap the Top-k susceptibility hit-rate is reported as the honest substitute.
+
+### Figures (`reports/figures/`, also on `/model-info` and `frontend/public/figures/`)
+
+| Figure | Shows |
+|---|---|
+| `per_organism_auc.png` | Per-organism RF vs antibiogram AUC (top 15 by support). |
+| `organism_drug_auc_heatmap.png` | Within-(organism×drug) RF AUC — where the patient-specific lift lives. |
+| `calibration_reliability.png` | Reliability diagram, uncalibrated vs isotonic. |
+| `decision_curve.png` | Net benefit vs treat-all / treat-none. |
+| `topk_coverage.png` | Top-1/Top-3 susceptibility hit-rate (coverage substitute). |
+| `us_vs_pk_contrast.png` | US vs Pakistan %-susceptible for the keystone divergence cells. |
+| `architecture_3layer.png` | The locale-aware engine (embedded in §8). |
+
+The first four come from `evaluate.py` (needs the cohort); the last three from `make_thesis_figures.py` (needs only committed artifacts — see §11).
 
 ### Most important features
 
@@ -415,6 +454,17 @@ Reads `d_dose.csv`, builds the exact lookup table, trains the RF dose/route fall
 
 Restart the backend after retraining; artifacts are loaded once at startup.
 
+**Step 4 — rigorous evaluation + figures (recommended)**
+
+```bash
+python armd_model/evaluate.py            # cohort required; writes reports/metrics.json + 4 eval figures,
+                                         # and (re)saves the calibrated served model
+python armd_model/make_thesis_figures.py # cohort NOT required; reads metrics.json + antibiograms
+                                         # → topk_coverage, us_vs_pk_contrast, architecture_3layer
+```
+
+`evaluate.py` uses the same seed-42, patient-grouped split as training and asserts the RF AUC hasn't drifted from the frozen baseline. `make_thesis_figures.py` reads only committed artifacts, so it reproduces the poster/thesis figures anywhere (no datasets). Both write into `reports/figures/` and mirror the examiner figures into `frontend/public/figures/` for the `/model-info` dashboard.
+
 ---
 
 ## 12. How the system works end-to-end
@@ -449,8 +499,9 @@ Base path: `/api/v2`. Full detail: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/v2/organisms` | Culture sites and (optionally, via `?culture_description=`) the valid organisms for a site. |
-| `POST` | `/api/v2/recommend` | Top-3 recommendations + dose range + route + full ranked list. |
-| `GET` | `/api/v2/model-info` | Model inventory, feature groups, held-out test metrics, top feature importances, dosage-model status. |
+| `GET` | `/api/v2/locales` | Available locales (`us_armd`, `pakistan`), each with its selectable organisms and a `has_data` flag. Drives the UI locale toggle + organism dropdown. |
+| `POST` | `/api/v2/recommend` | Top-3 recommendations + dose range + route + full ranked list. Add `locale` to switch paths (default `us_armd`). |
+| `GET` | `/api/v2/model-info` | Model inventory, feature groups, held-out test metrics, top feature importances, dosage-model status, plus the rigorous `evaluation` block and the `us_vs_pk_contrast` chart data. |
 | `GET` | `/health` | Liveness probe. |
 | `GET` | `/` | API metadata. |
 
@@ -478,6 +529,9 @@ Base path: `/api/v2`. Full detail: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.
 | `gender` | string | ✅ | `male` / `female`. |
 | `wbc`, `cr`, `lactate`, `procalcitonin` | float ≥ 0 | optional | Missing → imputed. |
 | `ward` | enum | optional | `general` (→ IP), `icu`, `er`. Default `general`. |
+| `locale` | string | optional | `us_armd` (default, ML path) or `pakistan` (antibiogram-only Route A). |
+
+On the Pakistan path the response is additive: `locale`, `basis` (`antibiogram`), `excluded` (drug → gate reason), `antibiogram_meta` (source/version), and `dose_disclaimer`. The `POST /api/v2/recommend` contract is unchanged for the US default — new fields are only *added*.
 
 **Response**
 
@@ -526,6 +580,8 @@ Copy `.env.example` → `.env`. Variables actually read by the V2 backend:
 | `ALLOWED_ORIGINS` | `http://localhost:3000` | Backend | CORS allowlist (comma-separated). |
 | `ARMD_ARTIFACTS_DIR` | `<repo>/armd_model/artifacts` | Backend (V2) | Where the RF + dosage + antibiogram artifacts are loaded from. |
 | `ARMD_COHORT_PATH` | `<repo>/datasets/microbiology_cultures_cohort.csv` | Backend (V2) | Cohort used to build the runtime organism catalog. |
+| `ANTIBIOGRAM_DIR` | `<repo>/backend/antibiograms` | Backend (V2) | Per-locale antibiogram JSONs (`us_armd.json`, `pakistan.json`). |
+| `REPORTS_DIR` | `<repo>/reports` | Backend (V2) | Where `metrics.json` (the `/model-info` evaluation block) is read from. |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Frontend | Client-side API base URL. |
 | `API_URL` | `http://backend:8000` | Frontend (Docker) | Server-side API URL. |
 
@@ -540,7 +596,7 @@ Full guide: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 | Target | How |
 |---|---|
 | **Local (full stack)** | `docker-compose up --build`. |
-| **Backend → Render** | Build from `backend/Dockerfile` as a free-tier web service. The RF artifact is sized (150 trees / depth 16 / `compress=3`) to fit the 512 MB free tier. |
+| **Backend → Render** | Build from `backend/Dockerfile` as a free-tier web service (health check `/health`). The image bundles the **calibrated** RF model (17.5 MB), both antibiograms, and `reports/metrics.json`; the RF is sized (150 trees / depth 16 / `compress=3`) to fit the 512 MB free tier. Set `ALLOWED_ORIGINS` to the Vercel URL and `ENVIRONMENT=production`. |
 | **Frontend → Vercel** | Set the project **Root Directory = `frontend`** (no root `vercel.json`). Set `NEXT_PUBLIC_API_URL` to the Render backend URL. |
 
 ---
@@ -567,24 +623,26 @@ A running log of the non-obvious issues hit while building V2 and how each was r
 
 ## 18. Limitations
 
+- **No pooled lift over the antibiogram.** Pooled, the RF does *not* beat a "use the local %-susceptible" baseline (AUC 0.851 vs 0.860). The defensible value is the **within-cell, patient-specific re-ranking** (median cell AUC 0.650), not a headline accuracy win. This is stated honestly rather than hidden.
 - **Prior history defaults to zero at inference.** The `prior_abxclass__*` and `prior_org__*` features aren't captured in the UI, so they're all 0 at prediction time. This reduces accuracy for patients with complex antibiotic/infection histories.
-- **Probabilities are uncalibrated.** RF `predict_proba` values are *rankable* but not calibrated probabilities; treat them as relative scores.
+- **Pakistan antibiogram is a provisional seed.** `pakistan.json` is mostly single-centre / literature-anchored with explicit `unknown` gaps and TODO placeholders for national PARN/NIH/GLASS data — it is illustrative of the *method*, not a validated national antibiogram. Several organisms return "no local data" by design rather than guessing.
+- **Dosing is a reference reframe, not a validated calculator.** Dose/route depend on `(drug, mapped-disease, age band)` — not weight, renal function, or full indication — and are surfaced with a non-validated-dosing disclaimer. Always verify against a pharmacist/formulary.
 - **No per-prediction explanation in V2.** Only global feature importance is exposed (no TreeSHAP per request).
-- **Coarse dosage keying.** Dose/route depend on `(drug, mapped-disease, age band)` — not weight, renal function, or full indication. Always verify dose against a pharmacist/formulary.
-- **Dataset-bound.** Trained on one institution's ARMD data; resistance patterns are local and time-bound. No external validation.
+- **Dataset-bound.** The model is trained on one US institution's ARMD data; resistance patterns are local and time-bound. No external validation.
 - **Not for autonomous prescribing.** Clinician judgment, local antibiograms, and stewardship policy always take precedence.
 
 ---
 
 ## 19. Future work
 
-- Capture prior antibiotic exposure and prior organism history in the V2 form.
-- Calibrate probabilities (isotonic / Platt scaling).
+- Capture prior antibiotic exposure and prior organism history in the V2 form (so they stop defaulting to 0).
+- Replace the Pakistan seed antibiogram with **national PARN / NIH-Pakistan / WHO GLASS** figures and fill the `unknown` cells.
 - Per-prediction explanations via TreeSHAP on the RF.
-- Persist Top-3 hit-rate / MRR into the artifacts and surface them on the dashboard.
 - Concept-drift detection + automated retraining.
 - External validation on an independent hospital dataset.
 - Auth, audit logging, and polymicrobial-infection support.
+
+*Done in V2 (previously listed here): isotonic probability calibration; rigorous seeded evaluation with figures; locale-aware US↔Pakistan recommendation.*
 
 ---
 
