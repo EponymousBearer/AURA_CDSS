@@ -58,10 +58,10 @@ Lead with this in the viva; don't hide from it.
 | **M5** | Dosage honest reframe | P1 (cheap, high safety value) | ✅ | 100% | 3 |
 | **M6** | Frontend & demo | P1 | ✅ | 100% | 3 |
 | **M7** | Deploy & verify live | **P0** | ✅ | 100% | 4 |
-| **M2** | Model comparison (RF vs GBDT) | 🔵 Stretch | 🔵 | — | if ahead |
+| **M2** | Model comparison (RF vs GBDT) | 🔵 Stretch | ✅ | 100% | done |
 | **M8** | Thesis figures & write-up handoff | P1 | ✅ | 100% | 4 |
 
-**Overall completion: ~99%** — every P0/P1 milestone done: M0 ✅ M1 ✅ M3 ✅ M4 ✅ M5 ✅ M6 ✅ M7 ✅ (LIVE) M8 ✅. Live: backend https://aura-cdss-v2.onrender.com · frontend https://aura-cdss.vercel.app. Only **M2** (RF-vs-GBDT model comparison, 🔵 stretch) remains.
+**Overall completion: 100%** — every milestone done, including the stretch: M0 ✅ M1 ✅ M2 ✅ M3 ✅ M4 ✅ M5 ✅ M6 ✅ M7 ✅ (LIVE) M8 ✅. Live: backend https://aura-cdss-v2.onrender.com · frontend https://aura-cdss.vercel.app. Open items are future-work only: swap RF→CatBoost (M2 finding), fill the Pakistan antibiogram `unknown` cells, TreeSHAP already shipped.
 
 > **M1 HEADLINE FINDING (the viva centerpiece):** on **pooled** AUC the RF (0.851) does **not** beat the cumulative **antibiogram baseline (0.860)** — pooled AUC just rewards between-drug ranking. But **within** each (organism×drug) cell, where the antibiogram is constant (AUC 0.5 by construction), the RF shows **median AUC 0.650** (80% of 219 cells >0.55, 67% >0.60) — i.e. **real patient-specific lift (~+0.15) that the antibiogram cannot provide.** That is the honest answer to the Review §0 objection, with evidence. Calibration cut Brier **0.168→0.099** (isotonic, −41%); the calibrated model is now the served default. Top-3 hit-rate on informative contexts = **0.998**.
 
@@ -235,14 +235,16 @@ Retrain/re-serialise artifacts with pinned versions, deploy to Render + Vercel, 
 
 ---
 
-### M2 — Model comparison (RF vs LightGBM vs CatBoost) · Status: 🔵 Stretch · only if ahead
-**Goal:** answer "why RandomForest?" with evidence. Review §2 Tier 2 / §4(e). **Demoted to stretch for the 4-week sprint** — do only after M0/M1/M4/M6/M7 are green.
+### M2 — Model comparison (RF vs LightGBM vs CatBoost) · Status: ✅ DONE (2026-07-14) · stretch, attempted
+**Goal:** answer "why RandomForest?" with evidence. Review §2 Tier 2 / §4(e).
 
-- [ ] 🔵 **T2.1** `L` — `compare_models.py`: RF, LightGBM, CatBoost on the **same split + features**, calibrated, same metrics.
-- [ ] 🔵 **T2.2** `M` — Include the V1 per-drug CatBoost design as a third architecture point (one-model-per-drug vs single-pipeline-with-drug-as-feature).
-- [ ] 🔵 **T2.3** `S` — One comparison table (AUC, Brier, top-k, coverage, artifact size, latency); justify the production choice in a paragraph.
+> **RESULT — honest and consequential.** `armd_model/compare_models.py` (→ `reports/model_comparison.{json,md}`) trains all three on the same frozen seed-42 split + one-hot pipeline, isotonic-calibrated, scored with the M1 metric functions. **RandomForest is *not* the best model:** pooled AUC RF **0.850** vs LightGBM **0.878** / CatBoost **0.876**; within-cell median AUC RF 0.643 vs 0.666 / **0.679**; Brier(cal) 0.099 vs 0.090 / 0.090; Top-3 ≈ 0.998 for all. The GBDTs are also **~15–35× smaller** (RF 12.6 MB vs LGBM 0.9 / CatBoost **0.34** MB) and **~30× faster** (67 ms vs 2.2 / **1.7** ms). RF reproduced its shipped 0.851 (setup validated). **Conclusion: a CatBoost/LightGBM estimator is the better production choice on accuracy AND size/latency; RF was the initial pick, retained in V2 for continuity, swap scoped as top future work.**
 
-**Acceptance (if attempted):** reproducible comparison table in `reports/`; production model justified on accuracy *and* size/latency for the 512 MB host. **If not attempted:** state in the thesis that RF was retained for size/latency + reproducibility, and comparison is future work.
+- [x] 🔵 **T2.1** `L` — `compare_models.py`: RF, LightGBM, CatBoost on the **same split + features**, isotonic-calibrated, same M1 metrics. Reproducible table in `reports/`.
+- [x] 🔵 **T2.2** `M` — Architecture point documented (README §10): V1 *one-model-per-drug* (23 CatBoost) vs V2 *single-pipeline-with-`antibiotic`-as-feature*; recommended path = keep V2 architecture, swap RF→CatBoost.
+- [x] 🔵 **T2.3** `S` — Comparison table (AUC, within-cell, Brier, top-k, size, latency) + honest justification paragraph in README §10; the evidence points to CatBoost, not RF.
+
+**Acceptance:** ✅ reproducible comparison table in `reports/`; production choice justified on accuracy *and* size/latency for the 512 MB host (and honestly finds RF is *not* the optimum — CatBoost is).
 
 ---
 

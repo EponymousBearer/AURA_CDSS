@@ -61,7 +61,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Prior antibiotic-class exposure** (18) and **prior infecting organisms** (16) are now captured in `PatientForm` (collapsible chip multi-selects, US model path) and flow through `ARMDRecommendationRequest.prior_abx_classes/prior_organisms` → `predict()`, which sets the matching `prior_abxclass__*`/`prior_org__*` columns to 1 instead of zero-filling them (T3.2). The selectable vocabulary is derived from the artifact and served on `GET /api/v2/model-info → prior_history_options`, so the UI always matches the model's columns. Unknown tokens are ignored (robust; never 500s). Additive — the US default contract is unchanged when the fields are omitted.
 - **History ablation** (`armd_model/ablate_history.py` → `reports/history_ablation.json`, T3.3): on the frozen seed-42 test split, zeroing prior history drops AUC **0.8510 → 0.8384** overall (**+0.0127** lift) and **0.8499 → 0.8354** on the 80.5% of rows that carry history (**+0.0145**, mean |Δp| ≈ 0.042) — quantifying the signal previously discarded at inference.
 
+### Added — model comparison (Review §2 Tier 2, §4e · M2)
+- **`armd_model/compare_models.py`** (→ `reports/model_comparison.{json,md}`): RF vs LightGBM vs CatBoost on the same frozen seed-42 split + one-hot pipeline, isotonic-calibrated, scored with the M1 metrics. Honest finding — **RandomForest is not the optimum**: pooled AUC 0.850 vs LightGBM 0.878 / CatBoost 0.876; within-cell 0.643 vs 0.666 / 0.679; and the GBDTs are ~15–35× smaller (0.34–0.88 MB vs 12.6 MB) and ~30× faster. Recommendation recorded (README §10): keep V2's single-pipeline architecture, swap the estimator RF→CatBoost.
+
 ### Planned
+- **Swap the production estimator RF → CatBoost** (M2 evidence: better AUC/Brier, 0.34 MB, 1.7 ms) — keep the single-pipeline architecture.
 - Replace the provisional Pakistan seed antibiogram with national PARN / NIH-Pakistan / WHO GLASS figures; fill the `unknown` cells.
 - Concept-drift detection and automated retraining pipeline.
 - User authentication and audit logging.
