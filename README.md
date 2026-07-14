@@ -395,6 +395,20 @@ High precision with moderate recall means: when AURA says an isolate is suscepti
 
 The first four come from `evaluate.py` (needs the cohort); the last three from `make_thesis_figures.py` (needs only committed artifacts — see §11).
 
+### Model comparison — why RandomForest? (honest answer)
+
+`armd_model/compare_models.py` trains **RF vs LightGBM vs CatBoost** on the *same* frozen seed-42 split and the *same* one-hot feature pipeline, each isotonic-calibrated and scored with the same M1 metrics (`reports/model_comparison.{json,md}`):
+
+| Model | Pooled AUC | Within-cell AUC | Brier (cal) | Top-3 | Size | Latency |
+|---|---:|---:|---:|---:|---:|---:|
+| **RandomForest** (shipped) | 0.850 | 0.643 | 0.099 | 0.998 | 12.6 MB | 67 ms |
+| **LightGBM** | **0.878** | 0.666 | 0.090 | 0.998 | 0.9 MB | 2.2 ms |
+| **CatBoost** | 0.876 | **0.679** | 0.090 | 0.998 | **0.3 MB** | **1.7 ms** |
+
+*(RF reproduces its shipped 0.851 here — the setup is validated.)* The honest conclusion is that **RandomForest is not the best model**: both gradient-boosted trees modestly beat it on discrimination *and* calibration *and* the honest within-cell patient-lift metric, while being **~15–35× smaller and ~30× faster** — which matters more, not less, on the 512 MB / cold-starting free tier. **A CatBoost (or LightGBM) model is the recommended production choice**; RF was the initial pick and is retained in this V2 for continuity, with the swap scoped as the top future-work item.
+
+**Architecture note (T2.2).** V1 used *one CatBoost model per antibiotic* (23 classifiers); V2 uses *a single pipeline with `antibiotic` as a feature*. The single-pipeline design is why V2 can score any drug×organism pair, share signal across drugs, and ship as one artifact — that design choice is independent of, and more consequential than, the RF-vs-GBDT choice above. The recommended path is **single-pipeline + CatBoost**: keep V2's architecture, swap the estimator.
+
 ### Most important features
 
 Feature importance is dominated by **antibiotic identity** (the drug-specific base susceptibility), then **organism**, then labs/demographics:
