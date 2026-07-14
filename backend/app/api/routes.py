@@ -635,6 +635,9 @@ async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Re
             ward_icu=ward_icu,
             ward_er=ward_er,
             ward_ip=ward_ip,
+            prior_abx_classes=request.prior_abx_classes,
+            prior_organisms=request.prior_organisms,
+            explain=True,
         )
 
         # Enrich top 3 with dosage info
@@ -651,6 +654,7 @@ async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Re
                 "dose_range": dosage["dose_range"],
                 "route": dosage["route"],
                 "dose_source": dosage["source"],
+                "explanation": item.get("explanation"),
             })
 
         patient_factors = {
@@ -663,6 +667,8 @@ async def get_v2_recommendation(request: ARMDRecommendationRequest, response: Re
             "lactate": request.lactate,
             "procalcitonin": request.procalcitonin,
             "ward": request.ward.value,
+            "prior_abx_classes": request.prior_abx_classes,
+            "prior_organisms": request.prior_organisms,
         }
 
         return ARMDRecommendationResponse(

@@ -54,14 +54,14 @@ Lead with this in the viva; don't hide from it.
 | **M0** | Reproduce & freeze baseline | P0 (gates all) | ✅ | 100% | 1 |
 | **M1** | Rigorous evaluation | **P0 (keystone of rigour)** | ✅ | 100% | 1 |
 | **M4** | Antibiogram-pluggable + Pakistan (Route A) | **P0 (thesis keystone)** | ✅ | 95% | 2 |
-| **M3** | Explainability + history inputs | P1 (partly stretch) | ⬜ | 0% | 3 |
+| **M3** | Explainability + history inputs | P1 (partly stretch) | ✅ | 100% | 3 |
 | **M5** | Dosage honest reframe | P1 (cheap, high safety value) | ✅ | 100% | 3 |
 | **M6** | Frontend & demo | P1 | ✅ | 100% | 3 |
 | **M7** | Deploy & verify live | **P0** | ✅ | 100% | 4 |
 | **M2** | Model comparison (RF vs GBDT) | 🔵 Stretch | 🔵 | — | if ahead |
 | **M8** | Thesis figures & write-up handoff | P1 | ✅ | 100% | 4 |
 
-**Overall completion: ~95%** — all P0/P1 milestones done: M0 ✅ M1 ✅ M4 ✅ M5 ✅ M6 ✅ M7 ✅ (LIVE) M8 ✅. Live: backend https://aura-cdss-v2.onrender.com · frontend https://aura-cdss.vercel.app. Remaining: M3 (history inputs, P1) + M2 (stretch) only.
+**Overall completion: ~99%** — every P0/P1 milestone done: M0 ✅ M1 ✅ M3 ✅ M4 ✅ M5 ✅ M6 ✅ M7 ✅ (LIVE) M8 ✅. Live: backend https://aura-cdss-v2.onrender.com · frontend https://aura-cdss.vercel.app. Only **M2** (RF-vs-GBDT model comparison, 🔵 stretch) remains.
 
 > **M1 HEADLINE FINDING (the viva centerpiece):** on **pooled** AUC the RF (0.851) does **not** beat the cumulative **antibiogram baseline (0.860)** — pooled AUC just rewards between-drug ranking. But **within** each (organism×drug) cell, where the antibiogram is constant (AUC 0.5 by construction), the RF shows **median AUC 0.650** (80% of 219 cells >0.55, 67% >0.60) — i.e. **real patient-specific lift (~+0.15) that the antibiogram cannot provide.** That is the honest answer to the Review §0 objection, with evidence. Calibration cut Brier **0.168→0.099** (isotonic, −41%); the calibrated model is now the served default. Top-3 hit-rate on informative contexts = **0.998**.
 
@@ -163,17 +163,17 @@ Retrain/re-serialise artifacts with pinned versions, deploy to Render + Vercel, 
 
 ---
 
-### M3 — Explainability + prior-history inputs · Status: ⬜ · Week 3
-**Goal:** kill "it's a black box" and re-activate the strongest personal signal (prior exposure/organism — currently zeroed at inference). Review §1 (Yelin) + §2 item 5. **In a tight sprint, T3.2 (history inputs) is P1; T3.1 (SHAP) is do-if-time.**
+### M3 — Explainability + prior-history inputs · Status: ✅ DONE (2026-07-14) · Week 3
+**Goal:** kill "it's a black box" and re-activate the strongest personal signal (prior exposure/organism — previously zeroed at inference). Review §1 (Yelin) + §2 item 5. **In a tight sprint, T3.2 (history inputs) is P1; T3.1 (SHAP) is do-if-time.**
 
-- [ ] **T3.2** `M` — Add prior-antibiotic-class-exposure + prior-organism fields to `PatientForm`; wire through `ARMDRecommendationRequest` → `armd_service.predict()` so they're no longer defaulted to 0. (Currently `predict()` zero-fills every non-supplied feature column.)
-- [ ] **T3.3** `S` — Re-run M1 with history features active; report the delta (does patient history add lift?).
-- [ ] 🔵 **T3.1** `L` — **TreeSHAP** per-prediction explanations in `predict()`; return top contributing features per recommended drug as an **additive** field in the API response. (V1 had SHAP; V2 does not — this is net-new for the RF pipeline.)
+- [x] **T3.2** `M` — Prior antibiotic-**class** exposure (18) + prior-**organism** (16) inputs added to `PatientForm` (collapsible chip multi-selects, US model path only), threaded `ARMDRecommendationRequest.prior_abx_classes/prior_organisms` → `armd_service.predict()`, which now sets the matching `prior_abxclass__*`/`prior_org__*` columns to 1 instead of zero-filling. Vocabulary is derived from the artifact and served on `/api/v2/model-info → prior_history_options` (UI stays in sync with the model). Unknown tokens are ignored (robust). **19/19 backend tests pass** (4 new: options exposed, history changes scores, optional/additive, unknown-token-safe); `next build` green.
+- [x] **T3.3** `S` — Ablation (`armd_model/ablate_history.py`, `reports/history_ablation.json`) on the frozen seed-42 test split, model fixed: **80.5%** of test rows carry prior history; zeroing it drops AUC **0.8510 → 0.8384 (lift +0.0127)** overall and **0.8499 → 0.8354 (+0.0145)** on the history-bearing subset (mean |Δp| ≈ 0.042). Enabling history recovers real, previously-discarded lift.
+- [x] 🔵 **T3.1** `L` — **TreeSHAP** per-prediction explanations wired into `predict(explain=True)`: for each top-3 drug, one-hot SHAP contributions are aggregated back to clinical factors (Drug identity, Organism, Prior antibiotic exposure, labs, …) and returned as the additive `recommendation.explanation` field. Lazy + best-effort (`shap==0.45.1`): the import/explainer build on first use, and any failure degrades gracefully (recommendations still served, `explanation=null`) — startup and `/recommend` are never blocked. Surfaced in the UI as a "Why this drug?" panel on `ResultCardV2` (model path only). **21/21 backend tests pass** (2 new).
 
 **Acceptance:**
-- [ ] UI captures prior history; values flow to the model (verified: changing them changes output).
-- [ ] M1 re-run shows the effect of enabling history.
-- [ ] (If T3.1 done) `/api/v2/recommend` returns per-drug explanation data.
+- [x] UI captures prior history; values flow to the model (verified: changing them changes output — test `test_v2_recommend_prior_history_changes_scores` + live check: prior β-lactam/FQ exposure drops β-lactam/FQ scores, reshuffles top-3).
+- [x] M1 re-run shows the effect of enabling history (+0.013 AUC overall, +0.015 on history-bearing rows).
+- [x] `/api/v2/recommend` returns per-drug explanation data (TreeSHAP; US model path).
 
 ---
 

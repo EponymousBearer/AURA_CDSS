@@ -77,6 +77,16 @@ export type WardType = 'general' | 'icu' | 'er'
 // 'us_armd' = RandomForest (US/ARMD); any other id = antibiogram-driven locale (Route A).
 export type LocaleId = 'us_armd' | 'pakistan' | string
 
+export interface HistoryOption {
+  value: string        // model column suffix (e.g. 'beta_lactam', 'escherichia')
+  label: string        // human-readable label
+}
+
+export interface PriorHistoryOptions {
+  antibiotic_classes: HistoryOption[]
+  organisms: HistoryOption[]
+}
+
 export interface ARMDFormData {
   culture_description: string
   organism: string
@@ -87,7 +97,16 @@ export interface ARMDFormData {
   lactate: number | null
   procalcitonin: number | null
   ward: WardType
+  prior_abx_classes: string[]   // M3/T3.2 — prior antibiotic-class exposure
+  prior_organisms: string[]     // M3/T3.2 — prior infecting organisms
   locale: LocaleId
+}
+
+export interface ExplanationFactor {
+  feature: string
+  label: string
+  contribution: number
+  direction: 'increases' | 'decreases'
 }
 
 export interface ARMDRecommendation {
@@ -101,6 +120,8 @@ export interface ARMDRecommendation {
   percent_susceptible?: number | null
   source_id?: string | null
   confidence?: string | null
+  // --- per-prediction TreeSHAP explanation (model path; M3/T3.1) ---
+  explanation?: ExplanationFactor[] | null
 }
 
 export interface ARMDRecommendationResponse {
@@ -149,6 +170,7 @@ export interface ARMDFormProps {
   onReset?: () => void
   locale: LocaleId
   localeOrganisms?: LocaleOrganismOption[]
+  historyOptions?: PriorHistoryOptions
 }
 
 export interface ARMDOrganismCatalog {

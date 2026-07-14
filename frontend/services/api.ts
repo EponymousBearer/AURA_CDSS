@@ -179,6 +179,10 @@ export interface ARMDModelInfoResponse {
   }
   test_summary: ARMDTestSummaryRow[]
   top_feature_importances: ARMDFeatureImportance[]
+  prior_history_options?: {
+    antibiotic_classes: { value: string; label: string }[]
+    organisms: { value: string; label: string }[]
+  }
   artifacts: Record<string, string>
   metadata: Record<string, unknown>
   dosage_model: ARMDDosageModelInfo
@@ -203,6 +207,8 @@ export async function getARMDRecommendation(
     lactate: data.lactate ?? undefined,
     procalcitonin: data.procalcitonin ?? undefined,
     ward: data.ward,
+    prior_abx_classes: data.prior_abx_classes ?? [],
+    prior_organisms: data.prior_organisms ?? [],
     locale: data.locale ?? 'us_armd',
   }
   const response = await api.post('/api/v2/recommend', payload)

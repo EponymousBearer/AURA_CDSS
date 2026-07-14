@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ARMDFormProps, ARMDFormData, WardType } from '@/types'
+import { ARMDFormProps, ARMDFormData, WardType, HistoryOption } from '@/types'
 import { getARMDOrganismCatalog } from '@/services/api'
 
 type OrganismChoice = { value: string; label: string; disabled: boolean }
@@ -28,6 +28,8 @@ type FormState = {
   lactate: string
   procalcitonin: string
   ward: WardType
+  priorAbxClasses: string[]
+  priorOrganisms: string[]
 }
 
 type FormErrors = {
@@ -81,6 +83,39 @@ function LabField({
   )
 }
 
+function ChipMultiSelect({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: HistoryOption[]
+  selected: string[]
+  onToggle: (value: string) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const active = selected.includes(opt.value)
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onToggle(opt.value)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+              active
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-gray-300 bg-white text-gray-600 hover:border-blue-400 hover:text-blue-700'
+            }`}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function PatientForm({
   onSubmit,
   loading,
@@ -88,6 +123,7 @@ export default function PatientForm({
   onReset,
   locale,
   localeOrganisms = [],
+  historyOptions,
 }: ARMDFormProps) {
   const isAntibiogram = locale !== 'us_armd'
   const [organismsByCulture, setOrganismsByCulture] = useState<Record<string, string[]>>(
@@ -103,12 +139,15 @@ export default function PatientForm({
     lactate: '',
     procalcitonin: '',
     ward: 'general',
+    priorAbxClasses: [],
+    priorOrganisms: [],
   })
   const [errors, setErrors] = useState<FormErrors>({})
 
   // Switching locale changes the organism vocabulary — clear the stale selection.
+  // Prior history is only used on the US model path, so clear it too on switch.
   useEffect(() => {
-    setForm((prev) => ({ ...prev, organism: '' }))
+    setForm((prev) => ({ ...prev, organism: '', priorAbxClasses: [], priorOrganisms: [] }))
     setErrors((prev) => ({ ...prev, organism: '' }))
   }, [locale])
 
@@ -173,6 +212,16 @@ export default function PatientForm({
     }
   }
 
+  const togglePrior = (field: 'priorAbxClasses' | 'priorOrganisms', value: string) => {
+    setForm((prev) => {
+      const set = prev[field]
+      return {
+        ...prev,
+        [field]: set.includes(value) ? set.filter((v) => v !== value) : [...set, value],
+      }
+    })
+  }
+
   const validateAge = (v: string) => {
     if (!v.trim()) return 'Age is required'
     const n = Number(v)
@@ -210,6 +259,9 @@ export default function PatientForm({
       lactate: form.lactate.trim() ? Number(form.lactate) : null,
       procalcitonin: form.procalcitonin.trim() ? Number(form.procalcitonin) : null,
       ward: form.ward,
+      // Prior history is only meaningful on the US model path (Route A ignores it).
+      prior_abx_classes: isAntibiogram ? [] : form.priorAbxClasses,
+      prior_organisms: isAntibiogram ? [] : form.priorOrganisms,
       locale,
     }
     onSubmit(data)
@@ -226,6 +278,8 @@ export default function PatientForm({
       lactate: '',
       procalcitonin: '',
       ward: 'general',
+      priorAbxClasses: [],
+      priorOrganisms: [],
     })
     setErrors({})
     onReset?.()
@@ -419,6 +473,60 @@ export default function PatientForm({
             />
           </div>
         </div>
+
+        {/* ── Section 4: Clinical history (US model path only) ── */}
+        {!isAntibiogram && historyOptions &&
+          (historyOptions.antibiotic_classes.length > 0 || historyOptions.organisms.length > 0) && (
+          <details className="group rounded-lg border border-gray-200 bg-gray-50/60 px-4 py-3">
+            <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <span>
+                Clinical History
+                <span className="ml-2 normal-case tracking-normal font-normal text-blue-400">
+                  optional · improves personalisation
+                </span>
+              </span>
+              <span className="text-gray-400 transition group-open:rotate-180">▾</span>
+            </summary>
+
+            <p className="mt-3 text-xs text-gray-500">
+              Prior antibiotic exposure and past infections shift the susceptibility estimate for
+              this patient. Leaving these blank assumes no known history.
+            </p>
+
+            {historyOptions.antibiotic_classes.length > 0 && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium text-gray-700">
+                  Prior antibiotic-class exposure
+                </p>
+                <ChipMultiSelect
+                  options={historyOptions.antibiotic_classes}
+                  selected={form.priorAbxClasses}
+                  onToggle={(v) => togglePrior('priorAbxClasses', v)}
+                />
+              </div>
+            )}
+
+            {historyOptions.organisms.length > 0 && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium text-gray-700">
+                  Prior infecting organisms
+                </p>
+                <ChipMultiSelect
+                  options={historyOptions.organisms}
+                  selected={form.priorOrganisms}
+                  onToggle={(v) => togglePrior('priorOrganisms', v)}
+                />
+              </div>
+            )}
+
+            {(form.priorAbxClasses.length > 0 || form.priorOrganisms.length > 0) && (
+              <p className="mt-3 text-xs text-blue-600">
+                {form.priorAbxClasses.length + form.priorOrganisms.length} selected — these will be
+                sent to the model.
+              </p>
+            )}
+          </details>
+        )}
 
         {/* ── Actions ── */}
         <div className="pt-2">

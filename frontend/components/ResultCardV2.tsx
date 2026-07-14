@@ -114,6 +114,43 @@ export default function ResultCardV2({ recommendation, rank }: ARMDResultCardPro
             <span className="italic">Reference figure only — not validated or patient-adjusted dosing.</span>
           </p>
         </div>
+
+        {/* Why this drug? — per-prediction TreeSHAP factors (model path only) */}
+        {recommendation.explanation && recommendation.explanation.length > 0 && (
+          <details className="group rounded-xl border border-gray-100 bg-white">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+              <span>Why this drug?</span>
+              <span className="text-gray-300 transition group-open:rotate-180">▾</span>
+            </summary>
+            <div className="space-y-2 px-4 pb-4">
+              <p className="text-[11px] text-gray-400">
+                Top factors shifting this susceptibility estimate (TreeSHAP).
+              </p>
+              {recommendation.explanation.map((f) => {
+                const up = f.direction === 'increases'
+                const mag = Math.min(100, Math.abs(f.contribution) * 220)
+                return (
+                  <div key={f.feature} className="flex items-center gap-2">
+                    <span className="w-28 shrink-0 text-xs text-gray-600">{f.label}</span>
+                    <span className={`text-xs ${up ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {up ? '▲' : '▼'}
+                    </span>
+                    <div className="h-1.5 flex-1 rounded-full bg-gray-100">
+                      <div
+                        className={`h-full rounded-full ${up ? 'bg-emerald-400' : 'bg-rose-400'}`}
+                        style={{ width: `${mag}%` }}
+                      />
+                    </div>
+                    <span className="w-12 shrink-0 text-right text-[11px] tabular-nums text-gray-500">
+                      {f.contribution >= 0 ? '+' : ''}
+                      {f.contribution.toFixed(3)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </details>
+        )}
       </div>
     </div>
   )

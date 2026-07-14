@@ -56,10 +56,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added — explainability + prior-history inputs (Review §1 Yelin, §2 item 5 · M3)
+- **Per-prediction TreeSHAP explanations** (T3.1): each US-path recommendation now carries an additive `explanation` field — the top clinical factors (Drug identity, Organism, Prior antibiotic exposure, labs, …) moving that drug's score, with signed contribution + direction. One-hot SHAP values are aggregated back to interpretable feature groups. Wired into `predict(explain=True)` and surfaced as a "Why this drug?" panel on `ResultCardV2`. `shap==0.45.1` is imported lazily and best-effort: on any failure recommendations are still returned with `explanation=null` — startup and `/recommend` are never blocked.
+- **Prior antibiotic-class exposure** (18) and **prior infecting organisms** (16) are now captured in `PatientForm` (collapsible chip multi-selects, US model path) and flow through `ARMDRecommendationRequest.prior_abx_classes/prior_organisms` → `predict()`, which sets the matching `prior_abxclass__*`/`prior_org__*` columns to 1 instead of zero-filling them (T3.2). The selectable vocabulary is derived from the artifact and served on `GET /api/v2/model-info → prior_history_options`, so the UI always matches the model's columns. Unknown tokens are ignored (robust; never 500s). Additive — the US default contract is unchanged when the fields are omitted.
+- **History ablation** (`armd_model/ablate_history.py` → `reports/history_ablation.json`, T3.3): on the frozen seed-42 test split, zeroing prior history drops AUC **0.8510 → 0.8384** overall (**+0.0127** lift) and **0.8499 → 0.8354** on the 80.5% of rows that carry history (**+0.0145**, mean |Δp| ≈ 0.042) — quantifying the signal previously discarded at inference.
+
 ### Planned
-- Capture prior antibiotic class exposure and prior organism history in the V2 UI form (they currently default to 0 at inference).
 - Replace the provisional Pakistan seed antibiogram with national PARN / NIH-Pakistan / WHO GLASS figures; fill the `unknown` cells.
-- Per-prediction TreeSHAP explainability for the V2 RandomForest model.
 - Concept-drift detection and automated retraining pipeline.
 - User authentication and audit logging.
 - External validation on an independent hospital dataset.

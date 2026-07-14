@@ -529,7 +529,11 @@ Base path: `/api/v2`. Full detail: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.
 | `gender` | string | ✅ | `male` / `female`. |
 | `wbc`, `cr`, `lactate`, `procalcitonin` | float ≥ 0 | optional | Missing → imputed. |
 | `ward` | enum | optional | `general` (→ IP), `icu`, `er`. Default `general`. |
+| `prior_abx_classes` | string[] | optional | Prior antibiotic-class exposure (values from `/model-info → prior_history_options`). US path only; unknown tokens ignored. |
+| `prior_organisms` | string[] | optional | Prior infecting organisms (same source). US path only. |
 | `locale` | string | optional | `us_armd` (default, ML path) or `pakistan` (antibiogram-only Route A). |
+
+On the US path each recommendation also carries `explanation` — top TreeSHAP factors `[{feature, label, contribution, direction}]` for that drug's score (null if `shap` is unavailable on the host).
 
 On the Pakistan path the response is additive: `locale`, `basis` (`antibiogram`), `excluded` (drug → gate reason), `antibiogram_meta` (source/version), and `dose_disclaimer`. The `POST /api/v2/recommend` contract is unchanged for the US default — new fields are only *added*.
 
@@ -582,6 +586,7 @@ Copy `.env.example` → `.env`. Variables actually read by the V2 backend:
 | `ARMD_COHORT_PATH` | `<repo>/datasets/microbiology_cultures_cohort.csv` | Backend (V2) | Cohort used to build the runtime organism catalog. |
 | `ANTIBIOGRAM_DIR` | `<repo>/backend/antibiograms` | Backend (V2) | Per-locale antibiogram JSONs (`us_armd.json`, `pakistan.json`). |
 | `REPORTS_DIR` | `<repo>/reports` | Backend (V2) | Where `metrics.json` (the `/model-info` evaluation block) is read from. |
+| `ENABLE_SHAP` | on in dev, **off in production** | Backend (V2) | Per-drug TreeSHAP explanations (M3/T3.1). Defaults off when `ENVIRONMENT=production` because shap/numba can OOM a 512 MB host; set `ENABLE_SHAP=1` to force on (only on an instance with headroom). |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Frontend | Client-side API base URL. |
 | `API_URL` | `http://backend:8000` | Frontend (Docker) | Server-side API URL. |
 
@@ -624,10 +629,10 @@ A running log of the non-obvious issues hit while building V2 and how each was r
 ## 18. Limitations
 
 - **No pooled lift over the antibiogram.** Pooled, the RF does *not* beat a "use the local %-susceptible" baseline (AUC 0.851 vs 0.860). The defensible value is the **within-cell, patient-specific re-ranking** (median cell AUC 0.650), not a headline accuracy win. This is stated honestly rather than hidden.
-- **Prior history defaults to zero at inference.** The `prior_abxclass__*` and `prior_org__*` features aren't captured in the UI, so they're all 0 at prediction time. This reduces accuracy for patients with complex antibiotic/infection histories.
+- **Prior history is optional and coarse.** Prior antibiotic-class exposure and prior organisms are now captured in the UI (US model path) and flow to the model — enabling them recovers ~+0.013 AUC that was previously discarded (`reports/history_ablation.json`). But they're still self-reported class/organism *flags*, not a full timestamped medication/culture history; when left blank the model assumes no known history.
 - **Pakistan antibiogram is a provisional seed.** `pakistan.json` is mostly single-centre / literature-anchored with explicit `unknown` gaps and TODO placeholders for national PARN/NIH/GLASS data — it is illustrative of the *method*, not a validated national antibiogram. Several organisms return "no local data" by design rather than guessing.
 - **Dosing is a reference reframe, not a validated calculator.** Dose/route depend on `(drug, mapped-disease, age band)` — not weight, renal function, or full indication — and are surfaced with a non-validated-dosing disclaimer. Always verify against a pharmacist/formulary.
-- **No per-prediction explanation in V2.** Only global feature importance is exposed (no TreeSHAP per request).
+- **Explanations are attributions, not causes.** Per-drug TreeSHAP factors (US path) show what moved *this model's* score; they aggregate one-hot columns into clinical groups and are best-effort (omitted if `shap` can't load on the host). They explain the model, not the biology.
 - **Dataset-bound.** The model is trained on one US institution's ARMD data; resistance patterns are local and time-bound. No external validation.
 - **Not for autonomous prescribing.** Clinician judgment, local antibiograms, and stewardship policy always take precedence.
 
@@ -635,14 +640,13 @@ A running log of the non-obvious issues hit while building V2 and how each was r
 
 ## 19. Future work
 
-- Capture prior antibiotic exposure and prior organism history in the V2 form (so they stop defaulting to 0).
 - Replace the Pakistan seed antibiogram with **national PARN / NIH-Pakistan / WHO GLASS** figures and fill the `unknown` cells.
-- Per-prediction explanations via TreeSHAP on the RF.
 - Concept-drift detection + automated retraining.
 - External validation on an independent hospital dataset.
 - Auth, audit logging, and polymicrobial-infection support.
+- RF vs LightGBM vs CatBoost comparison on the same split (roadmap M2, stretch).
 
-*Done in V2 (previously listed here): isotonic probability calibration; rigorous seeded evaluation with figures; locale-aware US↔Pakistan recommendation.*
+*Done in V2 (previously listed here): isotonic probability calibration; rigorous seeded evaluation with figures; locale-aware US↔Pakistan recommendation; prior antibiotic-exposure / prior-organism inputs wired to the model; per-prediction TreeSHAP explanations.*
 
 ---
 

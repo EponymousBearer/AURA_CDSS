@@ -8,7 +8,7 @@ import ResultCardV2 from "@/components/ResultCardV2";
 import ResistanceChart from "@/components/ResistanceChart";
 import DisclaimerBanner from "@/components/DisclaimerBanner";
 import LocaleToggle from "@/components/LocaleToggle";
-import { getARMDRecommendation, getARMDLocales } from "@/services/api";
+import { getARMDRecommendation, getARMDLocales, getARMDModelInfo } from "@/services/api";
 import {
   ARMDFormData,
   ARMDRecommendation,
@@ -16,6 +16,7 @@ import {
   ApiError,
   LocaleId,
   LocaleInfo,
+  PriorHistoryOptions,
 } from "@/types";
 
 // Human-readable reasons for the antibiogram `excluded` map.
@@ -38,6 +39,7 @@ function titleCase(value: string) {
 export default function Home() {
   const [locales, setLocales] = useState<LocaleInfo[]>([]);
   const [locale, setLocale] = useState<LocaleId>("us_armd");
+  const [historyOptions, setHistoryOptions] = useState<PriorHistoryOptions | undefined>();
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ARMDRecommendation[] | null>(null);
   const [meta, setMeta] = useState<ARMDRecommendationResponse | null>(null);
@@ -68,6 +70,22 @@ export default function Home() {
               organisms: [],
             },
           ]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Prior-history vocabulary (M3/T3.2) — sourced from the model artifact so the
+  // form's options always match the columns the RF actually knows.
+  useEffect(() => {
+    let mounted = true;
+    getARMDModelInfo()
+      .then((info) => {
+        if (mounted && info.prior_history_options) setHistoryOptions(info.prior_history_options);
+      })
+      .catch(() => {
+        /* non-fatal: form simply omits the optional history section */
       });
     return () => {
       mounted = false;
@@ -211,6 +229,7 @@ export default function Home() {
               onReset={clearResults}
               locale={locale}
               localeOrganisms={currentLocale?.organisms ?? []}
+              historyOptions={historyOptions}
             />
           </div>
 

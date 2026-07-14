@@ -10,3 +10,7 @@ pandas==2.1.4
 # package is never imported at runtime. Re-add if V1 (/api/v1) is restored.
 scikit-learn==1.3.2
 joblib==1.3.2
+# Per-prediction TreeSHAP explanations (M3/T3.1). Imported lazily and best-effort:
+# if it fails to load (e.g. RAM-constrained host), recommendations still work and
+# the explanation field is simply null. Remove this line to drop SHAP from deploy.
+shap==0.45.1

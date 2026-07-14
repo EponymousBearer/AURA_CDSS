@@ -1,0 +1,20 @@
+{
+  "n_test_rows": 177406,
+  "n_prior_history_cols": 34,
+  "n_rows_with_history": 142756,
+  "frac_rows_with_history": 0.8047,
+  "overall": {
+    "auc_with_history": 0.8510434181138239,
+    "auc_history_zeroed": 0.8383565684901695,
+    "auc_lift_from_history": 0.01269,
+    "mean_abs_prob_shift": 0.03372
+  },
+  "history_bearing_subset": {
+    "n": 142756,
+    "auc_with_history": 0.8499027547739296,
+    "auc_history_zeroed": 0.8354272496540476,
+    "auc_lift_from_history": 0.01448,
+    "mean_abs_prob_shift": 0.0419
+  },
+  "note": "Ablation holds the trained RF fixed and zeroes the prior_abxclass__*/prior_org__* columns at inference (the pre-M3 behaviour). Lift = AUC(with) - AUC(zeroed). The history-bearing subset is the honest place to read the effect, since rows with no recorded history are unchanged by zeroing."
+}

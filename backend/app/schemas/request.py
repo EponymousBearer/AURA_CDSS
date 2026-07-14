@@ -238,6 +238,22 @@ class ARMDRecommendationRequest(BaseModel):
     lactate: Optional[float] = Field(None, description="Lactate (mmol/L)", ge=0)
     procalcitonin: Optional[float] = Field(None, description="Procalcitonin (ng/mL)", ge=0)
     ward: WardEnum = Field(WardEnum.GENERAL, description="Patient ward location")
+    prior_abx_classes: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Prior antibiotic-CLASS exposure (e.g. 'beta_lactam', 'fluoroquinolone'). "
+            "Values from GET /api/v2/model-info -> prior_history_options.antibiotic_classes. "
+            "Previously zeroed at inference (M3/T3.2); unknown values are ignored."
+        ),
+    )
+    prior_organisms: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Prior infecting organisms (e.g. 'escherichia', 'pseudomonas'). "
+            "Values from GET /api/v2/model-info -> prior_history_options.organisms. "
+            "Only used on the us_armd (model) path; unknown values are ignored."
+        ),
+    )
     locale: str = Field(
         "us_armd",
         description=(
@@ -277,6 +293,14 @@ class ARMDResult(BaseModel):
     percent_susceptible: Optional[float] = Field(None, description="Local %-susceptible (antibiogram path)")
     source_id: Optional[str] = Field(None, description="Antibiogram source id (provenance)")
     confidence: Optional[str] = Field(None, description="Antibiogram source confidence tier")
+    # --- per-prediction TreeSHAP explanation (M3/T3.1; model path, best-effort) ---
+    explanation: Optional[List[Dict[str, Any]]] = Field(
+        None,
+        description=(
+            "Top contributing clinical factors for this drug's score (TreeSHAP): "
+            "[{feature, label, contribution, direction}]. Null if unavailable."
+        ),
+    )
 
 
 class ARMDRecommendationResponse(BaseModel):

@@ -158,3 +158,97 @@ def test_v2_recommend_rejects_invalid_culture_organism_pair():
 
     assert response.status_code == 422
     assert 'Select one of the listed organisms' in response.json()['detail']
+
+
+# ── M3/T3.2: prior-history inputs (no longer zeroed at inference) ──────────────
+
+def test_v2_model_info_exposes_prior_history_options():
+    body = client.get('/api/v2/model-info').json()
+    opts = body['prior_history_options']
+    abx = {o['value'] for o in opts['antibiotic_classes']}
+    orgs = {o['value'] for o in opts['organisms']}
+    # values are model column suffixes; a few well-known ones must be present
+    assert {'beta_lactam', 'fluoroquinolone', 'aminoglycoside'} <= abx
+    assert {'escherichia', 'pseudomonas', 'klebsiella'} <= orgs
+    # every option carries a display label
+    assert all(o['label'] for o in opts['antibiotic_classes'] + opts['organisms'])
+
+
+def _us_ecoli_payload(**extra):
+    payload = {
+        'culture_description': 'urine',
+        'organism': 'escherichia coli',
+        'age': 60,
+        'gender': 'female',
+        'ward': 'general',
+        'locale': 'us_armd',
+    }
+    payload.update(extra)
+    return payload
+
+
+def test_v2_recommend_prior_history_changes_scores():
+    """The core M3 acceptance: supplying prior history changes the model output."""
+    base = client.post('/api/v2/recommend', json=_us_ecoli_payload()).json()
+    hist = client.post('/api/v2/recommend', json=_us_ecoli_payload(
+        prior_abx_classes=['beta_lactam', 'fluoroquinolone'],
+        prior_organisms=['escherichia'],
+    )).json()
+
+    assert base['locale'] == 'us_armd' and base['basis'] == 'model'
+    base_scores = {p['antibiotic']: p['probability'] for p in base['all_predictions']}
+    hist_scores = {p['antibiotic']: p['probability'] for p in hist['all_predictions']}
+    # at least one candidate's probability must move once history is supplied
+    moved = [a for a in base_scores if abs(base_scores[a] - hist_scores.get(a, base_scores[a])) > 1e-6]
+    assert moved, 'prior history did not change any prediction — feature not wired'
+    # request echoes the supplied history back in patient_factors
+    assert hist['patient_factors']['prior_abx_classes'] == ['beta_lactam', 'fluoroquinolone']
+
+
+def test_v2_recommend_prior_history_is_optional_and_additive():
+    """Omitting history keeps the original US contract (back-compat)."""
+    body = client.post('/api/v2/recommend', json=_us_ecoli_payload()).json()
+    assert body['patient_factors']['prior_abx_classes'] == []
+    assert body['patient_factors']['prior_organisms'] == []
+    assert len(body['recommendations']) == 3
+
+
+def test_v2_recommend_prior_history_ignores_unknown_tokens():
+    """Unknown history values are silently ignored (robust, never 500s)."""
+    resp = client.post('/api/v2/recommend', json=_us_ecoli_payload(
+        prior_abx_classes=['not_a_real_class'],
+        prior_organisms=['not_a_real_org'],
+    ))
+    assert resp.status_code == 200
+
+
+# ── M3/T3.1: per-prediction TreeSHAP explanations ─────────────────────────────
+
+def test_v2_recommend_us_path_returns_explanations(monkeypatch):
+    """US model path attaches per-drug TreeSHAP factors (best-effort; skip if shap absent)."""
+    import importlib.util
+    if importlib.util.find_spec('shap') is None:
+        import pytest
+        pytest.skip('shap not installed in this environment')
+    monkeypatch.setenv('ENABLE_SHAP', '1')  # force-on regardless of ENVIRONMENT
+
+    body = client.post('/api/v2/recommend', json=_us_ecoli_payload()).json()
+    rec = body['recommendations'][0]
+    factors = rec.get('explanation')
+    assert factors, 'expected TreeSHAP explanation on the US model path'
+    top = factors[0]
+    assert {'feature', 'label', 'contribution', 'direction'} <= set(top)
+    assert top['direction'] in ('increases', 'decreases')
+    # factors ordered by |contribution| descending
+    mags = [abs(f['contribution']) for f in factors]
+    assert mags == sorted(mags, reverse=True)
+
+
+def test_v2_recommend_pakistan_path_has_no_model_explanation():
+    """Route A (antibiogram) carries provenance, not a model explanation."""
+    payload = {
+        'culture_description': 'blood', 'organism': 'salmonella typhi',
+        'age': 25, 'gender': 'male', 'ward': 'general', 'locale': 'pakistan',
+    }
+    body = client.post('/api/v2/recommend', json=payload).json()
+    assert body['recommendations'][0].get('explanation') is None
